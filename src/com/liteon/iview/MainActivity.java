@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	
@@ -18,6 +19,8 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		Intent intent = new Intent(MainActivity.this, VideoPlay.class);
+		startActivity(intent);
 	}
 	
 	@Override
@@ -49,6 +52,10 @@ public class MainActivity extends Activity {
             	intentActivity.setClass(MainActivity.this, Preview.class);
             } else if (mSystemMode.equals(Def.STORAGE_MODE)) {
             	intentActivity.setClass(MainActivity.this, Records.class);
+            } else {
+            	intentActivity.setAction("android.net.vpn.SETTINGS");
+            	intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            	Toast.makeText(context, "Please setup VPN to continue!!", Toast.LENGTH_LONG).show();
             }
             startActivity(intentActivity);
         }

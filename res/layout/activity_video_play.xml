@@ -1,0 +1,106 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+	tools:context="${relativePackage}.${activityClass}" >
+
+    <VideoView
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    
+    <RelativeLayout
+        android:id="@+id/video_control"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/play_pause"
+            android:layout_width="@dimen/video_page_icon_size"
+            android:layout_height="@dimen/video_page_icon_size"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="@dimen/video_page_icon_margin"
+            android:layout_marginRight="@dimen/video_page_icon_margin"
+            android:background="@drawable/video_pause"/>
+        <ImageView
+            android:id="@+id/rewind"
+            android:layout_width="@dimen/video_page_icon_size"
+            android:layout_height="@dimen/video_page_icon_size"
+            android:layout_toLeftOf="@id/play_pause"
+            android:layout_centerVertical="true"
+            android:background="@drawable/video_previous"/>
+        <ImageView
+            android:id="@+id/forward"
+            android:layout_width="@dimen/video_page_icon_size"
+            android:layout_height="@dimen/video_page_icon_size"
+            android:layout_toRightOf="@id/play_pause"
+            android:layout_centerVertical="true"
+            android:background="@drawable/video_next"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="@dimen/bottombar_height"
+            android:weightSum="100">
+            <TextView
+                android:id="@+id/start_time"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="3:00:00"
+                android:layout_weight="10"
+                android:visibility="invisible"/>
+            <SeekBar
+                android:id="@+id/seek_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="80"/>
+            <TextView
+                android:id="@+id/end_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3:00:00"
+                android:layout_gravity="right"
+                android:layout_weight="10"/>
+
+        </LinearLayout>
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="@dimen/preview_icon_thumbnail"
+        android:layout_height="@dimen/preview_icon_thumbnail"
+        android:layout_gravity="center_vertical|right"
+        android:layout_marginRight="@dimen/preview_margin_right_thumbnail"
+        android:layout_marginBottom="@dimen/preview_margin_bottom_thumbnail"
+        android:background="@color/md_white_1000"
+        android:scaleType="centerCrop"
+        android:padding="2dp"
+        android:cropToPadding="true"
+        android:visibility="invisible"/>
+
+    <ImageView
+        android:id="@+id/snapshot"
+        android:layout_width="@dimen/preview_icon_snapshot"
+        android:layout_height="@dimen/preview_icon_snapshot"
+        android:layout_gravity="center_vertical|right"
+        android:background="@drawable/menu_screenshots"
+        android:clickable="true"
+        android:elevation="6dp"/>
+
+    <include
+        android:id="@+id/toolbar_recordings"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_recording_height"
+        android:layout_gravity="top"
+        layout="@layout/toolbar_recordings"/>
+        
+    <include
+        android:id="@+id/bottombar"
+        layout="@layout/bottombar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottombar_height"
+        android:layout_gravity="bottom" />
+    
+</FrameLayout>
+

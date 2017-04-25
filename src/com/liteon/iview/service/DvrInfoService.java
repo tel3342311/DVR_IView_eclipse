@@ -133,9 +133,9 @@ public class DvrInfoService extends IntentService {
     	Intent intent = new Intent(Def.ACTION_GET_ALL_INFO);
     	boolean isLocalUrlReachable = true;
     	boolean isStorageMode = false;
-    	if (dvrClient.isURLReachable(getApplicationContext(), Def.DVR_PREVIEW_URL)) {
+    	if (DVRClient.isURLReachable(getApplicationContext(), Def.DVR_PREVIEW_URL)) {
             intent.putExtra(Def.EXTRA_GET_ALL_INFO, Def.RECORDING_MODE);
-    	} else if (dvrClient.isURLReachable(getApplicationContext(), Def.DVR_RECORDINGS_URL)) {
+    	} else if (DVRClient.isURLReachable(getApplicationContext(), Def.DVR_RECORDINGS_URL)) {
             intent.putExtra(Def.EXTRA_GET_ALL_INFO, Def.STORAGE_MODE);
             isStorageMode = true;
     	} else {

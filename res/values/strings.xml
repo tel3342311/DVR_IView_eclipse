@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-<string name="app_name">iView</string>
+
+    <string name="app_name">iView</string>
     <string name="title_home">Camera</string>
     <string name="title_dashboard">Records</string>
     <string name="title_notifications">DVR Settings</string>
@@ -55,7 +56,6 @@
         <item>(GMT+12:00) Fiji</item>
         <item>(GMT+12:00) New Zealand</item>
     </string-array>
-
     <string-array name="dev3g_list">
         <item>AutoDetect</item>
         <item>NU MU-Q101</item>
@@ -68,14 +68,15 @@
         <item>HUAWEI-E3372h-607</item>
         <item>ZTE-ZM8620</item>
     </string-array>
+
     <string name="title_activity_preview">Camera</string>
     <string name="title_activity_records">Records</string>
-    <string name="title_activity_settings">Settings</string>    
-	<string name="settings">Settings</string>
-	
-	<string name="resolution_label">Resolution</string>
-	<string name="resolution_times"> x </string>
-	<string-array name="resolution_array">
+    <string name="title_activity_settings">Settings</string>
+    <string name="settings">Settings</string>
+    <string name="resolution_label">Resolution</string>
+    <string name="resolution_times"> x </string>
+
+    <string-array name="resolution_array">
         <item>640x480</item>
         <item>480x640</item>
         <item>320x240</item>
@@ -85,21 +86,22 @@
         <item>Custom</item>
     </string-array>
 
-	<string name="ip_setting_label">Address</string>
-	<string name="port_setting_label">Port</string>
-	<string name="command_setting_label">Command</string>
-	
-	<string name="digits_increment">+</string>
-	<string name="digits_decrement">-</string>
-	<string name="address_dot">.</string>
-	<string name="port_80">80</string>
-	<string name="port_8080">8080</string>
-	<string name="port_80_with_explanation">80 (for Ai-ball)</string>
-	<string name="port_8080_with_explanation">8080 (for IP Webcam)</string>	
-	<string name="command_streaming">\?action=stream</string>
-	<string name="command_videofeed">videofeed</string>
-	<string name="command_streaming_with_explanation">\?action=stream (for Ai-ball)</string>
-	<string name="command_videofeed_with_explanation">videofeed (for IP Webcam)</string>
-	
-	<string name="settings_done">Done</string>
+    <string name="ip_setting_label">Address</string>
+    <string name="port_setting_label">Port</string>
+    <string name="command_setting_label">Command</string>
+    <string name="digits_increment">+</string>
+    <string name="digits_decrement">-</string>
+    <string name="address_dot">.</string>
+    <string name="port_80">80</string>
+    <string name="port_8080">8080</string>
+    <string name="port_80_with_explanation">80 (for Ai-ball)</string>
+    <string name="port_8080_with_explanation">8080 (for IP Webcam)</string>
+    <string name="command_streaming">\?action=stream</string>
+    <string name="command_videofeed">videofeed</string>
+    <string name="command_streaming_with_explanation">\?action=stream (for Ai-ball)</string>
+    <string name="command_videofeed_with_explanation">videofeed (for IP Webcam)</string>
+    <string name="settings_done">Done</string>
+    <string name="title_activity_video_play">VideoPlay</string>
+    <string name="hello_world">Hello world!</string>
+
 </resources>
