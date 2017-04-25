@@ -1,0 +1,159 @@
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:nestedScrollingEnabled="true">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/internet_setting_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/setting_timezone_title_margin_top"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:text="DVR SIM Setting"/>
+        <!--APN Setting-->
+        <LinearLayout
+            android:id="@+id/apn_sec"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/setting_edittext_bottom_margin"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/apn_title"
+                android:layout_width="@dimen/internet_edit_text_width"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:text="APN" />
+            <EditText
+                android:id="@+id/edit_apn_server"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/setting_timezone_edit_text_height"
+                android:layout_marginLeft="@dimen/setting_timezone_edit_text_margin_left"
+                android:layout_marginRight="@dimen/setting_timezone_edit_text_margin_left"
+                android:paddingLeft="@dimen/setting_timezone_edit_text_padding_left"
+                android:background="@drawable/setting_lcel_1"
+                android:maxLines="1"
+                android:hint="APN"/>
+        </LinearLayout>
+        <!--PIN Setting-->
+        <LinearLayout
+            android:id="@+id/pin_sec"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/setting_edittext_bottom_margin"            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/pin_title"
+                android:layout_width="@dimen/internet_edit_text_width"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:text="PIN" />
+            <EditText
+                android:id="@+id/edit_pin"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/setting_timezone_edit_text_height"
+                android:layout_marginLeft="@dimen/setting_timezone_edit_text_margin_left"
+                android:layout_marginRight="@dimen/setting_timezone_edit_text_margin_left"
+                android:paddingLeft="@dimen/setting_timezone_edit_text_padding_left"
+                android:background="@drawable/setting_lcel_1"
+                android:maxLines="1"
+                android:inputType="numberPassword"
+                android:hint="PIN"/>
+        </LinearLayout>
+        <!--Dial number Setting-->
+        <LinearLayout
+            android:id="@+id/dial_num_sec"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/setting_edittext_bottom_margin"            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/dial_num_title"
+                android:layout_width="@dimen/internet_edit_text_width"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:text="Dial Number" />
+            <EditText
+                android:id="@+id/edit_dial_num_server"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/setting_timezone_edit_text_height"
+                android:layout_marginLeft="@dimen/setting_timezone_edit_text_margin_left"
+                android:layout_marginRight="@dimen/setting_timezone_edit_text_margin_left"
+                android:paddingLeft="@dimen/setting_timezone_edit_text_padding_left"
+                android:background="@drawable/setting_lcel_1"
+                android:maxLines="1"
+                android:inputType="phone"
+                android:hint="Dial Number"/>
+        </LinearLayout>
+        <!--User Name Setting-->
+        <LinearLayout
+            android:id="@+id/username_sec"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/setting_edittext_bottom_margin"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/username_title"
+                android:layout_width="@dimen/internet_edit_text_width"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:text="Username" />
+            <EditText
+                android:id="@+id/edit_username"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/setting_timezone_edit_text_height"
+                android:layout_marginLeft="@dimen/setting_timezone_edit_text_margin_left"
+                android:layout_marginRight="@dimen/setting_timezone_edit_text_margin_left"
+                android:paddingLeft="@dimen/setting_timezone_edit_text_padding_left"
+                android:background="@drawable/setting_lcel_1"
+                android:maxLines="1"
+                android:hint="Username"/>
+        </LinearLayout>
+        <!--Password Setting-->
+        <LinearLayout
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/setting_edittext_bottom_margin"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/password_title"
+                android:layout_width="@dimen/internet_edit_text_width"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:text="Password" />
+            <EditText
+                android:id="@+id/edit_password"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/setting_timezone_edit_text_height"
+                android:layout_marginLeft="@dimen/setting_timezone_edit_text_margin_left"
+                android:layout_marginRight="@dimen/setting_timezone_edit_text_margin_left"
+                android:paddingLeft="@dimen/setting_timezone_edit_text_padding_left"
+                android:background="@drawable/setting_lcel_1"
+                android:maxLines="1"
+                android:inputType="textPassword"
+                android:hint="Password"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/modem_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:text="Modem" />
+
+        <LinearLayout
+            android:id="@+id/picker_container"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:clickable="true"
+            android:layout_height="@dimen/setting_timezone_picker_height"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/bottombar_height"
+            android:background="@drawable/setting_lcel_4"/>
+    </LinearLayout>
+</android.support.v4.widget.NestedScrollView>

@@ -1,6 +1,7 @@
-package com.camera.simplemjpeg;
+package com.liteon.iview.util;
 
 import java.io.IOException;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -11,14 +12,12 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
-   
-	public static final String TAG="MJPEG";
-	
-	public final static int POSITION_UPPER_LEFT  = 9;
+    public final static int POSITION_UPPER_LEFT  = 9;
     public final static int POSITION_UPPER_RIGHT = 3;
     public final static int POSITION_LOWER_LEFT  = 12;
     public final static int POSITION_LOWER_RIGHT = 6;
@@ -27,15 +26,11 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     public final static int SIZE_BEST_FIT   = 4;
     public final static int SIZE_FULLSCREEN = 8;
     
-    SurfaceHolder holder;
-	Context saved_context;
-    
     private MjpegViewThread thread;
     private MjpegInputStream mIn = null;    
     private boolean showFps = false;
     private boolean mRun = false;
     private boolean surfaceDone = false;    
-
     private Paint overlayPaint;
     private int overlayTextColor;
     private int overlayBackgroundColor;
@@ -43,26 +38,15 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     private int dispWidth;
     private int dispHeight;
     private int displayMode;
-
-	private boolean suspending = false;
-	
-	private Bitmap bmp = null;
-	
-	// image size
-
-	public int IMG_WIDTH = 1280;
-	public int IMG_HEIGHT = 720;
+    private Bitmap bmp = null;
 
     public class MjpegViewThread extends Thread {
         private SurfaceHolder mSurfaceHolder;
         private int frameCounter = 0;
         private long start;
-        private String fps = "";
-
+        private Bitmap ovl;
          
-        public MjpegViewThread(SurfaceHolder surfaceHolder, Context context) { 
-            mSurfaceHolder = surfaceHolder; 
-        }
+        public MjpegViewThread(SurfaceHolder surfaceHolder, Context context) { mSurfaceHolder = surfaceHolder; }
 
         private Rect destRect(int bmw, int bmh) {
             int tempx;
@@ -84,8 +68,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                 tempy = (dispHeight / 2) - (bmh / 2);
                 return new Rect(tempx, tempy, bmw + tempx, bmh + tempy);
             }
-            if (displayMode == MjpegView.SIZE_FULLSCREEN)
-                return new Rect(0, 0, dispWidth, dispHeight);
+            if (displayMode == MjpegView.SIZE_FULLSCREEN) return new Rect(0, 0, dispWidth, dispHeight);
             return null;
         }
          
@@ -96,62 +79,45 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
          
-        private Bitmap makeFpsOverlay(Paint p) {
+        private Bitmap makeFpsOverlay(Paint p, String text) {
             Rect b = new Rect();
-            p.getTextBounds(fps, 0, fps.length(), b);
-
-            // false indentation to fix forum layout             
-            Bitmap bm = Bitmap.createBitmap(b.width(), b.height(), Bitmap.Config.ARGB_8888);
-
+            p.getTextBounds(text, 0, text.length(), b);
+            int bwidth  = b.width()+2;
+            int bheight = b.height()+2;
+            Bitmap bm = Bitmap.createBitmap(bwidth, bheight, Bitmap.Config.RGB_565);
             Canvas c = new Canvas(bm);
             p.setColor(overlayBackgroundColor);
-            c.drawRect(0, 0, b.width(), b.height(), p);
+            c.drawRect(0, 0, bwidth, bheight, p);
             p.setColor(overlayTextColor);
-            c.drawText(fps, -b.left, b.bottom-b.top-p.descent(), p);
+            c.drawText(text, -b.left+1, (bheight/2)-((p.ascent()+p.descent())/2)+1, p);
             return bm;        	 
         }
 
         public void run() {
             start = System.currentTimeMillis();
             PorterDuffXfermode mode = new PorterDuffXfermode(PorterDuff.Mode.DST_OVER);
-
+            Bitmap bm;
             int width;
             int height;
+            Rect destRect;
+            Canvas c = null;
             Paint p = new Paint();
-            Bitmap ovl=null;
-            
+            String fps = "";
             while (mRun) {
-
-                Rect destRect=null;
-                Canvas c = null;
-
-                if(surfaceDone) {   
-                	try {
-                		if(bmp==null){
-                			bmp = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ARGB_8888);
-                		}
-                		int ret = mIn.readMjpegFrame(bmp);
-
-                		if(ret == -1)
-                		{
-                			return;
-                		}
-                		
-                        destRect = destRect(bmp.getWidth(),bmp.getHeight());
-                        
+                if(surfaceDone) {
+                    try {
                         c = mSurfaceHolder.lockCanvas();
                         synchronized (mSurfaceHolder) {
-
-                               	c.drawBitmap(bmp, null, destRect, p);
-
+                            try {
+                                bm = bmp = mIn.readMjpegFrame();
+                                destRect = destRect(bm.getWidth(),bm.getHeight());
+                                c.drawColor(Color.BLACK);
+                                c.drawBitmap(bm, null, destRect, p);
                                 if(showFps) {
                                     p.setXfermode(mode);
                                     if(ovl != null) {
-
-                                    	// false indentation to fix forum layout 	                                	 
                                     	height = ((ovlPos & 1) == 1) ? destRect.top : destRect.bottom-ovl.getHeight();
                                     	width  = ((ovlPos & 8) == 8) ? destRect.left : destRect.right -ovl.getWidth();
-
                                         c.drawBitmap(ovl, width, height, null);
                                     }
                                     p.setXfermode(null);
@@ -160,30 +126,19 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                                         fps = String.valueOf(frameCounter)+"fps";
                                         frameCounter = 0; 
                                         start = System.currentTimeMillis();
-                                        if(ovl!=null) ovl.recycle();
-                                    	
-                                        ovl = makeFpsOverlay(overlayPaint);
+                                        ovl = makeFpsOverlay(overlayPaint, fps);
                                     }
                                 }
-                                
-
+                            } catch (IOException e) {}
                         }
-
-                    }catch (IOException e){ 
-                	
-                }finally { 
-                    	if (c != null) mSurfaceHolder.unlockCanvasAndPost(c); 
-                    }
+                    } finally { if (c != null) mSurfaceHolder.unlockCanvasAndPost(c); }
                 }
             }
         }
     }
 
     private void init(Context context) {
-    	
-        //SurfaceHolder holder = getHolder();
-    	holder = getHolder();
-    	saved_context = context;
+        SurfaceHolder holder = getHolder();
         holder.addCallback(this);
         thread = new MjpegViewThread(holder, context);
         setFocusable(true);
@@ -197,105 +152,51 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
         displayMode = MjpegView.SIZE_STANDARD;
         dispWidth = getWidth();
         dispHeight = getHeight();
+        
+        Log.e("KKK","dispWidth =  " + dispWidth + " dispHeight = " + dispHeight);
+        Log.e("KKK","dispWidth =  " + dispWidth + " dispHeight = " + dispHeight);
     }
     
     public void startPlayback() { 
         if(mIn != null) {
             mRun = true;
-            if(thread==null){
-            	thread = new MjpegViewThread(holder, saved_context);
-            }
             thread.start();    		
         }
     }
     
-    public void resumePlayback() { 
-        if(suspending){
-            if(mIn != null) {
-                mRun = true;
-                SurfaceHolder holder = getHolder();
-                holder.addCallback(this);
-                thread = new MjpegViewThread(holder, saved_context);		
-                thread.start();
-                suspending=false;
-            }
-        }
-    }
     public void stopPlayback() { 
-    	if(mRun){
-    		suspending = true;
-    	}
         mRun = false;
-        if(thread!=null){
-        	boolean retry = true;
-	        while(retry) {
-	            try {
-	                thread.join();
-	                retry = false;
-	            } catch (InterruptedException e) {}
-	        }
-	        thread = null;
+        boolean retry = true;
+        while(retry) {
+            try {
+                thread.join();
+                retry = false;
+            } catch (InterruptedException e) {}
         }
-        if(mIn!=null){
-	        try{
-	        	mIn.close();
-	        }catch(IOException e){}
-	        mIn = null;
-        }
-
     }
 
-    public void freeCameraMemory(){
-    	if(mIn!=null){
-    		mIn.freeCameraMemory();
-    	}
-    }
-    
-    public MjpegView(Context context, AttributeSet attrs) { 
-        super(context, attrs); init(context); 
-    }
-
-    public void surfaceChanged(SurfaceHolder holder, int f, int w, int h) {
-    	if(thread!=null){
-    		thread.setSurfaceSize(w, h); 
-    	}
-    }
+    public MjpegView(Context context, AttributeSet attrs) { super(context, attrs); init(context); }
+    public void surfaceChanged(SurfaceHolder holder, int f, int w, int h) { thread.setSurfaceSize(w, h); }
 
     public void surfaceDestroyed(SurfaceHolder holder) { 
         surfaceDone = false; 
         stopPlayback(); 
     }
     
+    public Bitmap getBitmap() {
+        if (bmp != null) {
+            return Bitmap.createBitmap(bmp);
+        }
+        return null;
+    }
+    
     public MjpegView(Context context) { super(context); init(context); }    
     public void surfaceCreated(SurfaceHolder holder) { surfaceDone = true; }
     public void showFps(boolean b) { showFps = b; }
-    public void setSource(MjpegInputStream source) {
-    	mIn = source; 
-    	if(!suspending){
-    		startPlayback();
-    	}else{
-    		resumePlayback();
-    	}
-    }
+    public void setSource(MjpegInputStream source) { mIn = source; startPlayback();}
     public void setOverlayPaint(Paint p) { overlayPaint = p; }
     public void setOverlayTextColor(int c) { overlayTextColor = c; }
     public void setOverlayBackgroundColor(int c) { overlayBackgroundColor = c; }
     public void setOverlayPosition(int p) { ovlPos = p; }
     public void setDisplayMode(int s) { displayMode = s; }
-    
-    public void setResolution(int w, int h){
-    	IMG_WIDTH = w;
-    	IMG_HEIGHT = h;
-    }
-    
-	public boolean isStreaming(){
-		return mRun;
-	}
-	
-	public Bitmap getBitmap(){
-        if (bmp != null) {
-            return Bitmap.createBitmap(bmp);
-        }
-        return null;
-	}
 }

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.liteon.iView.MainActivity">
+
+    <include
+        android:id="@+id/bottombar"
+        layout="@layout/bottombar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottombar_height"
+        android:layout_alignParentBottom="true" />
+
+    <include
+        android:id="@+id/toolbar_preview"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_height"
+        android:layout_alignParentTop="true"
+        layout="@layout/toolbar_preview" />
+    <include
+        android:id="@+id/toolbar_recordings"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_recording_height"
+        android:layout_alignParentTop="true"
+        android:visibility="invisible"
+        layout="@layout/toolbar_recordings"/>
+    <include
+        android:id="@+id/toolbar_setting"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_height"
+        android:layout_alignParentTop="true"
+        android:visibility="invisible"
+        layout="@layout/toolbar_setting" />
+
+</RelativeLayout>

@@ -1,0 +1,98 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/recording_length_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/setting_timezone_title_margin_top"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:text="Recording Clip File Length Server"/>
+
+    <LinearLayout
+        android:id="@+id/recording_length_option"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/recording_option_height"
+        android:layout_below="@id/recording_length_title"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:background="@drawable/setting_lcel_2"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/two_min"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="2Min"
+            android:textColor="@drawable/text_select_color"
+            android:textSize="@dimen/setting_option_text_size"/>
+        <TextView
+            android:id="@+id/three_min"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="3Min"
+            android:textColor="@drawable/text_select_color"/>
+
+        <TextView
+            android:id="@+id/five_min"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="5Min"
+            android:textColor="@drawable/text_select_color"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/recording_camera_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_below="@id/recording_length_option"
+        android:text="Recording Camera Source" />
+
+    <LinearLayout
+        android:id="@+id/recording_camera_option"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/recording_option_height"
+        android:layout_below="@id/recording_camera_title"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:background="@drawable/setting_lcel_2"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/front_cam"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Front"
+            android:textColor="@drawable/text_select_color"/>
+
+        <TextView
+            android:id="@+id/rear_cam"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Rear"
+            android:textColor="@drawable/text_select_color"/>
+
+        <TextView
+            android:id="@+id/front_rear_cam"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Front &amp; Rear"
+            android:textColor="@drawable/text_select_color"/>
+    </LinearLayout>
+</RelativeLayout>

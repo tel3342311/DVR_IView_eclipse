@@ -1,0 +1,37 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.camera.simplemjpeg.MjpegView
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <ImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="@dimen/preview_icon_thumbnail"
+        android:layout_height="@dimen/preview_icon_thumbnail"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="@dimen/preview_margin_right_thumbnail"
+        android:layout_marginBottom="@dimen/preview_margin_bottom_thumbnail"
+        android:background="@color/md_white_1000"
+        android:scaleType="centerCrop"
+        android:padding="2dp"
+        android:cropToPadding="true"
+        android:visibility="invisible"/>
+
+    <ImageView
+        android:id="@+id/snapshot"
+        android:layout_width="@dimen/preview_icon_snapshot"
+        android:layout_height="@dimen/preview_icon_snapshot"
+        android:layout_above="@id/thumbnail"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:background="@drawable/menu_screenshots"
+        android:clickable="true"
+        android:elevation="6dp" />
+
+</RelativeLayout>

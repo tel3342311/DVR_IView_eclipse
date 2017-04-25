@@ -1,7 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">SimpleMjpegView</string>
-    
+<string name="app_name">iView</string>
+    <string name="title_home">Camera</string>
+    <string name="title_dashboard">Records</string>
+    <string name="title_notifications">DVR Settings</string>
+    <string name="title_setting_date">Sync Network Time</string>
+    <string name="title_setting_recording">Recording Setting</string>
+    <string name="title_setting_internet">Internet</string>
+    <string name="title_setting_vpn_routing">Cloud Service</string>
+    <string name="title_setting_wifi_setting">Wifi Setting</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string-array name="gmt_list">
+        <item>(GMT-11:00) Midway Island, Samoa</item>
+        <item>(GMT-10:00) Hawaii</item>
+        <item>(GMT-09:00) Alaska</item>
+        <item>(GMT-08:00) Pacific Time</item>
+        <item>(GMT-07:00) Mountain Time</item>
+        <item>(GMT-07:00) Arizona</item>
+        <item>(GMT-06:00) Central Time</item>
+        <item>(GMT-06:00) Middle America</item>
+        <item>(GMT-05:00) Indiana East, Colombia</item>
+        <item>(GMT-05:00) Eastern Time</item>
+        <item>(GMT-04:00) Atlantic Time, Brazil West</item>
+        <item>(GMT-04:00) Bolivia, Venezuela</item>
+        <item>(GMT-03:00) Guyana</item>
+        <item>(GMT-03:00) Brazil East, Greenland</item>
+        <item>(GMT-02:00) Mid-Atlantic</item>
+        <item>(GMT-01:00) Azores Islands</item>
+        <item>(GMT) Gambia, Liberia, Morocco</item>
+        <item>(GMT) England</item>
+        <item>(GMT+01:00) Czech Republic, N</item>
+        <item>(GMT+01:00) Germany</item>
+        <item>(GMT+01:00) Tunisia</item>
+        <item>(GMT+02:00) Greece, Ukraine, Turkey</item>
+        <item>(GMT+02:00) South Africa</item>
+        <item>(GMT+03:00) Iraq, Jordan, Kuwait</item>
+        <item>(GMT+03:00) Moscow Winter Time</item>
+        <item>(GMT+04:00) Armenia</item>
+        <item>(GMT+05:00) Pakistan, Russia</item>
+        <item>(GMT+06:00) Bangladesh, Russia</item>
+        <item>(GMT+07:00) Thailand, Russia</item>
+        <item>(GMT+08:00) China Coast, Hong Kong</item>
+        <item>(GMT+08:00) Taipei</item>
+        <item>(GMT+08:00) Singapore</item>
+        <item>(GMT+08:00) Australia (WA)</item>
+        <item>(GMT+09:00) Japan, Korea</item>
+        <item>(GMT+09:00) Korean</item>
+        <item>(GMT+10:00) Guam, Russia</item>
+        <item>(GMT+10:00) Australia (QLD, TAS,NSW,ACT,VIC)</item>
+        <item>(GMT+11:00) Solomon Islands</item>
+        <item>(GMT+12:00) Fiji</item>
+        <item>(GMT+12:00) New Zealand</item>
+    </string-array>
+
+    <string-array name="dev3g_list">
+        <item>AutoDetect</item>
+        <item>NU MU-Q101</item>
+        <item>HUAWEI E169</item>
+        <item>BandLuxe C270</item>
+        <item>OPTION ICON 225</item>
+        <item>DATANG M5731</item>
+        <item>MobilePeak-Titan</item>
+        <item>ZTE MF626</item>
+        <item>HUAWEI-E3372h-607</item>
+        <item>ZTE-ZM8620</item>
+    </string-array>
+    <string name="title_activity_preview">Camera</string>
+    <string name="title_activity_records">Records</string>
+    <string name="title_activity_settings">Settings</string>    
 	<string name="settings">Settings</string>
 	
 	<string name="resolution_label">Resolution</string>

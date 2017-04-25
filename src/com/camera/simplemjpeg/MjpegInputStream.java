@@ -263,4 +263,14 @@ public class MjpegInputStream extends DataInputStream {
     public void setSkip(int s){
     	skip = s;
     }
+    
+    public static MjpegInputStream read(InputStream is) {
+        try {
+            return new MjpegInputStream(is);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }
