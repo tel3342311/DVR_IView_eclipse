@@ -1,31 +1,56 @@
 package com.liteon.iview;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-
-import com.camera.simplemjpeg.MjpegInputStream;
-import com.camera.simplemjpeg.MjpegView;
+import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
 
 public class MainActivity extends Activity {
 	
+	private String mSystemMode;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		Intent intent = new Intent(getApplicationContext(), Preview.class);
-		startActivity(intent);
 	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+        IntentFilter intentFilter = new IntentFilter(Def.ACTION_GET_ALL_INFO);
+        registerReceiver(mBroadcastReceiver, intentFilter);
+        //Get DVR info
+		Intent intent = new Intent(getApplicationContext(), DvrInfoService.class);
+		intent.setAction(Def.ACTION_GET_ALL_INFO);
+		startService(intent);
+	}
+	
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mBroadcastReceiver);
+    }
+	
+    BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+
+		@Override
+        public void onReceive(Context context, Intent intent) {
+
+            String mode = intent.getStringExtra(Def.EXTRA_GET_ALL_INFO);
+            mSystemMode = mode;
+            Intent intentActivity = new Intent();
+            if (mSystemMode.equals(Def.RECORDING_MODE)) {
+            	intentActivity.setClass(MainActivity.this, Preview.class);
+            } else if (mSystemMode.equals(Def.STORAGE_MODE)) {
+            	intentActivity.setClass(MainActivity.this, Records.class);
+            }
+            startActivity(intentActivity);
+        }
+    };
 }

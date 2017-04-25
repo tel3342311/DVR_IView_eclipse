@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.util.Log;
 import com.liteon.iview.util.*;
 
+import java.util.List;
 import java.util.Map;
 
 public class DvrInfoService extends IntentService {
@@ -128,9 +129,38 @@ public class DvrInfoService extends IntentService {
     }
 
     private void handleActionGetAllInfo() {
+    	DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
+    	Intent intent = new Intent(Def.ACTION_GET_ALL_INFO);
+    	boolean isLocalUrlReachable = true;
+    	boolean isStorageMode = false;
+    	if (dvrClient.isURLReachable(getApplicationContext(), Def.DVR_PREVIEW_URL)) {
+            intent.putExtra(Def.EXTRA_GET_ALL_INFO, Def.RECORDING_MODE);
+    	} else if (dvrClient.isURLReachable(getApplicationContext(), Def.DVR_RECORDINGS_URL)) {
+            intent.putExtra(Def.EXTRA_GET_ALL_INFO, Def.STORAGE_MODE);
+            isStorageMode = true;
+    	} else {
+            intent.putExtra(Def.EXTRA_GET_ALL_INFO, Def.VPN_MODE);
+            isLocalUrlReachable = false;
+    	}
+        sendBroadcast(intent);
+        if (isStorageMode) {
+        	dvrClient.getRecordingList();
+        	NotifyRecordingListChange();
+        }
+        if (isLocalUrlReachable) {
+	    	dvrClient.getWifiBasic();
+	    	dvrClient.getWifiSecurity();
+	    	dvrClient.getNetworkSetting();
+	    	dvrClient.getInfoFromADMPage();
+	    	dvrClient.getCameraSetting();
+        }
 
     }
-
+    private void NotifyRecordingListChange() {
+    	Intent intent = new Intent();
+    	intent.setAction(Def.ACTION_GET_RECORDING_LIST);
+    	sendBroadcast(intent);
+    }
     private void handleActionGetSysInfo() {
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
         String mode = dvrClient.getSystemMode();

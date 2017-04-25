@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/recordings_list_item_height"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/records_item_state"
-    android:orientation="horizontal">
+    android:layout_height="wrap_content">
 
+    <ImageView 
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/recordings_list_item_height"
+    	android:background="@drawable/records_item_state"/>
+    
     <ImageView
         android:id="@+id/video_item_select"
         android:layout_width="@dimen/recordings_list_item_icon_size"
@@ -19,8 +21,9 @@
         android:id="@+id/video_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
+        android:layout_marginLeft="@dimen/text_margin"
         android:layout_toRightOf="@id/video_item_select"
+        android:layout_centerVertical="true"
         android:textSize="@dimen/recordings_list_item_text_size"
         android:textColor="@color/item_color_state"/>
 
@@ -37,8 +40,9 @@
         android:id="@+id/video_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
+        android:layout_marginRight="@dimen/text_margin"
         android:layout_toLeftOf="@id/video_play"
+        android:layout_centerVertical="true"
         android:textSize="@dimen/recordings_list_item_text_size"
         android:textColor="@color/item_color_state"/>
 

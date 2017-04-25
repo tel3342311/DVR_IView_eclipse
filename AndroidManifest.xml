@@ -27,18 +27,24 @@
         <activity
             android:name=".Preview"
             android:label="@string/title_activity_preview"
-            android:screenOrientation="landscape" >
+            android:screenOrientation="landscape"
+            android:launchMode="singleTask" >
         </activity>
         <activity
             android:name=".Records"
             android:label="@string/title_activity_records"
-            android:screenOrientation="landscape" >
+            android:screenOrientation="landscape" 
+            android:launchMode="singleTask">
         </activity>
         <activity
             android:name=".Settings"
             android:label="@string/title_activity_settings"
-            android:screenOrientation="landscape" >
+            android:screenOrientation="landscape" 
+            android:launchMode="singleTask">
         </activity>
+        <service
+            android:name="com.liteon.iview.service.DvrInfoService"
+            android:exported="false"/>
     </application>
 
 </manifest>

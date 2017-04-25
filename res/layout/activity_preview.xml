@@ -33,5 +33,19 @@
         android:background="@drawable/menu_screenshots"
         android:clickable="true"
         android:elevation="6dp" />
+    
+    <include
+        android:id="@+id/bottombar"
+        layout="@layout/bottombar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottombar_height"
+        android:layout_alignParentBottom="true" />
+
+    <include
+        android:id="@+id/toolbar_preview"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_height"
+        android:layout_alignParentTop="true"
+        layout="@layout/toolbar_preview" />
 
 </RelativeLayout>

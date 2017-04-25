@@ -19,6 +19,7 @@ public class Def {
     public final static String system_cgi = "cgi-bin/system.cgi";
     public final static String RECORDING_MODE = "uvc";
     public final static String STORAGE_MODE = "msdc";
+    public final static String VPN_MODE = "vpn";
     //time zone setting
     public final static String adm_setting = "adm/management.shtml";
     public final static String adm_cgi = "cgi-bin/adm.cgi";
@@ -172,7 +173,9 @@ public class Def {
     public final static String ACTION_SET_INTERNET = "com.liteon.iView.service.action.SET_INTERNET";
     public final static String ACTION_SET_WIFI = "com.liteon.iView.service.action.SET_WIFI";
     public final static String ACTION_SET_VPN = "com.liteon.iView.service.action.SET_VPN";
+    public final static String ACTION_GET_RECORDING_LIST = "com.liteon.iView.service.action.GET_RECORDING_LIST";
     //Key for Intent extra
+    public final static String EXTRA_GET_ALL_INFO = "com.liteon.iView.service.extra.GET_ALL_INFO";
     public final static String EXTRA_GET_SYS_MODE = "com.liteon.iView.service.extra.GET_SYS";
     public final static String EXTRA_SET_SYS_MODE = "com.liteon.iView.service.extra.SET_SYS";
     public final static String EXTRA_GET_CAM_MODE = "com.liteon.iView.service.extra.GET_CAM";
@@ -220,5 +223,6 @@ public class Def {
     public final static String SP_RECORDING_CAMERA = "SP_RECORDING_CAMERA";
     public final static String SP_PREVIEW_CAMERA = "SP_PREVIEW_CAMERA";
     public final static String SP_RECORDING_LIST = "SP_RECORDING_LIST";
+	
 
 }
