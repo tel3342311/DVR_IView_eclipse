@@ -174,6 +174,8 @@ public class Def {
     public final static String ACTION_SET_WIFI = "com.liteon.iView.service.action.SET_WIFI";
     public final static String ACTION_SET_VPN = "com.liteon.iView.service.action.SET_VPN";
     public final static String ACTION_GET_RECORDING_LIST = "com.liteon.iView.service.action.GET_RECORDING_LIST";
+    public final static String ACTION_SAVE_TO_PHONE = "com.liteon.iView.service.action.SAVE_TO_PHONE";
+    public final static String ACTION_SAVE_TO_OTG = "com.liteon.iView.service.action.SAVE_TO_OTG";
     //Key for Intent extra
     public final static String EXTRA_GET_ALL_INFO = "com.liteon.iView.service.extra.GET_ALL_INFO";
     public final static String EXTRA_GET_SYS_MODE = "com.liteon.iView.service.extra.GET_SYS";
@@ -196,6 +198,9 @@ public class Def {
     public final static String EXTRA_SECURITYMODE = "com.liteon.iView.service.extra.securitymode";
     public final static String EXTRA_ENCRYPTTYPE = "com.liteon.iView.service.extra.encrypttype";
     public final static String EXTRA_PASSPHASE = "com.liteon.iView.service.extra.passphase";
+    public final static String EXTRA_VIDEO_ITEM_ID = "com.liteon.iView.extra.videoItemId";
+    public final static String EXTRA_SAVE_ITEM_URL = "com.liteon.iView.extra.saveItemURL";
+    public final static String EXTRA_SAVE_ITEM_NAME = "com.liteon.iView.extra.saveItemNAME";
     //Key for sharePreference
     public final static String SHARE_PREFERENCE = "com.liteon.iView.PREFERENCE_FILE_KEY";
     public final static String SP_SSID = "SP_SSID";
@@ -224,5 +229,4 @@ public class Def {
     public final static String SP_PREVIEW_CAMERA = "SP_PREVIEW_CAMERA";
     public final static String SP_RECORDING_LIST = "SP_RECORDING_LIST";
 	
-
 }

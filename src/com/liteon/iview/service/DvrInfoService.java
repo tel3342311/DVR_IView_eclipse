@@ -3,9 +3,12 @@ package com.liteon.iview.service;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Environment;
 import android.util.Log;
 import com.liteon.iview.util.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -25,55 +28,11 @@ public class DvrInfoService extends IntentService {
     private static final String ACTION_SET_INTERNET = Def.ACTION_SET_INTERNET;
     private static final String ACTION_SET_VPN = Def.ACTION_SET_VPN;
     private static final String ACTION_SET_WIFI = Def.ACTION_SET_WIFI;
-
-    // TODO: Rename parameters
-    private static final String EXTRA_PARAM1 = "com.example.trdcmacpro.dvr_hammer.service.extra.PARAM1";
-    private static final String EXTRA_PARAM2 = "com.example.trdcmacpro.dvr_hammer.service.extra.PARAM2";
+    private static final String ACTION_SAVE_TO_PHONE = Def.ACTION_SAVE_TO_PHONE;
+    private static final String ACTION_SAVE_TO_OTG = Def.ACTION_SAVE_TO_OTG;
 
     public DvrInfoService() {
         super("DvrInfoService");
-    }
-
-    public static void startActionGetAllinfo(Context context) {
-        Intent intent = new Intent(context, DvrInfoService.class);
-        intent.setAction(ACTION_GET_ALL_INFO);
-        context.startService(intent);
-    }
-
-    public static void startActionGetSysInfo(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, DvrInfoService.class);
-        intent.setAction(ACTION_GET_SYS_MODE);
-        context.startService(intent);
-    }
-
-    public static void startActionGetCamMode(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, DvrInfoService.class);
-        intent.setAction(ACTION_GET_CAM_MODE);
-        context.startService(intent);
-    }
-
-    public static void startActionGetInternet(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, DvrInfoService.class);
-        intent.setAction(ACTION_GET_INTERNET);
-        context.startService(intent);
-    }
-
-    public static void startActionGetWireless(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, DvrInfoService.class);
-        intent.setAction(ACTION_GET_WIRELESS);
-        context.startService(intent);
-    }
-
-    public static void startActionGetSecurity(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, DvrInfoService.class);
-        intent.setAction(ACTION_GET_SECURITY);
-        context.startService(intent);
-    }
-
-    public static void startActionGetAdmin(Context context, String param1, String param2) {
-        Intent intent = new Intent(context, DvrInfoService.class);
-        intent.setAction(ACTION_GET_ADMIN);
-        context.startService(intent);
     }
 
     @Override
@@ -124,11 +83,31 @@ public class DvrInfoService extends IntentService {
                 String encryptType = intent.getStringExtra(Def.EXTRA_ENCRYPTTYPE);
                 String passPhase =intent.getStringExtra(Def.EXTRA_PASSPHASE);
                 handleActionSetWifi(ssid,securityMode,encryptType,passPhase);
+            } else if (ACTION_SAVE_TO_PHONE.equals(action)) {
+            	String url = intent.getStringExtra(Def.EXTRA_SAVE_ITEM_URL);
+            	int id = intent.getIntExtra(Def.EXTRA_VIDEO_ITEM_ID, 0);
+            	String name = intent.getStringExtra(Def.EXTRA_SAVE_ITEM_NAME);
+            	handleActionSaveToPhone(url, id, name);
             }
         }
     }
 
-    private void handleActionGetAllInfo() {
+    private void handleActionSaveToPhone(String url, int id, String name) {
+    	File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);    	
+    	if (path.exists()) {
+    		//sendBroadcast(intent);
+    		return ;
+    	}
+    	
+    	File file = new File(path, name);
+    	try {
+			file.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void handleActionGetAllInfo() {
     	DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
     	Intent intent = new Intent(Def.ACTION_GET_ALL_INFO);
     	boolean isLocalUrlReachable = true;
