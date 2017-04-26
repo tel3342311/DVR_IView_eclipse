@@ -14,8 +14,10 @@ import com.liteon.iview.util.Def;
 import com.liteon.iview.util.RecordingItem;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -30,6 +32,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.VideoView;
@@ -384,14 +387,21 @@ public class VideoPlay extends Activity {
     	int position = intent.getIntExtra(Def.EXTRA_VIDEO_ITEM_ID, 0);
     	setCurrentVideoItem(mDataList.get(position));
     	setupVideoView();
+        IntentFilter intentFilter = new IntentFilter(Def.ACTION_SAVE_STATUS);
+        registerReceiver(mBroadcastReceiver, intentFilter);
 	}
-    
+
     @Override
     protected void onStart() {
     	super.onStart();
     	mHandlerTime.postDelayed(HideUIControl, 1500);
     }
-    
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mBroadcastReceiver);
+    }
     private void setMenuVisible(boolean show) {
     	if (show) {
     		mToolbar.setVisibility(View.VISIBLE);
@@ -465,6 +475,15 @@ public class VideoPlay extends Activity {
         @Override
         public void onAnimationRepeat(Animation animation) {
 
+        }
+    };
+    
+    BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+
+		@Override
+        public void onReceive(Context context, Intent intent) {
+
+        
         }
     };
 }
