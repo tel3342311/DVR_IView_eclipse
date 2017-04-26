@@ -7,7 +7,6 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 import com.liteon.iview.util.RecordingItem;
 import com.liteon.iview.util.VideoItemAdapter;
@@ -19,8 +18,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
 
@@ -38,6 +41,9 @@ public class Records extends Activity {
     private View mSaveToPhone;
     private View mSaveToOTG;
     private View mDelete;
+    public static final int UPDATE_TOOL_BAR = 1;
+    public static final int ARG_UNSELECT = 1;
+    public static final int ARG_SELECT = 2;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +64,7 @@ public class Records extends Activity {
         mSaveToOTG = findViewById(R.id.save_to_otg);
         mSaveToPhone = findViewById(R.id.save_to_phone);
         mSelectAll = findViewById(R.id.select_all);
+        mDelete = findViewById(R.id.delete);
     }
 	
 	private void setListeners() {
@@ -66,12 +73,14 @@ public class Records extends Activity {
 		mSelectAll.setOnClickListener(mOnSelectAllClickListener);
 		mSaveToOTG.setOnClickListener(mOnSaveToOTGClickListener);
 		mSaveToPhone.setOnClickListener(mOnSaveToPhoneClickListener);
+		mListView.setOnItemClickListener(mOnItemClickListener);
 	}
 	
 	private void setupListView() {
 		mVideoItemAdapter = new VideoItemAdapter(this);
 		mDataList = new ArrayList<RecordingItem>();
 		mVideoItemAdapter.setDataList(mDataList);
+		mVideoItemAdapter.setUiHandler(mHandler);
 		mListView.setAdapter(mVideoItemAdapter);
 	}
 	
@@ -97,6 +106,9 @@ public class Records extends Activity {
 		updateList();
         IntentFilter intentFilter = new IntentFilter(Def.ACTION_GET_RECORDING_LIST);
         registerReceiver(mBroadcastReceiver, intentFilter);
+        mSaveToOTG.setEnabled(false);
+        mSaveToPhone.setEnabled(false);
+        mDelete.setEnabled(false);
 	}
 	
     @Override
@@ -163,5 +175,78 @@ public class Records extends Activity {
 		public void onClick(View v) {
 			
 		}
+	};
+	
+	private OnItemClickListener mOnItemClickListener = new OnItemClickListener() {
+
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			
+			resetSelectState();
+			Intent intent = new Intent();
+			intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, position);
+			intent.setClass(getApplicationContext(), VideoPlay.class);
+			startActivity(intent);
+		}
+		
+	};
+	
+	private void resetSelectState(){
+		mSelectAll.setSelected(false);
+		mSaveToOTG.setEnabled(false);
+		mSaveToPhone.setEnabled(false);
+		for (RecordingItem item : mDataList) {
+			item.setSelected(false);
+		}
+		mVideoItemAdapter.notifyDataSetChanged();
+	}
+	
+	private boolean hasSelectedState(){
+		boolean isSelected = false;
+		for (RecordingItem item : mDataList) {
+			if (item.isSelected()) {
+				isSelected = true;
+				break;
+			}
+		}
+		return isSelected;
+	}
+	
+	private boolean isSelectedAllState(){
+		boolean isSelectAll = true;
+		for (RecordingItem item : mDataList) {
+			if (!item.isSelected()) {
+				isSelectAll = false;
+				break;
+			}
+		}
+		return isSelectAll;
+	}
+	
+	private Handler mHandler = new Handler() {
+		int unselect = 1;
+		int select = 2;
+		@Override
+        public void handleMessage(Message msg) {
+            switch(msg.what){
+            case UPDATE_TOOL_BAR:
+            	if (ARG_UNSELECT == msg.arg1) {
+            		if (!hasSelectedState()) {
+            			mSaveToOTG.setEnabled(false);
+            			mSaveToPhone.setEnabled(false);
+            		}
+        			mSelectAll.setSelected(false);
+            	} else if (ARG_SELECT == msg.arg1) {
+            		mSaveToOTG.setEnabled(true);
+        			mSaveToPhone.setEnabled(true);
+        			if (isSelectedAllState()) {
+            			mSelectAll.setSelected(true);
+        			}
+            	}
+                break;
+            default:
+                break;
+            }
+        }
 	};
 }

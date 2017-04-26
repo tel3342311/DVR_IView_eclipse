@@ -22,6 +22,8 @@
     <!-- video playback page-->
     <dimen name="video_page_icon_size">50dp</dimen>
     <dimen name="video_page_icon_margin">100dp</dimen>
+    <dimen name="video_page_seekbar_maxheight">5dp</dimen>
+    <dimen name="video_page_seekbar_thumb">25dp</dimen>
     <!-- setting page-->
     <dimen name="setting_main_icon_height">170dp</dimen>
     <dimen name="setting_main_icon_margin">10dp</dimen>
@@ -48,5 +50,10 @@
     <dimen name="wifi_edit_text_width">80dp</dimen>
     <!--setting vpn-->
     <dimen name="vpn_edit_text_width">80dp</dimen>
-
+	<!--dialog   -->
+	<dimen name="dialog_background_width">300dp</dimen>
+	<dimen name="dialog_background_height">225dp</dimen>
+	<dimen name="dialog_ok_btn_height">35dp</dimen>
+	<dimen name="dialog_icon_size">52dp</dimen>
+	<dimen name="status_text_margin">10dp</dimen>
 </resources>

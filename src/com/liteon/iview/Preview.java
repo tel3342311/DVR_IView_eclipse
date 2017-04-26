@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class Preview extends Activity {
@@ -40,6 +41,7 @@ public class Preview extends Activity {
     private boolean mShowingMenu;
     private Handler mHandlerTime;
     private boolean mIsSuspend;
+	private TextView mTitleView;
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -106,6 +108,8 @@ public class Preview extends Activity {
         mPreview = (ImageView) findViewById(R.id.preview_icon);
         mRecordings = (ImageView) findViewById(R.id.recordings_icon);
         mSettings = (ImageView) findViewById(R.id.setting_icon);
+        mTitleView = (TextView) findViewById(R.id.toolbar_title);
+
    }
 
 	public View.OnClickListener mOnClickListener = new View.OnClickListener() {

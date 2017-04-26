@@ -5,6 +5,13 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.liteon.iview.service.DvrInfoService;
+import com.liteon.iview.util.Def;
+import com.liteon.iview.util.RecordingItem;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -12,24 +19,19 @@ import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.VideoView;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.liteon.iview.util.Def;
-import com.liteon.iview.util.RecordingItem;
 
 public class VideoPlay extends Activity {
 
@@ -57,6 +59,9 @@ public class VideoPlay extends Activity {
     private List<RecordingItem> mDataList;
     private boolean mShowingMenu;
     private Handler mHandlerTime;
+    private ImageView mBackToRecords;
+    private TextView mTitleView;
+    private View mProgressView;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,8 +77,7 @@ public class VideoPlay extends Activity {
 		mSettings.setOnClickListener(mOnSettingsClickListener);
 		mSaveToOTG.setOnClickListener(mOnSaveToOTGClickListener);
 		mSaveToPhone.setOnClickListener(mOnSaveToPhoneClickListener);
-		mToolbar = findViewById(R.id.toolbar_recordings);
-        mBottomBar = findViewById(R.id.bottombar);
+		mBackToRecords.setOnClickListener(mOnBackClickListener);
 		//video controls
         mVideoView.setOnTouchListener(mOnVideoViewTouchListener);
         mPause.setOnClickListener(mOnPlayPauseClickListener);
@@ -96,29 +100,43 @@ public class VideoPlay extends Activity {
         }
     };
 
+    private View.OnClickListener mOnBackClickListener = new OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			mHandlerTime.removeCallbacks(HideUIControl);
+			onBackPressed();
+		}
+	};
 
     private View.OnClickListener mOnPlayPauseClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+        	mHandlerTime.removeCallbacks(HideUIControl);
             if (mVideoView.isPlaying()) {
                 mVideoView.pause();
             } else {
                 mVideoView.start();
             }
+            mHandlerTime.postDelayed(HideUIControl, 1500);
         }
     };
 
     private View.OnClickListener mOnRewindClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+        	mHandlerTime.removeCallbacks(HideUIControl);
             previousVideo();
+            mHandlerTime.postDelayed(HideUIControl, 1500);
         }
     };
 
     private View.OnClickListener mOnForwardClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+        	mHandlerTime.removeCallbacks(HideUIControl);
             nextVideo();
+            mHandlerTime.postDelayed(HideUIControl, 1500);
         }
     };
 
@@ -137,12 +155,12 @@ public class VideoPlay extends Activity {
 
         @Override
         public void onStartTrackingTouch(SeekBar seekBar) {
-
+        	mHandlerTime.removeCallbacks(HideUIControl);
         }
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
-
+        	mHandlerTime.postDelayed(HideUIControl, 1500);
         }
     };
 
@@ -162,6 +180,11 @@ public class VideoPlay extends Activity {
         mSaveToOTG = findViewById(R.id.save_to_otg);
         mSaveToPhone = findViewById(R.id.save_to_phone);
         mSelectAll = findViewById(R.id.select_all);
+        mBackToRecords = (ImageView) findViewById(R.id.video_back);
+		mToolbar = findViewById(R.id.toolbar_recordings);
+        mBottomBar = findViewById(R.id.bottombar);
+        mTitleView = (TextView) findViewById(R.id.toolbar_title);
+        mProgressView = findViewById(R.id.progress_view);
         //video controls
         mVideoView = (VideoView) findViewById(R.id.video_view);
         mViewControlGroup = (ViewGroup) findViewById(R.id.video_control);
@@ -172,7 +195,7 @@ public class VideoPlay extends Activity {
         mThumbnail = (ImageView) findViewById(R.id.thumbnail);
         mSeekBar = (SeekBar) findViewById(R.id.seek_bar);
         mVideoEndTime = (TextView) findViewById(R.id.end_time);
-
+        
         
 	}
 	
@@ -196,14 +219,22 @@ public class VideoPlay extends Activity {
 		
 		@Override
 		public void onClick(View v) {
-			
+			mProgressView.setVisibility(View.VISIBLE);
 		}
 	};
 	private OnClickListener mOnSaveToPhoneClickListener = new OnClickListener() {
 		
 		@Override
 		public void onClick(View v) {
-			
+			mProgressView.setVisibility(View.VISIBLE);
+			RecordingItem item = getCurrentVideoItem();
+			Intent intent = new Intent();
+			intent.setAction(Def.ACTION_SAVE_TO_PHONE);
+			intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, mDataList.indexOf(item));
+			intent.putExtra(Def.EXTRA_SAVE_ITEM_URL, item.getUrl());
+			intent.putExtra(Def.EXTRA_SAVE_ITEM_NAME, item.getName());
+			intent.setClass(getApplicationContext(), DvrInfoService.class);
+			startService(intent);
 		}
 	};
 	private RecordingItem mCurrentVideoItem;
@@ -255,6 +286,7 @@ public class VideoPlay extends Activity {
             public void onPrepared(MediaPlayer mp) {
                 setDuration();
                 startUITimer();
+                
             }
         });
 
@@ -291,10 +323,10 @@ public class VideoPlay extends Activity {
         }
         RecordingItem item = getCurrentVideoItem();
         int idx = mDataList.indexOf(item);
-        if (idx == mDataList.size() - 1) {
-            idx = 0;
+        if (idx == mDataList.size() -1) {
+        	idx = 0;
         } else {
-            idx++;
+        	idx++;
         }
         item = mDataList.get(idx);
         setCurrentVideoItem(item);
@@ -306,12 +338,7 @@ public class VideoPlay extends Activity {
             getRecordingList();
         }
         RecordingItem item = getCurrentVideoItem();
-        int idx;
-        for (idx = 0; idx < mDataList.size(); idx++) {
-            if (mDataList.get(idx).getName().equals(item.getName())) {
-                break;
-            }
-        }
+        int idx = mDataList.indexOf(item);
         if (idx == 0) {
             idx = mDataList.size() -1;
         } else {
@@ -340,10 +367,16 @@ public class VideoPlay extends Activity {
     @Override
 	protected void onResume() {
 		super.onResume();
+		mBackToRecords.setVisibility(View.VISIBLE);
 		mRecordings.setSelected(true);
 		mSelectAll.setVisibility(View.GONE);
     	mShowingMenu = true;
     	setMenuVisible(true);
+    	getRecordingList();
+    	Intent intent = getIntent();
+    	int position = intent.getIntExtra(Def.EXTRA_VIDEO_ITEM_ID, 0);
+    	setCurrentVideoItem(mDataList.get(position));
+    	setupVideoView();
 	}
     
     @Override

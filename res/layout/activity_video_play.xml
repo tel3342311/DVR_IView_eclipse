@@ -49,17 +49,22 @@
                 android:layout_height="wrap_content"
                 android:text="3:00:00"
                 android:layout_weight="10"
+                android:textColor="@color/md_white_1000"
                 android:visibility="invisible"/>
             <SeekBar
                 android:id="@+id/seek_bar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="80"/>
+                android:maxHeight="@dimen/video_page_seekbar_maxheight"
+                android:layout_weight="80"
+                android:thumb="@drawable/seekbar_thumb"
+              	android:progressDrawable="@drawable/progress_bar"/>
             <TextView
                 android:id="@+id/end_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="3:00:00"
+                android:textColor="@color/md_white_1000"
                 android:layout_gravity="right"
                 android:layout_weight="10"/>
 
@@ -93,6 +98,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/toolbar_recording_height"
         android:layout_gravity="top"
+        android:clickable="true"
         layout="@layout/toolbar_recordings"/>
         
     <include
@@ -101,6 +107,14 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottombar_height"
         android:layout_gravity="bottom" />
+    
+    <include 
+        android:id="@+id/progress_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        layout="@layout/progress_layout"
+        android:visibility="gone"
+        android:clickable="true"/>
     
 </FrameLayout>
 

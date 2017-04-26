@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.liteon.iview.R;
+import com.liteon.iview.Records;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +20,7 @@ public class VideoItemAdapter extends BaseAdapter {
 
 	private List<RecordingItem> mDataList;
 	private LayoutInflater mInflater;
+	private Handler mHandler;
 	
 	public VideoItemAdapter(Context context) {
 		mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -39,7 +43,7 @@ public class VideoItemAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		if (convertView == null) {
-			convertView = mInflater.inflate(R.layout.video_item, parent);			
+			convertView = mInflater.inflate(R.layout.video_item, null);			
 		}
 		RecordingItem item = mDataList.get(position);
 		TextView name = (TextView) convertView.findViewById(R.id.video_name);
@@ -52,16 +56,18 @@ public class VideoItemAdapter extends BaseAdapter {
 		else {
 			select.setSelected(false);
 		}
+		select.setTag(item);
 		
 		select.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				View root = v.getRootView();
-				Integer idx = (Integer)root.getTag();
-				RecordingItem item = mDataList.get(idx.intValue());
-				boolean isSelect = item.isSelected();
-				item.setSelected(!isSelect);
+				RecordingItem item = (RecordingItem) v.getTag();
+				boolean isSelect = !item.isSelected();
+				item.setSelected(isSelect);
 				notifyDataSetChanged();
+				int select = isSelect ? Records.ARG_SELECT : Records.ARG_UNSELECT;
+				Message message = mHandler.obtainMessage(Records.UPDATE_TOOL_BAR, select, 0);
+				mHandler.sendMessage(message);
 			}
 		});
 		convertView.setTag(new Integer(position));
@@ -69,5 +75,8 @@ public class VideoItemAdapter extends BaseAdapter {
 	}
 	public void setDataList(List<RecordingItem> list) {
 			mDataList = list;
+	}
+	public void setUiHandler(Handler handler) {
+		mHandler = handler;
 	}
 }
