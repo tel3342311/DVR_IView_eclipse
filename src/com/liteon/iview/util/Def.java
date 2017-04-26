@@ -176,6 +176,7 @@ public class Def {
     public final static String ACTION_GET_RECORDING_LIST = "com.liteon.iView.service.action.GET_RECORDING_LIST";
     public final static String ACTION_SAVE_TO_PHONE = "com.liteon.iView.service.action.SAVE_TO_PHONE";
     public final static String ACTION_SAVE_TO_OTG = "com.liteon.iView.service.action.SAVE_TO_OTG";
+    public final static String ACTION_SAVE_STATUS = "com.liteon.iView.service.action.SAVE_STATUS";
     //Key for Intent extra
     public final static String EXTRA_GET_ALL_INFO = "com.liteon.iView.service.extra.GET_ALL_INFO";
     public final static String EXTRA_GET_SYS_MODE = "com.liteon.iView.service.extra.GET_SYS";
@@ -201,6 +202,7 @@ public class Def {
     public final static String EXTRA_VIDEO_ITEM_ID = "com.liteon.iView.extra.videoItemId";
     public final static String EXTRA_SAVE_ITEM_URL = "com.liteon.iView.extra.saveItemURL";
     public final static String EXTRA_SAVE_ITEM_NAME = "com.liteon.iView.extra.saveItemNAME";
+    public final static String EXTRA_SAVE_STATUS = "com.liteon.iView.extra.saveStatus";
     //Key for sharePreference
     public final static String SHARE_PREFERENCE = "com.liteon.iView.PREFERENCE_FILE_KEY";
     public final static String SP_SSID = "SP_SSID";

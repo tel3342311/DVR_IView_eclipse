@@ -3,8 +3,11 @@ package com.liteon.iview.service;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
+
+import com.liteon.iview.R;
 import com.liteon.iview.util.*;
 
 import java.io.File;
@@ -93,18 +96,30 @@ public class DvrInfoService extends IntentService {
     }
 
     private void handleActionSaveToPhone(String url, int id, String name) {
-    	File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);    	
-    	if (path.exists()) {
-    		//sendBroadcast(intent);
+    	
+    	Intent intent = new Intent(Def.ACTION_SAVE_STATUS);
+    	if (!isExternalStorageWritable()) {
+    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
+    		sendBroadcast(intent);
+    		return ;
+    	}
+    	File path = getAlbumStorageDir(getString(R.string.app_name)) ;   	
+    	if (!path.exists()) {
+    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
+    		sendBroadcast(intent);
     		return ;
     	}
     	
     	File file = new File(path, name);
-    	try {
-			file.createNewFile();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    	boolean isSuccess = DVRClient.downloadFileFromURL(url, file);
+    	if (isSuccess) {
+    		intent.putExtra(Def.EXTRA_SAVE_STATUS, true);
+    		sendBroadcast(intent);
+    	} else {
+    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
+    		sendBroadcast(intent);
+    	}
+
 	}
 
 	private void handleActionGetAllInfo() {
@@ -221,6 +236,33 @@ public class DvrInfoService extends IntentService {
         Log.v(TAG, "onDestroy");
         super.onDestroy();
     }
+    
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
 
-
+    /* Checks if external storage is available to at least read */
+    public boolean isExternalStorageReadable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state) ||
+            Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+    
+    public File getAlbumStorageDir(String albumName) {
+        // Get the directory for the user's public pictures directory.
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS), albumName);
+        if (!file.mkdirs()) {
+            Log.e(TAG, "Directory not created");
+        }
+        return file;
+    }
 }

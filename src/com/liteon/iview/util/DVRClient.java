@@ -1,5 +1,31 @@
 package com.liteon.iview.util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -11,30 +37,6 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class DVRClient {
@@ -1104,5 +1106,42 @@ public class DVRClient {
             }
         }
         return false;
+    }
+    
+    public static boolean downloadFileFromURL(String Url, File fileSaveTo) {
+    	URL url;
+		try {
+			url = new URL(Url);
+	    	HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+	    	urlc.connect();
+	    	int lengthOfFile = urlc.getContentLength();
+	    	InputStream is = new BufferedInputStream(urlc.getInputStream(), 8192);
+	    	OutputStream os = new FileOutputStream(fileSaveTo);
+	    	byte data[] = new byte[1024];
+	    	int count = 0;
+	    	long total = 0;
+
+	    	while ((count = is.read(data)) != -1) {
+		    	total += count;
+		    	// publishing the progress….
+		    	//(int)((total*100)/lenghtOfFile));
+		    	// writing data to file
+		    	os.write(data, 0, count);
+	    	}
+
+	    	// flushing output
+	    	os.flush();
+
+	    	// closing streams
+	    	os.close();
+	    	is.close();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return false;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
     }
 }

@@ -1,6 +1,7 @@
 package com.liteon.iview;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -70,6 +71,7 @@ public class VideoPlay extends Activity {
 		findViews();
 		setListeners();
 		mHandlerTime = new Handler();
+		mDataList = new ArrayList<RecordingItem>();
 	}
 	
 	private void setListeners() {
@@ -318,9 +320,6 @@ public class VideoPlay extends Activity {
 
 
     private void nextVideo() {
-        if (mDataList == null) {
-            getRecordingList();
-        }
         RecordingItem item = getCurrentVideoItem();
         int idx = mDataList.indexOf(item);
         if (idx == mDataList.size() -1) {
@@ -334,9 +333,6 @@ public class VideoPlay extends Activity {
     }
 
     private void previousVideo() {
-        if (mDataList == null) {
-            getRecordingList();
-        }
         RecordingItem item = getCurrentVideoItem();
         int idx = mDataList.indexOf(item);
         if (idx == 0) {
@@ -361,7 +357,18 @@ public class VideoPlay extends Activity {
         String json = sp.getString(Def.SP_RECORDING_LIST, "");
         Type typeOfList = new TypeToken<List<RecordingItem>>() { }.getType();
         Gson gson = new GsonBuilder().create();
-        mDataList = gson.fromJson(json, typeOfList);
+        List<RecordingItem> tempList = gson.fromJson(json, typeOfList);
+        if (tempList != null) {
+        	mDataList.clear();
+        	mDataList.addAll(tempList);
+        } else {
+        	RecordingItem item = new RecordingItem("http://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_30mb.mp4",
+        											"big_buck_bunny_720p_30mb.mp4",
+        											"2017/04/27", 
+        											"30mb");
+        	mDataList.add(item);
+        											
+        }
     }
 
     @Override
