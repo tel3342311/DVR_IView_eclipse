@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.github.mjdev.libaums.UsbMassStorageDevice;
+import com.github.mjdev.libaums.fs.FileSystem;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -15,17 +17,21 @@ import com.liteon.iview.util.RecordingItem;
 import com.liteon.iview.util.StatusDialog;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore.Video;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -34,13 +40,14 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.SeekBar;
-import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 public class VideoPlay extends Activity {
 
+	private final static String TAG = Video.class.getName();
     private View mToolbar;
     private View mBottomBar;
     private ImageView mRecordings;
@@ -68,6 +75,8 @@ public class VideoPlay extends Activity {
     private ImageView mBackToRecords;
     private TextView mTitleView;
     private View mProgressView;
+    private UsbManager mUsbManager;
+    private PendingIntent mPermissionIntent;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +86,52 @@ public class VideoPlay extends Activity {
 		setListeners();
 		mHandlerTime = new Handler();
 		mDataList = new ArrayList<RecordingItem>();
+		registerOTGEvent();
 	}
 	
+	private void registerOTGEvent() {
+		mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+		mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(Def.ACTION_USB_PERMISSION), 0);
+		IntentFilter filter = new IntentFilter(Def.ACTION_USB_PERMISSION);
+		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+		registerReceiver(mUsbReceiver, filter);
+	}
+	
+	private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(Def.ACTION_USB_PERMISSION)) {
+                synchronized (this) {
+                    UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (usbDevice != null) {
+                            Log.v(TAG, usbDevice.getDeviceName());
+                        }
+                    } else {
+                        Log.v(TAG, "usb permission is denied");
+                        mSaveToOTG.setEnabled(false);
+                    }
+                }
+            } else if (action.equals(UsbManager.ACTION_USB_DEVICE_DETACHED)) {
+                UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                if (usbDevice != null) {
+                    //close connection
+                    Log.v(TAG,"Device disconnected");
+                    Toast.makeText(VideoPlay.this, "USB device disonnected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
+        			mSaveToOTG.setEnabled(false);
+                }
+            }else if (action.equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)){
+                UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                Log.v(TAG,"Device connected");
+                Toast.makeText(VideoPlay.this, "USB device Connected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
+                mSaveToOTG.setEnabled(true);
+                mUsbManager.requestPermission(usbDevice, mPermissionIntent);
+            }
+        }
+    };
+    
 	private void setListeners() {
 		mPreview.setOnClickListener(mOnPreviewClickListener);
 		mSettings.setOnClickListener(mOnSettingsClickListener);
@@ -95,6 +148,7 @@ public class VideoPlay extends Activity {
 
 	}
 
+	
     private View.OnTouchListener mOnVideoViewTouchListener = new View.OnTouchListener() {
 
         @Override
@@ -230,6 +284,14 @@ public class VideoPlay extends Activity {
             if (mVideoView.isPlaying()) {
                 mVideoView.pause();
             }
+			RecordingItem item = getCurrentVideoItem();
+			Intent intent = new Intent();
+			intent.setAction(Def.ACTION_SAVE_TO_OTG);
+			intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, new String[]{ Integer.toString(mDataList.indexOf(item))});
+			intent.putExtra(Def.EXTRA_SAVE_ITEM_URL, new String[]{item.getUrl()});
+			intent.putExtra(Def.EXTRA_SAVE_ITEM_NAME, new String[]{item.getName()});
+			intent.setClass(getApplicationContext(), DvrInfoService.class);
+			startService(intent);
 		}
 	};
 	private OnClickListener mOnSaveToPhoneClickListener = new OnClickListener() {

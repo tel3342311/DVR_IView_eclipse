@@ -1108,7 +1108,7 @@ public class DVRClient {
         return false;
     }
     
-    public static boolean downloadFileFromURL(String Url, File fileSaveTo) {
+    public static boolean downloadFileFromURL(String Url, OutputStream fileSaveTo) {
     	URL url;
 		try {
 			url = new URL(Url);
@@ -1116,7 +1116,7 @@ public class DVRClient {
 	    	urlc.connect();
 	    	int lengthOfFile = urlc.getContentLength();
 	    	InputStream is = new BufferedInputStream(urlc.getInputStream(), 8192);
-	    	OutputStream os = new FileOutputStream(fileSaveTo);
+	    	OutputStream os = fileSaveTo;
 	    	byte data[] = new byte[1024];
 	    	int count = 0;
 	    	long total = 0;

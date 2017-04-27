@@ -1,19 +1,24 @@
 package com.liteon.iview.service;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Map;
+
+import com.github.mjdev.libaums.UsbMassStorageDevice;
+import com.github.mjdev.libaums.fs.FileSystem;
+import com.github.mjdev.libaums.fs.UsbFile;
+import com.github.mjdev.libaums.fs.UsbFileOutputStream;
+import com.liteon.iview.R;
+import com.liteon.iview.util.DVRClient;
+import com.liteon.iview.util.Def;
+
 import android.app.IntentService;
-import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
-
-import com.liteon.iview.R;
-import com.liteon.iview.util.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 public class DvrInfoService extends IntentService {
 
@@ -120,7 +125,11 @@ public class DvrInfoService extends IntentService {
     	String[] downloadPath = new String[count];
     	for (int i = 0; i < url.length; i++) {
     		File file = new File(path, name[i]);
-    		status[i] = DVRClient.downloadFileFromURL(url[i], file);
+    		try {
+				status[i] = DVRClient.downloadFileFromURL(url[i], new FileOutputStream(file));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
     		downloadPath[i] = file.getAbsolutePath();
     		if (status[i]) {
     			isSuccess = false;
@@ -141,38 +150,46 @@ public class DvrInfoService extends IntentService {
     private void handleActionSaveToOTG(String[] url, String[] id, String[] name) {
     	
     	Intent intent = new Intent(Def.ACTION_SAVE_TO_OTG_STATUS);
-    	if (!isExternalStorageWritable()) {
-    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
-    		sendBroadcast(intent);
-    		return ;
-    	}
-    	File path = getAlbumStorageDir(getString(R.string.app_name)) ;   	
-    	if (!path.exists()) {
-    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
-    		sendBroadcast(intent);
-    		return ;
-    	}
-    	int count = url.length;
-    	boolean isSuccess = true;
-    	boolean[] status = new boolean[count];
-    	String[] downloadPath = new String[count];
-    	for (int i = 0; i < url.length; i++) {
-    		File file = new File(path, name[i]);
-    		status[i] = DVRClient.downloadFileFromURL(url[i], file);
-    		downloadPath[i] = file.getAbsolutePath();
-    		if (status[i]) {
-    			isSuccess = false;
-    		}
-    	}
-    	intent.putExtra(Def.EXTRA_SAVE_STATUS_ARY, status);
-    	intent.putExtra(Def.EXTRA_SAVE_STATUS_FILE_PATH, downloadPath);
-    	intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, id);
-    	if (isSuccess) {
-    		intent.putExtra(Def.EXTRA_SAVE_STATUS, true);
-    		sendBroadcast(intent);
-    	} else {
-    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
-    		sendBroadcast(intent);
+    	UsbMassStorageDevice[] devices = UsbMassStorageDevice.getMassStorageDevices(this /* Context or Activity */);
+    	OutputStream os = null;
+    	if (devices.length > 0) {
+    		UsbMassStorageDevice device = devices[0];
+    		try {
+				device.init();
+	    		FileSystem currentFs = device.getPartitions().get(0).getFileSystem();
+	    		UsbFile root = currentFs.getRootDirectory();
+	    		UsbFile newDir = root.createDirectory(getString(R.string.app_name));
+	    		UsbFile file = newDir.createFile(name[0]);
+	    		os = new UsbFileOutputStream(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+				intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
+	    		sendBroadcast(intent);
+			}
+
+	    	int count = url.length;
+	    	boolean isSuccess = true;
+	    	boolean[] status = new boolean[count];
+	    	String[] downloadPath = new String[count];
+	    	for (int i = 0; i < url.length; i++) {
+				status[i] = DVRClient.downloadFileFromURL(url[i], os);
+	    		//TODO get Actual path 
+				downloadPath[i] = url[i];
+	    		if (status[i]) {
+	    			isSuccess = false;
+	    		}
+	    	}
+	    	device.close();
+	    	intent.putExtra(Def.EXTRA_SAVE_STATUS_ARY, status);
+	    	intent.putExtra(Def.EXTRA_SAVE_STATUS_FILE_PATH, downloadPath);
+	    	intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, id);
+	    	if (isSuccess) {
+	    		intent.putExtra(Def.EXTRA_SAVE_STATUS, true);
+	    		sendBroadcast(intent);
+	    	} else {
+	    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
+	    		sendBroadcast(intent);
+	    	}
     	}
 	}
     

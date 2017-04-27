@@ -178,6 +178,8 @@ public class Def {
     public final static String ACTION_SAVE_TO_OTG = "com.liteon.iView.service.action.SAVE_TO_OTG";
     public final static String ACTION_SAVE_TO_PHONE_STATUS = "com.liteon.iView.service.action.SAVE_TO_PHONE_STATUS";
     public final static String ACTION_SAVE_TO_OTG_STATUS = "com.liteon.iView.service.action.SAVE_TO_OTG_STATUS";
+    public static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
+
     //Key for Intent extra
     public final static String EXTRA_GET_ALL_INFO = "com.liteon.iView.service.extra.GET_ALL_INFO";
     public final static String EXTRA_GET_SYS_MODE = "com.liteon.iView.service.extra.GET_SYS";
@@ -233,5 +235,5 @@ public class Def {
     public final static String SP_RECORDING_CAMERA = "SP_RECORDING_CAMERA";
     public final static String SP_PREVIEW_CAMERA = "SP_PREVIEW_CAMERA";
     public final static String SP_RECORDING_LIST = "SP_RECORDING_LIST";
-	
+	//
 }
