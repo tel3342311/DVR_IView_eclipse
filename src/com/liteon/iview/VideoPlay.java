@@ -12,6 +12,7 @@ import com.google.gson.reflect.TypeToken;
 import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 import com.liteon.iview.util.RecordingItem;
+import com.liteon.iview.util.StatusDialog;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -24,6 +25,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -225,6 +227,9 @@ public class VideoPlay extends Activity {
 		@Override
 		public void onClick(View v) {
 			mProgressView.setVisibility(View.VISIBLE);
+            if (mVideoView.isPlaying()) {
+                mVideoView.pause();
+            }
 		}
 	};
 	private OnClickListener mOnSaveToPhoneClickListener = new OnClickListener() {
@@ -232,12 +237,15 @@ public class VideoPlay extends Activity {
 		@Override
 		public void onClick(View v) {
 			mProgressView.setVisibility(View.VISIBLE);
+            if (mVideoView.isPlaying()) {
+                mVideoView.pause();
+            }
 			RecordingItem item = getCurrentVideoItem();
 			Intent intent = new Intent();
 			intent.setAction(Def.ACTION_SAVE_TO_PHONE);
-			intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, mDataList.indexOf(item));
-			intent.putExtra(Def.EXTRA_SAVE_ITEM_URL, item.getUrl());
-			intent.putExtra(Def.EXTRA_SAVE_ITEM_NAME, item.getName());
+			intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, new String[]{ Integer.toString(mDataList.indexOf(item))});
+			intent.putExtra(Def.EXTRA_SAVE_ITEM_URL, new String[]{item.getUrl()});
+			intent.putExtra(Def.EXTRA_SAVE_ITEM_NAME, new String[]{item.getName()});
 			intent.setClass(getApplicationContext(), DvrInfoService.class);
 			startService(intent);
 		}
@@ -280,6 +288,7 @@ public class VideoPlay extends Activity {
     }
 
     private void setupVideoView() {
+    	stopUITimer();
         RecordingItem item = getCurrentVideoItem();
         Uri uri = Uri.parse(item.getUrl());
         //Uri uri = Uri.parse("android.resource://"+getActivity().getPackageName()+"/"+R.raw.rtrs);
@@ -291,7 +300,7 @@ public class VideoPlay extends Activity {
             public void onPrepared(MediaPlayer mp) {
                 setDuration();
                 startUITimer();
-                
+                mProgressView.setVisibility(View.GONE);
             }
         });
 
@@ -323,6 +332,7 @@ public class VideoPlay extends Activity {
 
 
     private void nextVideo() {
+    	mProgressView.setVisibility(View.VISIBLE);
         RecordingItem item = getCurrentVideoItem();
         int idx = mDataList.indexOf(item);
         if (idx == mDataList.size() -1) {
@@ -336,6 +346,7 @@ public class VideoPlay extends Activity {
     }
 
     private void previousVideo() {
+    	mProgressView.setVisibility(View.VISIBLE);
         RecordingItem item = getCurrentVideoItem();
         int idx = mDataList.indexOf(item);
         if (idx == 0) {
@@ -387,7 +398,8 @@ public class VideoPlay extends Activity {
     	int position = intent.getIntExtra(Def.EXTRA_VIDEO_ITEM_ID, 0);
     	setCurrentVideoItem(mDataList.get(position));
     	setupVideoView();
-        IntentFilter intentFilter = new IntentFilter(Def.ACTION_SAVE_STATUS);
+        IntentFilter intentFilter = new IntentFilter(Def.ACTION_SAVE_TO_PHONE_STATUS);
+        intentFilter.addAction(Def.ACTION_SAVE_TO_OTG_STATUS);
         registerReceiver(mBroadcastReceiver, intentFilter);
 	}
 
@@ -395,6 +407,7 @@ public class VideoPlay extends Activity {
     protected void onStart() {
     	super.onStart();
     	mHandlerTime.postDelayed(HideUIControl, 1500);
+    	showDialog(true,true);
     }
 
     @Override
@@ -482,8 +495,43 @@ public class VideoPlay extends Activity {
 
 		@Override
         public void onReceive(Context context, Intent intent) {
-
-        
+			String action = intent.getAction();
+			boolean isSaveToPhone = false;
+			if (TextUtils.equals(action, Def.ACTION_SAVE_TO_PHONE_STATUS)) {
+				isSaveToPhone = true;
+			}
+			if (TextUtils.equals(action, Def.ACTION_SAVE_TO_PHONE_STATUS) ||
+					TextUtils.equals(action, Def.ACTION_SAVE_TO_PHONE_STATUS)) {
+				mProgressView.setVisibility(View.GONE);
+				String [] ids = intent.getStringArrayExtra(Def.EXTRA_VIDEO_ITEM_ID);
+				String [] path = intent.getStringArrayExtra(Def.EXTRA_SAVE_STATUS_FILE_PATH);
+				boolean isSuccess = intent.getBooleanExtra(Def.EXTRA_SAVE_STATUS, false);
+				showDialog(isSuccess, isSaveToPhone);
+				boolean [] status = intent.getBooleanArrayExtra(Def.EXTRA_SAVE_STATUS_ARY);
+				for (int i = 0; i < status.length; i++) {
+					if (status[i]) {
+						RecordingItem item = mDataList.get(Integer.parseInt(ids[i]));
+						if (TextUtils.equals(action, Def.ACTION_SAVE_TO_PHONE_STATUS)) {
+							item.setLocalPath(path[i]);
+						} else {
+							item.setOtgPath(path[i]);
+						}
+					}
+				}
+			}
         }
     };
+    
+    private void showDialog(boolean isSuccess, boolean isSaveToPhone) {
+    	StatusDialog dialog;
+		if (isSuccess) {
+			if (isSaveToPhone)
+				dialog = new StatusDialog(VideoPlay.this, "Save it to Phone", isSuccess);
+			else 
+				dialog = new StatusDialog(VideoPlay.this, "Save it to OTG", isSuccess);
+		} else {
+			dialog = new StatusDialog(VideoPlay.this, "Save Failed!", isSuccess);
+		}
+		dialog.show();
+    }
 }

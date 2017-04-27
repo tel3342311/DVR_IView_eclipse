@@ -1124,7 +1124,8 @@ public class DVRClient {
 	    	while ((count = is.read(data)) != -1) {
 		    	total += count;
 		    	// publishing the progress….
-		    	//(int)((total*100)/lenghtOfFile));
+		    	int progress = (int)((total*100)/lengthOfFile);
+		    	Log.d(TAG, "[downloadFileFromURL] Progress is " + progress + "%, current bytes :" + total);
 		    	// writing data to file
 		    	os.write(data, 0, count);
 	    	}

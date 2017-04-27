@@ -87,17 +87,22 @@ public class DvrInfoService extends IntentService {
                 String passPhase =intent.getStringExtra(Def.EXTRA_PASSPHASE);
                 handleActionSetWifi(ssid,securityMode,encryptType,passPhase);
             } else if (ACTION_SAVE_TO_PHONE.equals(action)) {
-            	String url = intent.getStringExtra(Def.EXTRA_SAVE_ITEM_URL);
-            	int id = intent.getIntExtra(Def.EXTRA_VIDEO_ITEM_ID, 0);
-            	String name = intent.getStringExtra(Def.EXTRA_SAVE_ITEM_NAME);
+            	String[] url = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_URL);
+            	String[] id = intent.getStringArrayExtra(Def.EXTRA_VIDEO_ITEM_ID);
+            	String[] name = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_NAME);
             	handleActionSaveToPhone(url, id, name);
+            } else if (ACTION_SAVE_TO_OTG.equals(action)) {
+            	String[] url = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_URL);
+            	String[] id = intent.getStringArrayExtra(Def.EXTRA_VIDEO_ITEM_ID);
+            	String[] name = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_NAME);
+            	handleActionSaveToOTG(url, id, name);
             }
         }
     }
 
-    private void handleActionSaveToPhone(String url, int id, String name) {
+    private void handleActionSaveToPhone(String[] url, String[] id, String[] name) {
     	
-    	Intent intent = new Intent(Def.ACTION_SAVE_STATUS);
+    	Intent intent = new Intent(Def.ACTION_SAVE_TO_PHONE_STATUS);
     	if (!isExternalStorageWritable()) {
     		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
     		sendBroadcast(intent);
@@ -109,9 +114,21 @@ public class DvrInfoService extends IntentService {
     		sendBroadcast(intent);
     		return ;
     	}
-    	
-    	File file = new File(path, name);
-    	boolean isSuccess = DVRClient.downloadFileFromURL(url, file);
+    	int count = url.length;
+    	boolean isSuccess = true;
+    	boolean[] status = new boolean[count];
+    	String[] downloadPath = new String[count];
+    	for (int i = 0; i < url.length; i++) {
+    		File file = new File(path, name[i]);
+    		status[i] = DVRClient.downloadFileFromURL(url[i], file);
+    		downloadPath[i] = file.getAbsolutePath();
+    		if (status[i]) {
+    			isSuccess = false;
+    		}
+    	}
+    	intent.putExtra(Def.EXTRA_SAVE_STATUS_ARY, status);
+    	intent.putExtra(Def.EXTRA_SAVE_STATUS_FILE_PATH, downloadPath);
+    	intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, id);
     	if (isSuccess) {
     		intent.putExtra(Def.EXTRA_SAVE_STATUS, true);
     		sendBroadcast(intent);
@@ -119,8 +136,46 @@ public class DvrInfoService extends IntentService {
     		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
     		sendBroadcast(intent);
     	}
-
 	}
+    
+    private void handleActionSaveToOTG(String[] url, String[] id, String[] name) {
+    	
+    	Intent intent = new Intent(Def.ACTION_SAVE_TO_OTG_STATUS);
+    	if (!isExternalStorageWritable()) {
+    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
+    		sendBroadcast(intent);
+    		return ;
+    	}
+    	File path = getAlbumStorageDir(getString(R.string.app_name)) ;   	
+    	if (!path.exists()) {
+    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
+    		sendBroadcast(intent);
+    		return ;
+    	}
+    	int count = url.length;
+    	boolean isSuccess = true;
+    	boolean[] status = new boolean[count];
+    	String[] downloadPath = new String[count];
+    	for (int i = 0; i < url.length; i++) {
+    		File file = new File(path, name[i]);
+    		status[i] = DVRClient.downloadFileFromURL(url[i], file);
+    		downloadPath[i] = file.getAbsolutePath();
+    		if (status[i]) {
+    			isSuccess = false;
+    		}
+    	}
+    	intent.putExtra(Def.EXTRA_SAVE_STATUS_ARY, status);
+    	intent.putExtra(Def.EXTRA_SAVE_STATUS_FILE_PATH, downloadPath);
+    	intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, id);
+    	if (isSuccess) {
+    		intent.putExtra(Def.EXTRA_SAVE_STATUS, true);
+    		sendBroadcast(intent);
+    	} else {
+    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
+    		sendBroadcast(intent);
+    	}
+	}
+    
 
 	private void handleActionGetAllInfo() {
     	DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());

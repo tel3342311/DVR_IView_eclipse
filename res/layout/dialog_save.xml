@@ -3,7 +3,6 @@
     android:layout_height="@dimen/dialog_background_height"
     android:background="@drawable/popup_gnd2">
 
-
     <TextView 
         android:id="@+id/status_text"
         android:layout_width="wrap_content"
@@ -19,7 +18,17 @@
         android:background="@drawable/popup_img_ok"
         android:layout_above="@id/status_text"
         android:layout_centerInParent="true"/>
-        
+    <TextView 
+        android:id="@+id/status_fail_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Please try again."
+        android:layout_marginTop="@dimen/status_text_margin"
+        android:layout_below="@id/status_text"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible"
+        android:textColor="@color/md_white_1000"/>
+            
     <ImageView
         android:id="@+id/ok_btn"
         android:layout_width="match_parent"
