@@ -11,6 +11,7 @@ import com.github.mjdev.libaums.UsbMassStorageDevice;
 import com.github.mjdev.libaums.fs.FileSystem;
 import com.github.mjdev.libaums.fs.UsbFile;
 import com.github.mjdev.libaums.fs.UsbFileOutputStream;
+import com.github.mjdev.libaums.fs.UsbFileStreamFactory;
 import com.liteon.iview.R;
 import com.liteon.iview.util.DVRClient;
 import com.liteon.iview.util.Def;
@@ -160,7 +161,8 @@ public class DvrInfoService extends IntentService {
 	    		UsbFile root = currentFs.getRootDirectory();
 	    		UsbFile newDir = root.createDirectory(getString(R.string.app_name));
 	    		UsbFile file = newDir.createFile(name[0]);
-	    		os = new UsbFileOutputStream(file);
+	    		//os = new UsbFileOutputStream(file);
+	    		os = UsbFileStreamFactory.createBufferedOutputStream(file, currentFs);
 			} catch (IOException e) {
 				e.printStackTrace();
 				intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
