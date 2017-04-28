@@ -114,7 +114,7 @@ public class DvrInfoService extends IntentService {
     		sendBroadcast(intent);
     		return ;
     	}
-    	File path = getAlbumStorageDir(getString(R.string.app_name)) ;   	
+    	File path = getAlbumStorageDir("Download") ;   	
     	if (!path.exists()) {
     		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
     		sendBroadcast(intent);
@@ -159,7 +159,7 @@ public class DvrInfoService extends IntentService {
 				device.init();
 	    		FileSystem currentFs = device.getPartitions().get(0).getFileSystem();
 	    		UsbFile root = currentFs.getRootDirectory();
-	    		UsbFile newDir = root.createDirectory(getString(R.string.app_name));
+	    		UsbFile newDir = root.createDirectory("Download");
 	    		UsbFile file = newDir.createFile(name[0]);
 	    		//os = new UsbFileOutputStream(file);
 	    		os = UsbFileStreamFactory.createBufferedOutputStream(file, currentFs);

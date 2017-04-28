@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.github.mjdev.libaums.UsbMassStorageDevice;
-import com.github.mjdev.libaums.fs.FileSystem;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -15,6 +13,7 @@ import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 import com.liteon.iview.util.RecordingItem;
 import com.liteon.iview.util.StatusDialog;
+import com.liteon.iview.util.UsbUtil;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -96,6 +95,10 @@ public class VideoPlay extends Activity {
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 		registerReceiver(mUsbReceiver, filter);
+		if (UsbUtil.discoverDevice(getApplicationContext(), getIntent())) {
+			mSaveToOTG.setEnabled(true);
+		}
+		
 	}
 	
 	private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
