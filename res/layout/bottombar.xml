@@ -26,7 +26,7 @@
     <ImageView
         android:id="@+id/setting_icon"
         android:layout_width="0dp"
-        android:layout_height="@dimen/bottom_icon_height_left_right"
+        android:layout_height="@dimen/bottom_icon_height_middle"
         android:layout_weight="3"
         android:layout_gravity="bottom"
         android:clickable="true"

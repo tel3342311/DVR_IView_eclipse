@@ -2,8 +2,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.liteon.iview.Settings" >
+    android:background="@drawable/records_gnd"
+    tools:context="com.liteon.iview.Settings">
 
+
+    
+	<FrameLayout 
+        android:id="@+id/frag_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+	    
     <include
         android:id="@+id/bottombar"
         layout="@layout/bottombar"
@@ -16,7 +24,6 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/toolbar_height"
         android:layout_alignParentTop="true"
-        android:visibility="invisible"
         layout="@layout/toolbar_setting" />
-        
+     
 </RelativeLayout>
