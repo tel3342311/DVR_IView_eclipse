@@ -1,4 +1,4 @@
-<android.support.v4.widget.NestedScrollView
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -156,4 +156,4 @@
             android:layout_marginBottom="@dimen/bottombar_height"
             android:background="@drawable/setting_lcel_4"/>
     </LinearLayout>
-</android.support.v4.widget.NestedScrollView>
+</ScrollView>

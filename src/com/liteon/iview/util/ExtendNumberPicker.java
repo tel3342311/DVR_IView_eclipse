@@ -1,11 +1,15 @@
 package com.liteon.iview.util;
 
+import java.lang.reflect.Field;
+
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.NumberPicker;
-
-import java.lang.reflect.Field;
 
 public class ExtendNumberPicker extends NumberPicker {
 

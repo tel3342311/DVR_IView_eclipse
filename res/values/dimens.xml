@@ -17,7 +17,7 @@
     <dimen name="preview_margin_bottom_thumbnail">64dp</dimen>
     <!-- recordings page-->
     <dimen name="recordings_list_item_height">60dp</dimen>
-    <dimen name="recordings_list_item_icon_size">50dp</dimen>
+    <dimen name="recordings_list_item_icon_size">40dp</dimen>
     <dimen name="recordings_list_item_text_size">20dp</dimen>
     <!-- video playback page-->
     <dimen name="video_page_icon_size">50dp</dimen>

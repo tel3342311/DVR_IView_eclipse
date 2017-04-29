@@ -1,5 +1,16 @@
 package com.liteon.iview;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.settings.InternetSetting;
 import com.liteon.iview.settings.MainSetting;
 import com.liteon.iview.settings.MainSetting.OnSettingPageSelectedListener;
@@ -7,16 +18,7 @@ import com.liteon.iview.settings.RecordSetting;
 import com.liteon.iview.settings.TimezoneSetting;
 import com.liteon.iview.settings.VPNSetting;
 import com.liteon.iview.settings.WifiSetting;
-
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.os.Bundle;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.ImageView;
-import android.widget.TextView;
+import com.liteon.iview.util.Def;
 
 public class Settings extends Activity implements OnSettingPageSelectedListener{
 
@@ -51,6 +53,7 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
 		findViews();
 		setListeners();
 		mMainSetting = new MainSetting();
+		mMainSetting.setOnSettingPageSelectedListener(Settings.this);
 
 		FragmentManager fm = getFragmentManager();
 		FragmentTransaction transaction = fm.beginTransaction();
@@ -58,8 +61,17 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
 		transaction.commit();
 	}
 
+	@Override
+	protected void onResume(){
+		super.onResume();
+		mConfirm.setVisibility(View.VISIBLE);
+		mCancel.setVisibility(View.VISIBLE);
+	}
+	
 	private void setListeners() {
 
+		mCancel.setOnClickListener(mOnCancelClickListener);
+		mConfirm.setOnClickListener(mOnConfirmClickListener);
 	}
 
 	private void findViews() {
@@ -73,27 +85,15 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
         mCancel = (ImageView) findViewById(R.id.cancel_icon);
 	}
 
-	private View.OnClickListener mOnSettingClickListener = new OnClickListener() {
-		
-		@Override
-		public void onClick(View v) {
-			int id = v.getId();
-			switch (id) {
-				case R.id.time_zone:
-					
-				break;
-			}
-		}
-	};
-
 	@Override
 	public void onSettingSelected(int position) {
 		
-		Fragment fragment;
+		Fragment fragment = mMainSetting;
 		switch (position) {
 			case SETTING_MAIN:
 				if (mMainSetting == null) {
 					mMainSetting = new MainSetting();
+					mMainSetting.setOnSettingPageSelectedListener(Settings.this);
 				}
 				fragment = mMainSetting;
 				break;
@@ -103,6 +103,11 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
 				}
 				fragment = mTimezoneSetting;
 				break;
+			case SETTING_RECORDINGS:
+				if (mRecordSetting == null) {
+					mRecordSetting = new RecordSetting();
+				}
+				fragment = mRecordSetting;
 			case SETTING_INTERNET:
 				if (mInternetSetting == null) {
 					mInternetSetting = new InternetSetting();
@@ -124,7 +129,71 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
 		};
 		FragmentManager fm = getFragmentManager();
 		FragmentTransaction transaction = fm.beginTransaction();
-		transaction.replace(R.id.frag_container, mMainSetting);
+		transaction.replace(R.id.frag_container, fragment);
 		transaction.commit();
 	}
+	
+	private View.OnClickListener mOnCancelClickListener = new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			onSettingSelected(SETTING_MAIN);
+		}
+	};
+	
+	private View.OnClickListener mOnConfirmClickListener = new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			Intent intent = new Intent();
+			Fragment fragment = getFragmentManager().findFragmentById(R.id.frag_container);
+			if (fragment instanceof TimezoneSetting) {
+                String timezone = ((TimezoneSetting)fragment).getCurrentTimeZone();
+                String ntpServer = ((TimezoneSetting)fragment).getNTPServer();
+                intent.setAction(Def.ACTION_SET_TIMEZONE);
+                intent.putExtra(Def.EXTRA_TIMEZONE, timezone);
+                intent.putExtra(Def.EXTRA_NTP_SERVER, ntpServer);
+            } else if (fragment instanceof RecordSetting) {
+                String recordingLength = ((RecordSetting)fragment).getRecordingLength();
+                String recordingChannel = ((RecordSetting)fragment).getRecordingChannel();
+                intent.setAction(Def.ACTION_SET_RECORDINGS);
+                intent.putExtra(Def.EXTRA_RECORDING_LENGTH, recordingLength);
+                intent.putExtra(Def.EXTRA_RECORDING_CHANNEL, recordingChannel);
+            } else if (fragment instanceof InternetSetting) {
+                String apn = ((InternetSetting)fragment).getCurrentAPN();
+                String pin = ((InternetSetting)fragment).getCurrentPIN();
+                String dial_Num = ((InternetSetting)fragment).getCurrentDialNum();
+                String username = ((InternetSetting)fragment).getCurrentUsername();
+                String password = ((InternetSetting)fragment).getCurrentPassword();
+                String modem = ((InternetSetting)fragment).getCurrentModem();
+                intent.setAction(Def.ACTION_SET_INTERNET);
+                intent.putExtra(Def.EXTRA_APN, apn);
+                intent.putExtra(Def.EXTRA_PIN, pin);
+                intent.putExtra(Def.EXTRA_DIAL_NUM, dial_Num);
+                intent.putExtra(Def.EXTRA_USERNAME_3G, username);
+                intent.putExtra(Def.EXTRA_PASSWORD_3G, password);
+                intent.putExtra(Def.EXTRA_MODEM, modem);
+            } else if (fragment instanceof VPNSetting) {
+                String pPTPServer = ((VPNSetting)fragment).getCurrentServer();
+                String pPTPUsername = ((VPNSetting)fragment).getCurrentUsername();
+                String pPTPPassword = ((VPNSetting)fragment).getCurrentPassword();
+                intent.setAction(Def.ACTION_SET_VPN);
+                intent.putExtra(Def.EXTRA_PPTP_SERVER, pPTPServer);
+                intent.putExtra(Def.EXTRA_PPTP_USERNAME,pPTPUsername);
+                intent.putExtra(Def.EXTRA_PPTP_PASSWORD,pPTPPassword);
+            } else if (fragment instanceof WifiSetting) {
+                String ssid = ((WifiSetting)fragment).getCurrentSsid();
+                String securityMode = ((WifiSetting)fragment).getCurrentSecurityMode();
+                String encryptType = ((WifiSetting)fragment).getCurrentEncryptType();
+                String passPhase = ((WifiSetting)fragment).getCurrentPassPhase();
+                intent.setAction(Def.ACTION_SET_WIFI);
+                intent.putExtra(Def.EXTRA_SSID, ssid);
+                intent.putExtra(Def.EXTRA_SECURITYMODE, securityMode);
+                intent.putExtra(Def.EXTRA_ENCRYPTTYPE, encryptType);
+                intent.putExtra(Def.EXTRA_PASSPHASE, passPhase);
+            }
+            intent.setClass(Settings.this, DvrInfoService.class);
+            startService(intent);
+		}
+	};
 }

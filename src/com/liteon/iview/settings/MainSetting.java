@@ -34,14 +34,8 @@ public class MainSetting extends Fragment {
         return view;
     }
 	
-	@Override
-	public void onAttach(Context context) {
-		super.onAttach(context);
-        try {
-            mCallback = ((Settings)getActivity());
-        } catch (ClassCastException e) {
-        	e.printStackTrace();
-        }
+	public void setOnSettingPageSelectedListener(OnSettingPageSelectedListener callback) {
+		mCallback = callback;
 	}
 	
 	void findViews(View rootView) {
