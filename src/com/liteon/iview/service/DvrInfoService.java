@@ -24,21 +24,6 @@ import android.util.Log;
 public class DvrInfoService extends IntentService {
 
     private static final String TAG = DvrInfoService.class.getName();
-    private static final String ACTION_GET_ALL_INFO = Def.ACTION_GET_ALL_INFO;
-    private static final String ACTION_GET_SYS_MODE = Def.ACTION_GET_SYS_MODE;
-    private static final String ACTION_SET_SYS_MODE = Def.ACTION_SET_SYS_MODE;
-    private static final String ACTION_GET_CAM_MODE = Def.ACTION_GET_CAM_MODE;
-    private static final String ACTION_GET_INTERNET = Def.ACTION_GET_INTERNET;
-    private static final String ACTION_GET_WIRELESS = Def.ACTION_GET_WIRELESS;
-    private static final String ACTION_GET_SECURITY = Def.ACTION_GET_SECURITY;
-    private static final String ACTION_GET_ADMIN    = Def.ACTION_GET_ADMIN;
-    private static final String ACTION_SET_TIMEZONE = Def.ACTION_SET_TIMEZONE;
-    private static final String ACTION_SET_RECORDINGS = Def.ACTION_SET_RECORDINGS;
-    private static final String ACTION_SET_INTERNET = Def.ACTION_SET_INTERNET;
-    private static final String ACTION_SET_VPN = Def.ACTION_SET_VPN;
-    private static final String ACTION_SET_WIFI = Def.ACTION_SET_WIFI;
-    private static final String ACTION_SAVE_TO_PHONE = Def.ACTION_SAVE_TO_PHONE;
-    private static final String ACTION_SAVE_TO_OTG = Def.ACTION_SAVE_TO_OTG;
 
     public DvrInfoService() {
         super("DvrInfoService");
@@ -48,32 +33,35 @@ public class DvrInfoService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
             final String action = intent.getAction();
-            if (ACTION_GET_ALL_INFO.equals(action)) {
+            if (Def.ACTION_GET_ALL_INFO.equals(action)) {
                 handleActionGetAllInfo();
-            } else if (ACTION_GET_SYS_MODE.equals(action)) {
+            } else if (Def.ACTION_GET_SYS_MODE.equals(action)) {
                 handleActionGetSysInfo();
-            } else if (ACTION_SET_SYS_MODE.equals(action)) {
+            } else if (Def.ACTION_SET_SYS_MODE.equals(action)) {
                 String mode = intent.getStringExtra(Def.EXTRA_SET_SYS_MODE);
                 handleActionSetSysInfo(mode);
-            } else if (ACTION_GET_CAM_MODE.equals(action)) {
+            } else if (Def.ACTION_GET_CAM_MODE.equals(action)) {
                 handleActionGetCamMode();
-            } else if (ACTION_GET_INTERNET.equals(action)) {
+            } else if (Def.ACTION_SET_CAM_MODE.equals(action)) {
+                String mode = intent.getStringExtra(Def.EXTRA_SET_CAM_MODE);
+                handleActionSetCamInfo(mode);
+            } else if (Def.ACTION_GET_INTERNET.equals(action)) {
                 handleActionGetInternet();
-            } else if (ACTION_GET_WIRELESS.equals(action)) {
+            } else if (Def.ACTION_GET_WIRELESS.equals(action)) {
                 handleActionGetWireless();
-            } else if (ACTION_GET_SECURITY.equals(action)) {
+            } else if (Def.ACTION_GET_SECURITY.equals(action)) {
                 handleActionGetSecurity();
-            } else if (ACTION_GET_ADMIN.equals(action)) {
+            } else if (Def.ACTION_GET_ADMIN.equals(action)) {
                 handleActionGetAdmin();
-            } else if (ACTION_SET_TIMEZONE.equals(action)) {
+            } else if (Def.ACTION_SET_TIMEZONE.equals(action)) {
                 String timezone = intent.getStringExtra(Def.EXTRA_TIMEZONE);
                 String ntpServer = intent.getStringExtra(Def.EXTRA_NTP_SERVER);
                 handleActionSetTimezone(timezone, ntpServer);
-            } else if (ACTION_SET_RECORDINGS.equals(action)) {
+            } else if (Def.ACTION_SET_RECORDINGS.equals(action)) {
                 String recordingLength = intent.getStringExtra(Def.EXTRA_RECORDING_LENGTH);
                 String recordingChannel = intent.getStringExtra(Def.EXTRA_RECORDING_CHANNEL);
                 handleActionSetRecordings(recordingLength, recordingChannel);
-            } else if (ACTION_SET_INTERNET.equals(action)) {
+            } else if (Def.ACTION_SET_INTERNET.equals(action)) {
                 String apn = intent.getStringExtra(Def.EXTRA_APN);
                 String pin = intent.getStringExtra(Def.EXTRA_PIN);
                 String dial_Num = intent.getStringExtra(Def.EXTRA_DIAL_NUM);
@@ -81,23 +69,23 @@ public class DvrInfoService extends IntentService {
                 String password = intent.getStringExtra(Def.EXTRA_PASSWORD_3G);
                 String modem =intent.getStringExtra(Def.EXTRA_MODEM);
                 handleActionSetInternet(apn, pin, dial_Num, username, password, modem);
-            } else if (ACTION_SET_VPN.equals(action)) {
+            } else if (Def.ACTION_SET_VPN.equals(action)) {
                 String PPTPServer = intent.getStringExtra(Def.EXTRA_PPTP_SERVER);
                 String PPTPUsername = intent.getStringExtra(Def.EXTRA_PPTP_USERNAME);
                 String PPTPPassword = intent.getStringExtra(Def.EXTRA_PPTP_PASSWORD);
                 handleActionSetVPN(PPTPServer, PPTPUsername, PPTPPassword);
-            } else if (ACTION_SET_WIFI.equals(action)) {
+            } else if (Def.ACTION_SET_WIFI.equals(action)) {
                 String ssid = intent.getStringExtra(Def.EXTRA_SSID);
                 String securityMode = intent.getStringExtra(Def.EXTRA_SECURITYMODE);
                 String encryptType = intent.getStringExtra(Def.EXTRA_ENCRYPTTYPE);
                 String passPhase =intent.getStringExtra(Def.EXTRA_PASSPHASE);
                 handleActionSetWifi(ssid,securityMode,encryptType,passPhase);
-            } else if (ACTION_SAVE_TO_PHONE.equals(action)) {
+            } else if (Def.ACTION_SAVE_TO_PHONE.equals(action)) {
             	String[] url = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_URL);
             	String[] id = intent.getStringArrayExtra(Def.EXTRA_VIDEO_ITEM_ID);
             	String[] name = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_NAME);
             	handleActionSaveToPhone(url, id, name);
-            } else if (ACTION_SAVE_TO_OTG.equals(action)) {
+            } else if (Def.ACTION_SAVE_TO_OTG.equals(action)) {
             	String[] url = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_URL);
             	String[] id = intent.getStringArrayExtra(Def.EXTRA_VIDEO_ITEM_ID);
             	String[] name = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_NAME);
@@ -195,7 +183,6 @@ public class DvrInfoService extends IntentService {
     	}
 	}
     
-
 	private void handleActionGetAllInfo() {
     	DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
     	Intent intent = new Intent(Def.ACTION_GET_ALL_INFO);
@@ -216,14 +203,16 @@ public class DvrInfoService extends IntentService {
         	NotifyRecordingListChange();
         }
         if (isLocalUrlReachable) {
-	    	dvrClient.getWifiBasic();
+	    	dvrClient.getCameraSetting();
+        	dvrClient.getWifiBasic();
 	    	dvrClient.getWifiSecurity();
 	    	dvrClient.getNetworkSetting();
 	    	dvrClient.getInfoFromADMPage();
-	    	dvrClient.getCameraSetting();
+
         }
 
     }
+	
     private void NotifyRecordingListChange() {
     	Intent intent = new Intent();
     	intent.setAction(Def.ACTION_GET_RECORDING_LIST);
@@ -258,6 +247,15 @@ public class DvrInfoService extends IntentService {
         String length = dvrClient.getRecordingLength();
         Log.v(TAG, "[handleActionGetCamMode] recording length is " + length);
 
+    }
+    
+    private void handleActionSetCamInfo(String mode) {
+    	DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
+        dvrClient.setCameraMode(mode);
+        Log.v(TAG, "[handleActionSetCamMode] Camera Mode is " + mode);
+        Intent intent = new Intent(Def.ACTION_GET_CAM_MODE);
+        intent.putExtra(Def.EXTRA_GET_CAM_MODE, mode);
+        sendBroadcast(intent);
     }
 
     private void handleActionGetInternet(){

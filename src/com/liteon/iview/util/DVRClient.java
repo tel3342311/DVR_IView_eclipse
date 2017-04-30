@@ -106,7 +106,7 @@ public class DVRClient {
     //    return mCameraMode;
     //}
 
-    public void setCameraMode(String mode) {
+    public boolean setCameraMode(String mode) {
 
         try {
             URL url = new URL(String.format(Def.DVR_Url, Def.camera_cgi));
@@ -116,9 +116,7 @@ public class DVRClient {
             }
             Uri.Builder builder = mUri.buildUpon()
                     .appendQueryParameter("page", "camera_configuration")
-                    //.appendQueryParameter("listbox_capture", "cha")
-                    //.appendQueryParameter("listbox_video_length", "2m")
-                    .appendQueryParameter("listbox_resolution", mode);
+                    .appendQueryParameter("listbox_capture", mode);
 
             String query = builder.build().getEncodedQuery();
             urlConnection.setRequestMethod("POST");
@@ -140,9 +138,20 @@ public class DVRClient {
             Log.i(TAG, "Set Camera mode to " + mode + ", Response is " + response);
             mCameraMode = mode;
             urlConnection.disconnect();
+            //workaround for always 400 response
+            if (response == HttpURLConnection.HTTP_OK ||
+            		response == HttpURLConnection.HTTP_NOT_FOUND) {
+                SharedPreferences.Editor editor = mSharedPref.edit();
+                editor.putString(Def.SP_PREVIEW_CAMERA, mode);
+                editor.commit();
+            	return true;
+            } else {
+            	return false;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     public void setRecordingLength(String length) {
@@ -247,6 +256,9 @@ public class DVRClient {
             Log.i(TAG, "Get Camera mode , Response is " + response);
             is.close();
             urlConnection.disconnect();
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            editor.putString(Def.SP_PREVIEW_CAMERA, mode);
+            editor.commit();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -856,8 +868,8 @@ public class DVRClient {
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "Set recording length to " + recordingLength + ", Set recording Channel to " + recordingChannel + ", Response is " + response);
             urlConnection.disconnect();
-            //Save to share preference
-            if (response == HttpURLConnection.HTTP_OK) {
+            //workaround for always 404 response
+            if (response == HttpURLConnection.HTTP_OK || response == HttpURLConnection.HTTP_NOT_FOUND) {
                 SharedPreferences.Editor editor = mSharedPref.edit();
                 editor.putString(Def.SP_RECORDING_LENGTH, recordingLength);
                 editor.putString(Def.SP_RECORDING_CAMERA, recordingChannel);

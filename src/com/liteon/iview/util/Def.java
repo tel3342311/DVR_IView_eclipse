@@ -164,6 +164,7 @@ public class Def {
     public final static String ACTION_GET_SYS_MODE = "com.liteon.iView.service.action.GET_SYS";
     public final static String ACTION_SET_SYS_MODE = "com.liteon.iView.service.action.SET_SYS";
     public final static String ACTION_GET_CAM_MODE = "com.liteon.iView.service.action.GET_CAM";
+    public final static String ACTION_SET_CAM_MODE = "com.liteon.iView.service.action.SET_CAM";
     public final static String ACTION_GET_INTERNET = "com.liteon.iView.service.action.GET_INET";
     public final static String ACTION_GET_WIRELESS = "com.liteon.iView.service.action.GET_WIRELESS";
     public final static String ACTION_GET_SECURITY = "com.liteon.iView.service.action.GET_SECURITY";
@@ -185,6 +186,7 @@ public class Def {
     public final static String EXTRA_GET_SYS_MODE = "com.liteon.iView.service.extra.GET_SYS";
     public final static String EXTRA_SET_SYS_MODE = "com.liteon.iView.service.extra.SET_SYS";
     public final static String EXTRA_GET_CAM_MODE = "com.liteon.iView.service.extra.GET_CAM";
+    public final static String EXTRA_SET_CAM_MODE = "com.liteon.iView.service.extra.SET_CAM";
     public final static String EXTRA_TIMEZONE     = "com.liteon.iView.service.extra.TIMEZONE";
     public final static String EXTRA_NTP_SERVER   = "com.liteon.iView.service.extra.NTP_SERVER";
     public final static String EXTRA_RECORDING_LENGTH = "com.liteon.iView.service.extra.RECORDING_LENGTH";;
