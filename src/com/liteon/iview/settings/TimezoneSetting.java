@@ -76,7 +76,6 @@ public class TimezoneSetting extends Fragment {
         mNTPServer = sp.getString(Def.SP_NTPSERVER, "");
         mNTPSyncValue = sp.getString(Def.SP_NTP_SYNC_VALUE, "");
         mTimeZoneTitle = "";
-        mConfirm.setEnabled(false);
         for(Map.Entry entry: mTimeZoneList.entrySet()){
             if(mTimeZone.equals(entry.getValue())){
                 mTimeZoneTitle = (String)entry.getKey();
@@ -85,6 +84,7 @@ public class TimezoneSetting extends Fragment {
         }
         mEdTextNtpServer.setText(mNTPServer);
         setupPicker();
+        mConfirm.setEnabled(false);
     }
     
     private void setupPicker() {

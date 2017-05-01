@@ -70,6 +70,7 @@ public class VPNSetting extends Fragment {
         mEditTextPPTPUsername.setText(mPPTPUsername);
         mEditTextPPTPPassword.setText(mPPTPPassword);
         mEditTextPPTPClientIP.setText(mPPTPClientIP);
+        mConfirm.setEnabled(false);
 
     }
 

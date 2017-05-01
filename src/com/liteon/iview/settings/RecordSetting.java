@@ -132,6 +132,7 @@ public class RecordSetting extends Fragment {
         camera_map.get(mRecordingChannel).setSelected(true);
         currentRecordingLength = mRecordingLength;
         currentRecordingChannel = mRecordingChannel;
+        mConfirm.setEnabled(false);
     }
 
     private void isSettingchanged() {

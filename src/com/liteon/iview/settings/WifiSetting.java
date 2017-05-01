@@ -165,6 +165,7 @@ public class WifiSetting extends Fragment {
         if (encrypt != null) {
             encrypt.setSelected(true);
         }
+        mConfirm.setEnabled(false);
     }
     
 	public String getCurrentSsid() {
