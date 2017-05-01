@@ -2,9 +2,9 @@
 <resources>
 
     <string name="app_name">iView</string>
-    <string name="title_home">Camera</string>
-    <string name="title_dashboard">Records</string>
-    <string name="title_notifications">DVR Settings</string>
+    <string name="title_camera">Camera</string>
+    <string name="title_records">Records</string>
+    <string name="title_setting">DVR Settings</string>
     <string name="title_setting_date">Sync Network Time</string>
     <string name="title_setting_recording">Recording Setting</string>
     <string name="title_setting_internet">Internet</string>
