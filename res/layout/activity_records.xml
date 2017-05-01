@@ -24,5 +24,10 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottombar_height"
         android:layout_alignParentBottom="true" />
-
+    <include
+        android:id="@+id/progress"
+        layout="@layout/progress_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible"/>
 </RelativeLayout>
