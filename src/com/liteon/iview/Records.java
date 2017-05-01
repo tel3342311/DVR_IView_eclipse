@@ -7,28 +7,37 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 import com.liteon.iview.util.RecordingItem;
+import com.liteon.iview.util.UsbUtil;
 import com.liteon.iview.util.VideoItemAdapter;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class Records extends Activity {
 
+	private final static String TAG = Records.class.getName();
     private View mToolbar;
     private View mBottomBar;
     private ImageView mRecordings;
@@ -44,6 +53,10 @@ public class Records extends Activity {
     public static final int UPDATE_TOOL_BAR = 1;
     public static final int ARG_UNSELECT = 1;
     public static final int ARG_SELECT = 2;
+    private UsbManager mUsbManager;
+    private PendingIntent mPermissionIntent;
+    private boolean mIsOTGReady;
+	private View mMenuLoadingIndicator;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +67,18 @@ public class Records extends Activity {
 		setupListView();
 	}
 	
+    private void checkSystemMode() {
+    	SharedPreferences sp = getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
+    	String system_mode = sp.getString(Def.SP_SYSTEM_MODE, Def.STORAGE_MODE);
+        if (!TextUtils.equals(system_mode, Def.STORAGE_MODE)) {
+        	mMenuLoadingIndicator.setVisibility(View.VISIBLE);
+    		Intent intent = new Intent(getApplicationContext(), DvrInfoService.class);
+    		intent.setAction(Def.ACTION_SET_SYS_MODE);
+    		intent.putExtra(Def.EXTRA_SET_SYS_MODE, Def.STORAGE_MODE);
+    		startService(intent);
+        }
+    }
+    
 	private void findViews() {
 		mToolbar = findViewById(R.id.toolbar_preview);
         mBottomBar = findViewById(R.id.bottombar);
@@ -65,6 +90,7 @@ public class Records extends Activity {
         mSaveToPhone = findViewById(R.id.save_to_phone);
         mSelectAll = findViewById(R.id.select_all);
         mDelete = findViewById(R.id.delete);
+        mMenuLoadingIndicator = (View) findViewById(R.id.progress);
     }
 	
 	private void setListeners() {
@@ -87,16 +113,22 @@ public class Records extends Activity {
 	public View.OnClickListener mOnPreviewClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+        	mRecordings.setSelected(false);
+        	mPreview.setSelected(true);
         	Intent intent = new Intent(getApplicationContext(), Preview.class);
-    		startActivity(intent);        
+    		startActivity(intent);
+    		finish();
     	}
     };
     
 	public View.OnClickListener mOnSettingsClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+        	mRecordings.setSelected(false);
+        	mSettings.setSelected(true);
         	Intent intent = new Intent(getApplicationContext(), Settings.class);
-    		startActivity(intent);        
+    		startActivity(intent);
+    		finish();
     	}
     };
     
@@ -105,23 +137,33 @@ public class Records extends Activity {
 		super.onResume();
 		updateList();
         IntentFilter intentFilter = new IntentFilter(Def.ACTION_GET_RECORDING_LIST);
+        intentFilter.addAction(Def.ACTION_GET_SYS_MODE);
         registerReceiver(mBroadcastReceiver, intentFilter);
+		registerOTGEvent();
         mSaveToOTG.setEnabled(false);
         mSaveToPhone.setEnabled(false);
         mDelete.setEnabled(false);
+        mRecordings.setSelected(true);
+        checkSystemMode();
 	}
 	
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mBroadcastReceiver);
+        unregisterOTGEvent();
     }
 	
     BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
 
 		@Override
         public void onReceive(Context context, Intent intent) {
-			updateList();
+			if (TextUtils.equals(Def.ACTION_GET_RECORDING_LIST, intent.getAction())) {
+				updateList();
+			} else if (TextUtils.equals(Def.ACTION_GET_SYS_MODE, intent.getAction())) { 
+	        	mMenuLoadingIndicator.setVisibility(View.INVISIBLE);
+				updateList();
+			}
         }
     };
     
@@ -159,7 +201,9 @@ public class Records extends Activity {
 			} else {
 				mSelectAll.setSelected(true);
 				isSelectAll = true;
-				mSaveToOTG.setEnabled(true);
+				if (mIsOTGReady) {
+					mSaveToOTG.setEnabled(true);
+				}
 				mSaveToPhone.setEnabled(true);
 			}
 			
@@ -173,14 +217,48 @@ public class Records extends Activity {
 		
 		@Override
 		public void onClick(View v) {
-			
+			List<RecordingItem> selecteditemList = getSelectedList();
+			String [] ids = new String[selecteditemList.size()];
+			String [] urls = new String[selecteditemList.size()];
+			String [] names = new String[selecteditemList.size()];
+			int idx = 0;
+			for (RecordingItem item : selecteditemList) {
+				ids[idx] = Integer.toString(mDataList.indexOf(item));
+				urls[idx] = item.getUrl();
+				names[idx] = item.getName();
+				idx++;
+			}
+			Intent intent = new Intent();
+			intent.setAction(Def.ACTION_SAVE_TO_OTG);
+			intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, ids);
+			intent.putExtra(Def.EXTRA_SAVE_ITEM_URL, urls);
+			intent.putExtra(Def.EXTRA_SAVE_ITEM_NAME, names);
+			intent.setClass(getApplicationContext(), DvrInfoService.class);
+			startService(intent);
 		}
 	};
 	private OnClickListener mOnSaveToPhoneClickListener = new OnClickListener() {
 		
 		@Override
 		public void onClick(View v) {
-			
+			List<RecordingItem> selecteditemList = getSelectedList();
+			String [] ids = new String[selecteditemList.size()];
+			String [] urls = new String[selecteditemList.size()];
+			String [] names = new String[selecteditemList.size()];
+			int idx = 0;
+			for (RecordingItem item : selecteditemList) {
+				ids[idx] = Integer.toString(mDataList.indexOf(item));
+				urls[idx] = item.getUrl();
+				names[idx] = item.getName();
+				idx++;
+			}
+			Intent intent = new Intent();
+			intent.setAction(Def.ACTION_SAVE_TO_PHONE);
+			intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, ids);
+			intent.putExtra(Def.EXTRA_SAVE_ITEM_URL, urls);
+			intent.putExtra(Def.EXTRA_SAVE_ITEM_NAME, names);
+			intent.setClass(getApplicationContext(), DvrInfoService.class);
+			startService(intent);
 		}
 	};
 	
@@ -230,6 +308,16 @@ public class Records extends Activity {
 		return isSelectAll;
 	}
 	
+	private List<RecordingItem> getSelectedList() {
+		List<RecordingItem> selecteditemList = new ArrayList<RecordingItem>();
+		for (RecordingItem item : mDataList) {
+			if (item.isSelected()) {
+				selecteditemList.add(item);
+			}
+		}
+		return selecteditemList;
+	}
+	
 	private Handler mHandler = new Handler() {
 		int unselect = 1;
 		int select = 2;
@@ -244,7 +332,9 @@ public class Records extends Activity {
             		}
         			mSelectAll.setSelected(false);
             	} else if (ARG_SELECT == msg.arg1) {
-            		mSaveToOTG.setEnabled(true);
+            		if (mIsOTGReady) {
+            			mSaveToOTG.setEnabled(true);
+            		}
         			mSaveToPhone.setEnabled(true);
         			if (isSelectedAllState()) {
             			mSelectAll.setSelected(true);
@@ -256,4 +346,66 @@ public class Records extends Activity {
             }
         }
 	};
+	
+	private void registerOTGEvent() {
+		mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+		mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(Def.ACTION_USB_PERMISSION), 0);
+		IntentFilter filter = new IntentFilter(Def.ACTION_USB_PERMISSION);
+		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+		registerReceiver(mUsbReceiver, filter);
+		if (UsbUtil.discoverDevice(getApplicationContext(), getIntent())) {
+			//mSaveToOTG.setEnabled(true);
+			mIsOTGReady = true;
+		}
+		
+	}
+	
+	private void unregisterOTGEvent() {
+		unregisterReceiver(mUsbReceiver);
+	}
+	
+	private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(Def.ACTION_USB_PERMISSION)) {
+                synchronized (this) {
+                    UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (usbDevice != null) {
+                            Log.v(TAG, usbDevice.getDeviceName());
+                        }
+            			mIsOTGReady = true;
+            			if (hasSelectedState()) {
+                			mSaveToOTG.setEnabled(false);
+            			}
+                    } else {
+                        Log.v(TAG, "usb permission is denied");
+                        mSaveToOTG.setEnabled(false);
+            			mIsOTGReady = false;
+                    }
+                }
+            } else if (action.equals(UsbManager.ACTION_USB_DEVICE_DETACHED)) {
+                UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                if (usbDevice != null) {
+                    //close connection
+                    Log.v(TAG,"Device disconnected");
+                    Toast.makeText(Records.this, "USB device disonnected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
+        			mSaveToOTG.setEnabled(false);
+        			mIsOTGReady = false;
+                }
+            }else if (action.equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)){
+                UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                Log.v(TAG,"Device connected");
+                Toast.makeText(Records.this, "USB device Connected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
+                //mSaveToOTG.setEnabled(true);
+    			mIsOTGReady = true;
+    			if (hasSelectedState()) {
+        			mSaveToOTG.setEnabled(false);
+    			}
+                mUsbManager.requestPermission(usbDevice, mPermissionIntent);
+            }
+        }
+    };
 }

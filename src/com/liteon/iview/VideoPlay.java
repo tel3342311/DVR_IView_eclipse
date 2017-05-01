@@ -6,15 +6,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.liteon.iview.service.DvrInfoService;
-import com.liteon.iview.util.Def;
-import com.liteon.iview.util.RecordingItem;
-import com.liteon.iview.util.StatusDialog;
-import com.liteon.iview.util.UsbUtil;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -28,7 +19,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore.Video;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -44,9 +34,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.liteon.iview.service.DvrInfoService;
+import com.liteon.iview.util.Def;
+import com.liteon.iview.util.RecordingItem;
+import com.liteon.iview.util.StatusDialog;
+import com.liteon.iview.util.UsbUtil;
+
 public class VideoPlay extends Activity {
 
-	private final static String TAG = Video.class.getName();
+	private final static String TAG = VideoPlay.class.getName();
     private View mToolbar;
     private View mBottomBar;
     private ImageView mRecordings;
@@ -85,7 +84,6 @@ public class VideoPlay extends Activity {
 		setListeners();
 		mHandlerTime = new Handler();
 		mDataList = new ArrayList<RecordingItem>();
-		registerOTGEvent();
 	}
 	
 	private void registerOTGEvent() {
@@ -101,6 +99,10 @@ public class VideoPlay extends Activity {
 		
 	}
 	
+	private void unregisterOTGEvent() {
+		unregisterReceiver(mUsbReceiver);
+	}
+	
 	private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -112,6 +114,7 @@ public class VideoPlay extends Activity {
                         if (usbDevice != null) {
                             Log.v(TAG, usbDevice.getDeviceName());
                         }
+                        mSaveToOTG.setEnabled(true);
                     } else {
                         Log.v(TAG, "usb permission is denied");
                         mSaveToOTG.setEnabled(false);
@@ -169,7 +172,7 @@ public class VideoPlay extends Activity {
 		@Override
 		public void onClick(View v) {
 			mHandlerTime.removeCallbacks(HideUIControl);
-			onBackPressed();
+			finish();
 		}
 	};
 
@@ -244,6 +247,7 @@ public class VideoPlay extends Activity {
         mSaveToOTG = findViewById(R.id.save_to_otg);
         mSaveToPhone = findViewById(R.id.save_to_phone);
         mSelectAll = findViewById(R.id.select_all);
+        mDelete = findViewById(R.id.delete);
         mBackToRecords = (ImageView) findViewById(R.id.video_back);
 		mToolbar = findViewById(R.id.toolbar_recordings);
         mBottomBar = findViewById(R.id.bottombar);
@@ -259,21 +263,24 @@ public class VideoPlay extends Activity {
         mThumbnail = (ImageView) findViewById(R.id.thumbnail);
         mSeekBar = (SeekBar) findViewById(R.id.seek_bar);
         mVideoEndTime = (TextView) findViewById(R.id.end_time);
-        
-        
 	}
 	
 	public View.OnClickListener mOnPreviewClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+        	mRecordings.setSelected(true);
+        	mPreview.setSelected(true);
         	Intent intent = new Intent(getApplicationContext(), Preview.class);
-    		startActivity(intent);        
+    		startActivity(intent);
+    		finish();
     	}
     };
     
 	public View.OnClickListener mOnSettingsClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+        	mRecordings.setSelected(false);
+        	mSettings.setSelected(true);
         	Intent intent = new Intent(getApplicationContext(), Settings.class);
     		startActivity(intent);        
     	}
@@ -456,6 +463,8 @@ public class VideoPlay extends Activity {
 		mBackToRecords.setVisibility(View.VISIBLE);
 		mRecordings.setSelected(true);
 		mSelectAll.setVisibility(View.GONE);
+        mSaveToOTG.setEnabled(false);
+        mDelete.setEnabled(false);
     	mShowingMenu = true;
     	setMenuVisible(true);
     	getRecordingList();
@@ -466,19 +475,21 @@ public class VideoPlay extends Activity {
         IntentFilter intentFilter = new IntentFilter(Def.ACTION_SAVE_TO_PHONE_STATUS);
         intentFilter.addAction(Def.ACTION_SAVE_TO_OTG_STATUS);
         registerReceiver(mBroadcastReceiver, intentFilter);
+		registerOTGEvent();
 	}
 
     @Override
     protected void onStart() {
     	super.onStart();
     	mHandlerTime.postDelayed(HideUIControl, 1500);
-    	showDialog(true,true);
+    	//showDialog(true,true);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mBroadcastReceiver);
+        unregisterOTGEvent();
     }
     private void setMenuVisible(boolean show) {
     	if (show) {
