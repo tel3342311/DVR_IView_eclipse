@@ -97,6 +97,9 @@ public class DVRClient {
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "Set DVR mode to " + mode + ", Response is " + response);
             urlConnection.disconnect();
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            editor.putString(Def.SP_SYSTEM_MODE, mode);
+            editor.commit();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -219,7 +222,9 @@ public class DVRClient {
             Log.i(TAG, "Get System mode , mode is " + mode);
             is.close();
             urlConnection.disconnect();
-
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            editor.putString(Def.SP_SYSTEM_MODE, mode);
+            editor.commit();
         } catch (IOException e) {
             e.printStackTrace();
         }

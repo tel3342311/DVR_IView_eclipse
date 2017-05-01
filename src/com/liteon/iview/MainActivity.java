@@ -19,8 +19,6 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		Intent intent = new Intent(MainActivity.this, Records.class);
-		startActivity(intent);
 	}
 	
 	@Override
@@ -58,6 +56,7 @@ public class MainActivity extends Activity {
             	Toast.makeText(context, "Please setup VPN to continue!!", Toast.LENGTH_LONG).show();
             }
             startActivity(intentActivity);
+            finish();
         }
     };
 }

@@ -237,5 +237,6 @@ public class Def {
     public final static String SP_RECORDING_CAMERA = "SP_RECORDING_CAMERA";
     public final static String SP_PREVIEW_CAMERA = "SP_PREVIEW_CAMERA";
     public final static String SP_RECORDING_LIST = "SP_RECORDING_LIST";
+    public final static String SP_SYSTEM_MODE = "SP_SYSTEM_MODE";
 	//
 }

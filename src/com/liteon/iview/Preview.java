@@ -6,19 +6,20 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.camera.simplemjpeg.MjpegInputStream;
-import com.camera.simplemjpeg.MjpegView;
-import com.liteon.iview.util.Def;
-
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
@@ -26,6 +27,11 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.camera.simplemjpeg.MjpegInputStream;
+import com.camera.simplemjpeg.MjpegView;
+import com.liteon.iview.service.DvrInfoService;
+import com.liteon.iview.util.Def;
 
 public class Preview extends Activity {
 
@@ -42,6 +48,11 @@ public class Preview extends Activity {
     private Handler mHandlerTime;
     private boolean mIsSuspend;
 	private TextView mTitleView;
+	private ImageView mCamera1;
+	private ImageView mCamera2;
+	private View mCameraloadingIndicator;
+	private View mMenuLoadingIndicator;
+	
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -58,15 +69,55 @@ public class Preview extends Activity {
     	mShowingMenu = true;
     	setMenuVisible(true);
 		mPreview.setSelected(true);
-        if(mv!=null){
-        	if(mIsSuspend){
+        IntentFilter intentFilter = new IntentFilter(Def.ACTION_GET_CAM_MODE);
+        intentFilter.addAction(Def.ACTION_GET_SYS_MODE);
+        registerReceiver(mBroadcastReceiver, intentFilter);
+        if (mv != null){
+        	if ( mIsSuspend ){
         		new Preview.ReadDVR().execute(Def.DVR_PREVIEW_URL);
         		mIsSuspend = false;
         	}
         }
+        checkSystemMode();
+        checkCameraStatus();
     }
     
-    @Override
+    private void checkSystemMode() {
+    	SharedPreferences sp = getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
+    	String system_mode = sp.getString(Def.SP_SYSTEM_MODE, Def.RECORDING_MODE);
+        if (!TextUtils.equals(system_mode, "uvc")) {
+        	mMenuLoadingIndicator.setVisibility(View.VISIBLE);
+    		Intent intent = new Intent(getApplicationContext(), DvrInfoService.class);
+    		intent.setAction(Def.ACTION_SET_SYS_MODE);
+    		intent.putExtra(Def.EXTRA_SET_SYS_MODE, Def.RECORDING_MODE);
+    		startService(intent);
+        }
+    }
+    
+    private void checkCameraStatus() {
+    	
+    	SharedPreferences sp = getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
+        String recordingChannel = sp.getString(Def.SP_RECORDING_CAMERA, "chab");
+        String previewChannel = sp.getString(Def.SP_PREVIEW_CAMERA, "cha");
+        if (!TextUtils.equals(recordingChannel, "chab")) {
+        	mCamera1.setEnabled(false);
+        	mCamera2.setEnabled(false);
+        } else {
+        	mCamera1.setEnabled(true);
+        	mCamera2.setEnabled(true);
+        }
+        mCamera1.setVisibility(View.INVISIBLE);
+        mCamera2.setVisibility(View.INVISIBLE);
+        if (TextUtils.equals(previewChannel, "cha")) {
+        	mTitleView.setText("Camera 1");
+        	mCamera2.setVisibility(View.VISIBLE);
+        } else {
+        	mTitleView.setText("Camera 2");
+        	mCamera1.setVisibility(View.VISIBLE);
+        }
+	}
+
+	@Override
     protected void onPause() {
     	super.onPause();
         if(mv!=null){
@@ -75,6 +126,7 @@ public class Preview extends Activity {
 		        mIsSuspend = true;
         	}
         }
+        unregisterReceiver(mBroadcastReceiver);
     }
     
     public void onDestroy() {
@@ -97,6 +149,8 @@ public class Preview extends Activity {
         mSnapshot.setOnClickListener(mOnSnapshotClickListener);
         mRecordings.setOnClickListener(mOnRecordingsClickListener);
         mSettings.setOnClickListener(mOnSettingsClickListener);
+        mCamera1.setOnClickListener(mOnCameraClickListener);
+        mCamera2.setOnClickListener(mOnCameraClickListener);
     }
     
 	private void findViews() {
@@ -109,7 +163,10 @@ public class Preview extends Activity {
         mRecordings = (ImageView) findViewById(R.id.recordings_icon);
         mSettings = (ImageView) findViewById(R.id.setting_icon);
         mTitleView = (TextView) findViewById(R.id.toolbar_title);
-
+        mCamera1 = (ImageView) findViewById(R.id.icon_camera_1);
+        mCamera2 = (ImageView) findViewById(R.id.icon_camera_2);
+        mCameraloadingIndicator = (View) findViewById(R.id.icon_loading);
+        mMenuLoadingIndicator = (View) findViewById(R.id.progress);
    }
 
 	public View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -142,16 +199,22 @@ public class Preview extends Activity {
 	public View.OnClickListener mOnRecordingsClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+        	mPreview.setSelected(false);
+        	mRecordings.setSelected(true);
         	Intent intent = new Intent(getApplicationContext(), Records.class);
-    		startActivity(intent);        
+    		startActivity(intent);
+    		finish();
     	}
     };
     
 	public View.OnClickListener mOnSettingsClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+        	mPreview.setSelected(false);
+        	mSettings.setSelected(true);
         	Intent intent = new Intent(getApplicationContext(), Settings.class);
-    		startActivity(intent);        
+    		startActivity(intent);
+    		finish();
     	}
     };
     
@@ -180,6 +243,35 @@ public class Preview extends Activity {
                     });
                 }
             }.start();
+        }
+    };
+    
+    private View.OnClickListener mOnCameraClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            final String mode;
+            mCameraloadingIndicator.setVisibility(View.VISIBLE);
+            
+            switch (view.getId()) {
+                case R.id.icon_camera_1:
+                    mode = Def.FRONT_CAM_MODE;
+                    mCamera1.setVisibility(View.INVISIBLE);
+                    mTitleView.setText("Camera 1");
+                    break;
+                case R.id.icon_camera_2:
+                    mode = Def.REAR_CAM_MODE;
+                    mCamera2.setVisibility(View.INVISIBLE);
+                    mTitleView.setText("Camera 2");
+                    break;
+                default:
+                    mode = Def.FRONT_CAM_MODE;
+                    break;
+            }
+            //set DVR camera 
+    		Intent intent = new Intent(getApplicationContext(), DvrInfoService.class);
+    		intent.setAction(Def.ACTION_SET_CAM_MODE);
+    		intent.putExtra(Def.EXTRA_SET_CAM_MODE, mode);
+    		startService(intent);
         }
     };
 
@@ -270,4 +362,20 @@ public class Preview extends Activity {
             }
         }
     }
+    
+    BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+
+ 		@Override
+         public void onReceive(Context context, Intent intent) {
+ 			if (TextUtils.equals(intent.getAction(), Def.ACTION_GET_CAM_MODE)) {
+ 				mCameraloadingIndicator.setVisibility(View.INVISIBLE);
+ 				checkCameraStatus();
+ 			} else if (TextUtils.equals(intent.getAction(), Def.ACTION_GET_SYS_MODE)) {
+ 				recreate();
+ 			}
+
+ 		}
+ 	};
+ 	
+ 	
 }

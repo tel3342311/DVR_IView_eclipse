@@ -17,7 +17,9 @@ import com.liteon.iview.util.DVRClient;
 import com.liteon.iview.util.Def;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Log;
 
@@ -198,17 +200,30 @@ public class DvrInfoService extends IntentService {
             isLocalUrlReachable = false;
     	}
         sendBroadcast(intent);
-        if (isStorageMode) {
-        	dvrClient.getRecordingList();
-        	NotifyRecordingListChange();
-        }
+       
+
+
         if (isLocalUrlReachable) {
+        	
+            SharedPreferences SharedPref = getApplicationContext().getSharedPreferences(
+                    Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = SharedPref.edit();
+            
+            if (isStorageMode) {
+            	dvrClient.getRecordingList();
+            	NotifyRecordingListChange();
+                editor.putString(Def.SP_SYSTEM_MODE, Def.STORAGE_MODE);
+                
+            } else {
+                editor.putString(Def.SP_SYSTEM_MODE, Def.RECORDING_MODE);
+            }
+            editor.commit();
+            
 	    	dvrClient.getCameraSetting();
         	dvrClient.getWifiBasic();
 	    	dvrClient.getWifiSecurity();
 	    	dvrClient.getNetworkSetting();
 	    	dvrClient.getInfoFromADMPage();
-
         }
 
     }

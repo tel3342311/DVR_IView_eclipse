@@ -37,7 +37,6 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
     private VPNSetting mVpnSetting;
     private WifiSetting mWifiSetting;
     
-    
     private static final int PAGE_COUNT = 6;
     private static final int SETTING_MAIN = 0;
     private static final int SETTING_TIMEZONE = 1;
@@ -52,26 +51,21 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
 		setContentView(R.layout.activity_settings);
 		findViews();
 		setListeners();
-		mMainSetting = new MainSetting();
-		mMainSetting.setOnSettingPageSelectedListener(Settings.this);
-
-		FragmentManager fm = getFragmentManager();
-		FragmentTransaction transaction = fm.beginTransaction();
-		transaction.replace(R.id.frag_container, mMainSetting);
-		transaction.commit();
 	}
 
 	@Override
 	protected void onResume(){
 		super.onResume();
-		mConfirm.setVisibility(View.VISIBLE);
-		mCancel.setVisibility(View.VISIBLE);
+		onSettingSelected(SETTING_MAIN);
+		mSettings.setSelected(true);
 	}
 	
 	private void setListeners() {
 
 		mCancel.setOnClickListener(mOnCancelClickListener);
 		mConfirm.setOnClickListener(mOnConfirmClickListener);
+		mPreview.setOnClickListener(mOnPreviewClickListener);
+		mRecordings.setOnClickListener(mOnRecordingsClickListener);
 	}
 
 	private void findViews() {
@@ -87,46 +81,56 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
 
 	@Override
 	public void onSettingSelected(int position) {
-		
+		String title = "";
 		Fragment fragment = mMainSetting;
+		showTitleAction(true);
 		switch (position) {
 			case SETTING_MAIN:
+				title = getResources().getString(R.string.title_activity_settings);
 				if (mMainSetting == null) {
 					mMainSetting = new MainSetting();
 					mMainSetting.setOnSettingPageSelectedListener(Settings.this);
 				}
 				fragment = mMainSetting;
+				showTitleAction(false);
 				break;
 			case SETTING_TIMEZONE:
+				title = getResources().getString(R.string.title_setting_date);
 				if (mTimezoneSetting == null) {
 					mTimezoneSetting = new TimezoneSetting();
 				}
 				fragment = mTimezoneSetting;
 				break;
 			case SETTING_RECORDINGS:
+				title = getResources().getString(R.string.title_setting_recording);
 				if (mRecordSetting == null) {
 					mRecordSetting = new RecordSetting();
 				}
 				fragment = mRecordSetting;
+				break;
 			case SETTING_INTERNET:
+				title = getResources().getString(R.string.title_setting_internet);
 				if (mInternetSetting == null) {
 					mInternetSetting = new InternetSetting();
 				}
 				fragment = mInternetSetting;
 				break;
 			case SETTING_VPN:
+				title = getResources().getString(R.string.title_setting_vpn_routing);
 				if (mVpnSetting == null) {
 					mVpnSetting = new VPNSetting();
 				}
 				fragment = mVpnSetting;
 				break;
 			case SETTING_WIFI:
+				title = getResources().getString(R.string.title_setting_wifi_setting);
 				if (mWifiSetting == null) {
 					mWifiSetting = new WifiSetting();
 				}
 				fragment = mWifiSetting;
 				break;
 		};
+		updateTitle(title);
 		FragmentManager fm = getFragmentManager();
 		FragmentTransaction transaction = fm.beginTransaction();
 		transaction.replace(R.id.frag_container, fragment);
@@ -194,6 +198,46 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
             }
             intent.setClass(Settings.this, DvrInfoService.class);
             startService(intent);
+            
+			onSettingSelected(SETTING_MAIN);
 		}
 	};
+	
+	public View.OnClickListener mOnPreviewClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+        	mSettings.setSelected(false);
+        	mPreview.setSelected(true);
+        	Intent intent = new Intent(getApplicationContext(), Preview.class);
+    		startActivity(intent);
+    		finish();
+    	}
+    };
+    
+	public View.OnClickListener mOnRecordingsClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+        	mSettings.setSelected(false);
+        	mRecordings.setSelected(true);
+        	Intent intent = new Intent(getApplicationContext(), Records.class);
+    		startActivity(intent);
+    		finish();
+    	}
+    };
+    
+	private void updateTitle(String title) {
+		mTitleView.setText(title);
+	}
+	
+	private void showTitleAction(boolean show){
+		if (show) {
+			//default disable confirm btn
+			mConfirm.setEnabled(false);
+			mConfirm.setVisibility(View.VISIBLE);
+			mCancel.setVisibility(View.VISIBLE);
+		} else {
+			mConfirm.setVisibility(View.INVISIBLE);
+			mCancel.setVisibility(View.INVISIBLE);
+		}
+	}
 }
