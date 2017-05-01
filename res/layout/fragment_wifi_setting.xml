@@ -20,7 +20,7 @@
                 android:layout_width="@dimen/wifi_edit_text_width"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:text="Server IP" />
+                android:text="SSID" />
             <EditText
                 android:id="@+id/edit_ssid"
                 android:layout_width="match_parent"
