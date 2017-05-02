@@ -1,24 +1,45 @@
 package com.liteon.iview;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.liteon.iview.service.DvrInfoService;
+import com.liteon.iview.util.Def;
+import com.liteon.iview.util.RecordingItem;
+import com.liteon.iview.util.StatusDialog;
+import com.liteon.iview.util.UsbUtil;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -33,15 +54,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.liteon.iview.service.DvrInfoService;
-import com.liteon.iview.util.Def;
-import com.liteon.iview.util.RecordingItem;
-import com.liteon.iview.util.StatusDialog;
-import com.liteon.iview.util.UsbUtil;
 
 public class VideoPlay extends Activity {
 
@@ -125,13 +137,13 @@ public class VideoPlay extends Activity {
                 if (usbDevice != null) {
                     //close connection
                     Log.v(TAG,"Device disconnected");
-                    Toast.makeText(VideoPlay.this, "USB device disonnected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(VideoPlay.this, "USB device disonnected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
         			mSaveToOTG.setEnabled(false);
                 }
             }else if (action.equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)){
                 UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                 Log.v(TAG,"Device connected");
-                Toast.makeText(VideoPlay.this, "USB device Connected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
+                //Toast.makeText(VideoPlay.this, "USB device Connected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
                 mSaveToOTG.setEnabled(true);
                 mUsbManager.requestPermission(usbDevice, mPermissionIntent);
             }
@@ -234,9 +246,33 @@ public class VideoPlay extends Activity {
     private View.OnClickListener mOnSnapShotClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-
+        	new Thread() {
+                @Override
+                public void run() {
+                    super.run();
+                    String uri = saveImageToGallery(VideoPlay.this, snapShot());
+                    ContentResolver cr = getContentResolver();
+                    long id = ContentUris.parseId(android.net.Uri.parse(uri));
+                    final Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mThumbnail.setImageBitmap(miniThumb);
+                            mThumbnail.setVisibility(View.VISIBLE);
+                        }
+                    });
+                }
+            }.start();
         }
     };
+    
+    private Bitmap snapShot() {
+    	Bitmap bitmap = Bitmap.createBitmap(mVideoView.getWidth(),
+    			mVideoView.getHeight(), Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        mVideoView.draw(canvas);
+        return bitmap;
+    }
 
 	private void findViews() {
 		mToolbar = findViewById(R.id.toolbar_preview);
@@ -436,6 +472,7 @@ public class VideoPlay extends Activity {
     }
     private void setCurrentVideoItem(RecordingItem item) {
     	mCurrentVideoItem = item;
+        mTitleView.setText(item.getName());
 	}
 
 	private void getRecordingList() {
@@ -474,6 +511,7 @@ public class VideoPlay extends Activity {
     	setupVideoView();
         IntentFilter intentFilter = new IntentFilter(Def.ACTION_SAVE_TO_PHONE_STATUS);
         intentFilter.addAction(Def.ACTION_SAVE_TO_OTG_STATUS);
+        intentFilter.addAction(Def.ACTION_SAVE_TO_PROGRESS);
         registerReceiver(mBroadcastReceiver, intentFilter);
 		registerOTGEvent();
 	}
@@ -573,11 +611,21 @@ public class VideoPlay extends Activity {
         public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			boolean isSaveToPhone = false;
+			if (TextUtils.equals(Def.ACTION_SAVE_TO_PROGRESS, action)) {
+				int progress = intent.getIntExtra(Def.EXTRA_SAVE_TO_PROGRESS, 0);
+				int idx = intent.getIntExtra(Def.EXTRA_SAVE_TO_IDX, 1);
+				int count = intent.getIntExtra(Def.EXTRA_SAVE_TO_COUNT, 1);
+				if (count == 1) {
+					Toast.makeText(VideoPlay.this, "Download Progress is "+progress + "%", Toast.LENGTH_LONG).show();
+				} else if (count > 1) {
+					Toast.makeText(VideoPlay.this, "Download Progress is "+progress + "% (" + idx + "/" + count + ")", Toast.LENGTH_LONG).show();
+				}
+			}
 			if (TextUtils.equals(action, Def.ACTION_SAVE_TO_PHONE_STATUS)) {
 				isSaveToPhone = true;
 			}
 			if (TextUtils.equals(action, Def.ACTION_SAVE_TO_PHONE_STATUS) ||
-					TextUtils.equals(action, Def.ACTION_SAVE_TO_PHONE_STATUS)) {
+					TextUtils.equals(action, Def.ACTION_SAVE_TO_OTG_STATUS)) {
 				mProgressView.setVisibility(View.GONE);
 				String [] ids = intent.getStringArrayExtra(Def.EXTRA_VIDEO_ITEM_ID);
 				String [] path = intent.getStringArrayExtra(Def.EXTRA_SAVE_STATUS_FILE_PATH);
@@ -610,4 +658,37 @@ public class VideoPlay extends Activity {
 		}
 		dialog.show();
     }
+    
+ 	public static String saveImageToGallery(Context context, Bitmap bmp) {
+ 	    
+ 		String uri = "";
+        // Get the directory for the user's public pictures directory.
+        File appDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS), context.getString(R.string.app_name));
+
+ 	    if (!appDir.exists()) {
+ 	    	appDir.mkdir();
+ 	    }
+ 	    String fileName = System.currentTimeMillis() + ".jpg";
+ 	    File file = new File(appDir, fileName);
+ 	    try {
+ 	        FileOutputStream fos = new FileOutputStream(file);
+ 	        bmp.compress(CompressFormat.JPEG, 100, fos);
+ 	        fos.flush();
+ 	        fos.close();
+ 	    } catch (FileNotFoundException e) {
+ 	        e.printStackTrace();
+ 	    } catch (IOException e) {
+ 	        e.printStackTrace();
+ 		}
+ 	    
+ 	    try {
+ 	    	uri = MediaStore.Images.Media.insertImage(context.getContentResolver(),
+ 					file.getAbsolutePath(), fileName, null);
+ 	    } catch (FileNotFoundException e) {
+ 	        e.printStackTrace();
+ 	    }
+ 	    context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + file.getAbsolutePath())));
+ 	    return uri;
+ 	}
 }

@@ -23,7 +23,8 @@
     <dimen name="video_page_icon_size">50dp</dimen>
     <dimen name="video_page_icon_margin">100dp</dimen>
     <dimen name="video_page_seekbar_maxheight">5dp</dimen>
-    <dimen name="video_page_seekbar_thumb">25dp</dimen>
+    <dimen name="video_page_seekbar_thumb">25dp</dimen>    
+    <dimen name="video_page_margin_right_thumbnail">16dp</dimen>
     <!-- setting page-->
     <dimen name="setting_main_icon_height">170dp</dimen>
     <dimen name="setting_main_icon_margin">10dp</dimen>

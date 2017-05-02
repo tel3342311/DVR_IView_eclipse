@@ -58,8 +58,10 @@ public class StatusDialog extends Dialog {
 		mText.setText(mMessage);
 		if (mIsSuccess) {
 			mTextRetry.setVisibility(View.INVISIBLE);
+			mStatusIcon.setBackground(getContext().getResources().getDrawable(R.drawable.popup_img_ok));
 		} else {
 			mTextRetry.setVisibility(View.VISIBLE);
+			mStatusIcon.setBackground(getContext().getResources().getDrawable(R.drawable.popup_img_warning));
 		}
 	};
 }
