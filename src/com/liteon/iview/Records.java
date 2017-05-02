@@ -10,6 +10,7 @@ import com.google.gson.reflect.TypeToken;
 import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 import com.liteon.iview.util.RecordingItem;
+import com.liteon.iview.util.StatusDialog;
 import com.liteon.iview.util.UsbUtil;
 import com.liteon.iview.util.VideoItemAdapter;
 
@@ -138,6 +139,9 @@ public class Records extends Activity {
 		updateList();
         IntentFilter intentFilter = new IntentFilter(Def.ACTION_GET_RECORDING_LIST);
         intentFilter.addAction(Def.ACTION_GET_SYS_MODE);
+        intentFilter.addAction(Def.ACTION_SAVE_TO_PROGRESS);
+        intentFilter.addAction(Def.ACTION_SAVE_TO_PHONE_STATUS);
+        intentFilter.addAction(Def.ACTION_SAVE_TO_OTG_STATUS);
         registerReceiver(mBroadcastReceiver, intentFilter);
 		registerOTGEvent();
         mSaveToOTG.setEnabled(false);
@@ -163,6 +167,40 @@ public class Records extends Activity {
 			} else if (TextUtils.equals(Def.ACTION_GET_SYS_MODE, intent.getAction())) { 
 	        	mMenuLoadingIndicator.setVisibility(View.INVISIBLE);
 				updateList();
+			} else if (TextUtils.equals(Def.ACTION_SAVE_TO_PROGRESS, intent.getAction())) {
+				mMenuLoadingIndicator.setVisibility(View.VISIBLE);
+				int progress = intent.getIntExtra(Def.EXTRA_SAVE_TO_PROGRESS, 0);
+				int idx = intent.getIntExtra(Def.EXTRA_SAVE_TO_IDX, 1);
+				int count = intent.getIntExtra(Def.EXTRA_SAVE_TO_COUNT, 1);
+				if (count == 1) {
+					Toast.makeText(Records.this, "Download Progress is "+progress + "%", Toast.LENGTH_LONG).show();
+				} else if (count > 1) {
+					Toast.makeText(Records.this, "Download Progress is "+progress + "% (" + idx + "/" + count + ")", Toast.LENGTH_LONG).show();
+				}
+			} else {
+				boolean isSaveToPhone = false;
+				if (TextUtils.equals(intent.getAction(), Def.ACTION_SAVE_TO_PHONE_STATUS)) {
+					isSaveToPhone = true;
+				}
+				if (TextUtils.equals(intent.getAction(), Def.ACTION_SAVE_TO_PHONE_STATUS) ||
+						TextUtils.equals(intent.getAction(), Def.ACTION_SAVE_TO_OTG_STATUS)) {
+					mMenuLoadingIndicator.setVisibility(View.GONE);
+					String [] ids = intent.getStringArrayExtra(Def.EXTRA_VIDEO_ITEM_ID);
+					String [] path = intent.getStringArrayExtra(Def.EXTRA_SAVE_STATUS_FILE_PATH);
+					boolean isSuccess = intent.getBooleanExtra(Def.EXTRA_SAVE_STATUS, false);
+					showDialog(isSuccess, isSaveToPhone);
+					boolean [] status = intent.getBooleanArrayExtra(Def.EXTRA_SAVE_STATUS_ARY);
+					for (int i = 0; i < status.length; i++) {
+						if (status[i]) {
+							RecordingItem item = mDataList.get(Integer.parseInt(ids[i]));
+							if (TextUtils.equals(intent.getAction(), Def.ACTION_SAVE_TO_PHONE_STATUS)) {
+								item.setLocalPath(path[i]);
+							} else {
+								item.setOtgPath(path[i]);
+							}
+						}
+					}
+				}
 			}
         }
     };
@@ -217,6 +255,7 @@ public class Records extends Activity {
 		
 		@Override
 		public void onClick(View v) {
+			mMenuLoadingIndicator.setVisibility(View.VISIBLE);
 			List<RecordingItem> selecteditemList = getSelectedList();
 			String [] ids = new String[selecteditemList.size()];
 			String [] urls = new String[selecteditemList.size()];
@@ -241,6 +280,7 @@ public class Records extends Activity {
 		
 		@Override
 		public void onClick(View v) {
+			mMenuLoadingIndicator.setVisibility(View.VISIBLE);
 			List<RecordingItem> selecteditemList = getSelectedList();
 			String [] ids = new String[selecteditemList.size()];
 			String [] urls = new String[selecteditemList.size()];
@@ -309,13 +349,13 @@ public class Records extends Activity {
 	}
 	
 	private List<RecordingItem> getSelectedList() {
-		List<RecordingItem> selecteditemList = new ArrayList<RecordingItem>();
+		List<RecordingItem> itemList = new ArrayList<RecordingItem>();
 		for (RecordingItem item : mDataList) {
 			if (item.isSelected()) {
-				selecteditemList.add(item);
+				itemList.add(item);
 			}
 		}
-		return selecteditemList;
+		return itemList;
 	}
 	
 	private Handler mHandler = new Handler() {
@@ -391,14 +431,14 @@ public class Records extends Activity {
                 if (usbDevice != null) {
                     //close connection
                     Log.v(TAG,"Device disconnected");
-                    Toast.makeText(Records.this, "USB device disonnected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(Records.this, "USB device disonnected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
         			mSaveToOTG.setEnabled(false);
         			mIsOTGReady = false;
                 }
             }else if (action.equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)){
                 UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                 Log.v(TAG,"Device connected");
-                Toast.makeText(Records.this, "USB device Connected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
+                //Toast.makeText(Records.this, "USB device Connected!! getDeviceProtocol " + usbDevice.getDeviceProtocol() + "", Toast.LENGTH_LONG).show();
                 //mSaveToOTG.setEnabled(true);
     			mIsOTGReady = true;
     			if (hasSelectedState()) {
@@ -408,4 +448,17 @@ public class Records extends Activity {
             }
         }
     };
+    
+    private void showDialog(boolean isSuccess, boolean isSaveToPhone) {
+    	StatusDialog dialog;
+		if (isSuccess) {
+			if (isSaveToPhone)
+				dialog = new StatusDialog(Records.this, "Save it to Phone", isSuccess);
+			else 
+				dialog = new StatusDialog(Records.this, "Save it to OTG", isSuccess);
+		} else {
+			dialog = new StatusDialog(Records.this, "Save Failed!", isSuccess);
+		}
+		dialog.show();
+    }
 }

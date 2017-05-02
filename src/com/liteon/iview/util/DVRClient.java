@@ -31,6 +31,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.telecom.Call;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -1125,7 +1126,7 @@ public class DVRClient {
         return false;
     }
     
-    public static boolean downloadFileFromURL(String Url, OutputStream fileSaveTo) {
+    public static boolean downloadFileFromURL(String Url, OutputStream fileSaveTo, ProgressChangeCallback callback, int idx, int file_count) {
     	URL url;
 		try {
 			url = new URL(Url);
@@ -1137,12 +1138,16 @@ public class DVRClient {
 	    	byte data[] = new byte[1024];
 	    	int count = 0;
 	    	long total = 0;
-
+	    	int currentProgress = 0;
 	    	while ((count = is.read(data)) != -1) {
 		    	total += count;
 		    	// publishing the progress….
 		    	int progress = (int)((total*100)/lengthOfFile);
 		    	Log.d(TAG, "[downloadFileFromURL] Progress is " + progress + "%, current bytes :" + total);
+		    	if (currentProgress != progress) {
+		    		currentProgress = progress;
+		    		callback.onProgressChange(currentProgress, idx, file_count);
+		    	}
 		    	// writing data to file
 		    	os.write(data, 0, count);
 	    	}
@@ -1161,5 +1166,9 @@ public class DVRClient {
 			return false;
 		}
 		return true;
+    }
+    
+    public interface ProgressChangeCallback {
+    	public void onProgressChange(int progress, int idx, int count);
     }
 }

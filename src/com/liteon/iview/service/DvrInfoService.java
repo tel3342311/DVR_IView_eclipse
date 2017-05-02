@@ -10,10 +10,10 @@ import java.util.Map;
 import com.github.mjdev.libaums.UsbMassStorageDevice;
 import com.github.mjdev.libaums.fs.FileSystem;
 import com.github.mjdev.libaums.fs.UsbFile;
-import com.github.mjdev.libaums.fs.UsbFileOutputStream;
 import com.github.mjdev.libaums.fs.UsbFileStreamFactory;
 import com.liteon.iview.R;
 import com.liteon.iview.util.DVRClient;
+import com.liteon.iview.util.DVRClient.ProgressChangeCallback;
 import com.liteon.iview.util.Def;
 
 import android.app.IntentService;
@@ -104,7 +104,7 @@ public class DvrInfoService extends IntentService {
     		sendBroadcast(intent);
     		return ;
     	}
-    	File path = getAlbumStorageDir("Download") ;   	
+    	File path = getAlbumStorageDir(getString(R.string.app_name)) ;   	
     	if (!path.exists()) {
     		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
     		sendBroadcast(intent);
@@ -117,12 +117,12 @@ public class DvrInfoService extends IntentService {
     	for (int i = 0; i < url.length; i++) {
     		File file = new File(path, name[i]);
     		try {
-				status[i] = DVRClient.downloadFileFromURL(url[i], new FileOutputStream(file));
+				status[i] = DVRClient.downloadFileFromURL(url[i], new FileOutputStream(file), mOnProgressChange, i, count);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
     		downloadPath[i] = file.getAbsolutePath();
-    		if (status[i]) {
+    		if (!status[i]) {
     			isSuccess = false;
     		}
     	}
@@ -137,11 +137,19 @@ public class DvrInfoService extends IntentService {
     		sendBroadcast(intent);
     	}
 	}
-    
+    private ProgressChangeCallback mOnProgressChange = new ProgressChangeCallback () {
+    	public void onProgressChange(int progress, int idx, int count) {
+        	Intent intent = new Intent(Def.ACTION_SAVE_TO_PROGRESS);
+        	intent.putExtra(Def.EXTRA_SAVE_TO_PROGRESS, progress);
+        	intent.putExtra(Def.EXTRA_SAVE_TO_IDX, idx);
+        	intent.putExtra(Def.EXTRA_SAVE_TO_COUNT, count);
+    		sendBroadcast(intent);
+    	};
+    };
     private void handleActionSaveToOTG(String[] url, String[] id, String[] name) {
     	
     	Intent intent = new Intent(Def.ACTION_SAVE_TO_OTG_STATUS);
-    	UsbMassStorageDevice[] devices = UsbMassStorageDevice.getMassStorageDevices(this /* Context or Activity */);
+    	UsbMassStorageDevice[] devices = UsbMassStorageDevice.getMassStorageDevices(getApplicationContext() /* Context or Activity */);
     	OutputStream os = null;
     	if (devices.length > 0) {
     		UsbMassStorageDevice device = devices[0];
@@ -149,7 +157,7 @@ public class DvrInfoService extends IntentService {
 				device.init();
 	    		FileSystem currentFs = device.getPartitions().get(0).getFileSystem();
 	    		UsbFile root = currentFs.getRootDirectory();
-	    		UsbFile newDir = root.createDirectory("Download");
+	    		UsbFile newDir = root.createDirectory(getString(R.string.app_name));
 	    		UsbFile file = newDir.createFile(name[0]);
 	    		//os = new UsbFileOutputStream(file);
 	    		os = UsbFileStreamFactory.createBufferedOutputStream(file, currentFs);
@@ -164,10 +172,10 @@ public class DvrInfoService extends IntentService {
 	    	boolean[] status = new boolean[count];
 	    	String[] downloadPath = new String[count];
 	    	for (int i = 0; i < url.length; i++) {
-				status[i] = DVRClient.downloadFileFromURL(url[i], os);
+				status[i] = DVRClient.downloadFileFromURL(url[i], os, mOnProgressChange, i, count);
 	    		//TODO get Actual path 
 				downloadPath[i] = url[i];
-	    		if (status[i]) {
+	    		if (!status[i]) {
 	    			isSuccess = false;
 	    		}
 	    	}

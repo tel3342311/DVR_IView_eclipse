@@ -180,6 +180,7 @@ public class Def {
     public final static String ACTION_SAVE_TO_PHONE_STATUS = "com.liteon.iView.service.action.SAVE_TO_PHONE_STATUS";
     public final static String ACTION_SAVE_TO_OTG_STATUS = "com.liteon.iView.service.action.SAVE_TO_OTG_STATUS";
     public static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
+    public static final String ACTION_SAVE_TO_PROGRESS = "com.android.example.SAVE_TO_PROGRESS";
 
     //Key for Intent extra
     public final static String EXTRA_GET_ALL_INFO = "com.liteon.iView.service.extra.GET_ALL_INFO";
@@ -210,6 +211,9 @@ public class Def {
     public final static String EXTRA_SAVE_STATUS = "com.liteon.iView.extra.saveStatus";
     public final static String EXTRA_SAVE_STATUS_ARY = "com.liteon.iView.extra.saveStatusAry";
     public final static String EXTRA_SAVE_STATUS_FILE_PATH = "com.liteon.iView.extra.FILE_PATH";
+    public final static String EXTRA_SAVE_TO_PROGRESS = "com.liteon.iView.extra.SAVE_TO_PROGRESS";
+    public final static String EXTRA_SAVE_TO_IDX = "com.liteon.iView.extra.SAVE_TO_IDX";
+    public final static String EXTRA_SAVE_TO_COUNT = "com.liteon.iView.extra.SAVE_TO_COUNT";
     //Key for sharePreference
     public final static String SHARE_PREFERENCE = "com.liteon.iView.PREFERENCE_FILE_KEY";
     public final static String SP_SSID = "SP_SSID";

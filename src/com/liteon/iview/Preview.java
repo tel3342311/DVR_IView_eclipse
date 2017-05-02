@@ -1,10 +1,18 @@
 package com.liteon.iview;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import com.camera.simplemjpeg.MjpegInputStream;
+import com.camera.simplemjpeg.MjpegView;
+import com.liteon.iview.service.DvrInfoService;
+import com.liteon.iview.util.Def;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -15,8 +23,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.text.TextUtils;
@@ -27,11 +38,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.camera.simplemjpeg.MjpegInputStream;
-import com.camera.simplemjpeg.MjpegView;
-import com.liteon.iview.service.DvrInfoService;
-import com.liteon.iview.util.Def;
 
 public class Preview extends Activity {
 
@@ -222,16 +228,13 @@ public class Preview extends Activity {
 
         @Override
         public void onClick(View v) {
+        	
             new Thread() {
                 @Override
                 public void run() {
                     super.run();
+                    String uri = saveImageToGallery(Preview.this, snapShot());
                     ContentResolver cr = getContentResolver();
-                    String uri = MediaStore.Images.Media.insertImage(cr, snapShot(), "", "" );
-                    Log.d(TAG, "The URI of insert image is " + uri);
-                    if (uri == null) {
-                        return ;
-                    }
                     long id = ContentUris.parseId(android.net.Uri.parse(uri));
                     final Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
                     runOnUiThread(new Runnable() {
@@ -377,5 +380,37 @@ public class Preview extends Activity {
  		}
  	};
  	
+ 	public static String saveImageToGallery(Context context, Bitmap bmp) {
+ 	    
+ 		String uri = "";
+        // Get the directory for the user's public pictures directory.
+        File appDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS), context.getString(R.string.app_name));
+
+ 	    if (!appDir.exists()) {
+ 	    	appDir.mkdir();
+ 	    }
+ 	    String fileName = System.currentTimeMillis() + ".jpg";
+ 	    File file = new File(appDir, fileName);
+ 	    try {
+ 	        FileOutputStream fos = new FileOutputStream(file);
+ 	        bmp.compress(CompressFormat.JPEG, 100, fos);
+ 	        fos.flush();
+ 	        fos.close();
+ 	    } catch (FileNotFoundException e) {
+ 	        e.printStackTrace();
+ 	    } catch (IOException e) {
+ 	        e.printStackTrace();
+ 		}
+ 	    
+ 	    try {
+ 	    	uri = MediaStore.Images.Media.insertImage(context.getContentResolver(),
+ 					file.getAbsolutePath(), fileName, null);
+ 	    } catch (FileNotFoundException e) {
+ 	        e.printStackTrace();
+ 	    }
+ 	    context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + file.getAbsolutePath())));
+ 	    return uri;
+ 	}
  	
 }
