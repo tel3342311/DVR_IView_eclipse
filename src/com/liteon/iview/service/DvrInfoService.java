@@ -10,6 +10,7 @@ import java.util.Map;
 import com.github.mjdev.libaums.UsbMassStorageDevice;
 import com.github.mjdev.libaums.fs.FileSystem;
 import com.github.mjdev.libaums.fs.UsbFile;
+import com.github.mjdev.libaums.fs.UsbFileOutputStream;
 import com.github.mjdev.libaums.fs.UsbFileStreamFactory;
 import com.liteon.iview.R;
 import com.liteon.iview.util.DVRClient;
@@ -83,15 +84,24 @@ public class DvrInfoService extends IntentService {
                 String passPhase =intent.getStringExtra(Def.EXTRA_PASSPHASE);
                 handleActionSetWifi(ssid,securityMode,encryptType,passPhase);
             } else if (Def.ACTION_SAVE_TO_PHONE.equals(action)) {
-            	String[] url = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_URL);
-            	String[] id = intent.getStringArrayExtra(Def.EXTRA_VIDEO_ITEM_ID);
-            	String[] name = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_NAME);
-            	handleActionSaveToPhone(url, id, name);
+            	final String[] url = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_URL);
+            	final String[] id = intent.getStringArrayExtra(Def.EXTRA_VIDEO_ITEM_ID);
+            	final String[] name = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_NAME);
+            	new Thread() {
+            		public void run() {
+                    	handleActionSaveToPhone(url, id, name);
+            		};
+            	
+            	}.start();
             } else if (Def.ACTION_SAVE_TO_OTG.equals(action)) {
-            	String[] url = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_URL);
-            	String[] id = intent.getStringArrayExtra(Def.EXTRA_VIDEO_ITEM_ID);
-            	String[] name = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_NAME);
-            	handleActionSaveToOTG(url, id, name);
+            	final String[] url = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_URL);
+            	final String[] id = intent.getStringArrayExtra(Def.EXTRA_VIDEO_ITEM_ID);
+            	final String[] name = intent.getStringArrayExtra(Def.EXTRA_SAVE_ITEM_NAME);
+            	new Thread() {
+            		public void run() {
+                    	handleActionSaveToOTG(url, id, name);
+            		};
+            	}.start();
             }
         }
     }
@@ -157,39 +167,43 @@ public class DvrInfoService extends IntentService {
 				device.init();
 	    		FileSystem currentFs = device.getPartitions().get(0).getFileSystem();
 	    		UsbFile root = currentFs.getRootDirectory();
-	    		UsbFile newDir = root.createDirectory(getString(R.string.app_name));
-	    		UsbFile file = newDir.createFile(name[0]);
-	    		//os = new UsbFileOutputStream(file);
-	    		os = UsbFileStreamFactory.createBufferedOutputStream(file, currentFs);
+	    		UsbFile downloadDir = root.search(getString(R.string.app_name));
+	    		if (downloadDir == null) {
+	    			downloadDir = root.createDirectory(getString(R.string.app_name));
+	    		}
+		    	int count = url.length;
+		    	boolean isSuccess = true;
+		    	boolean[] status = new boolean[count];
+		    	String[] downloadPath = new String[count];
+		    	for (int i = 0; i < url.length; i++) {
+		    		UsbFile file = downloadDir.search(name[i]);
+		    		if ( file == null) {
+		    			file = downloadDir.createFile(name[i]);
+		    		}
+		    		os = UsbFileStreamFactory.createBufferedOutputStream(file, currentFs);
+					status[i] = DVRClient.downloadFileFromURL(url[i], os, mOnProgressChange, i, count);
+		    		//TODO get Actual path 
+					downloadPath[i] = url[i];
+		    		if (!status[i]) {
+		    			isSuccess = false;
+		    		}
+		    	}
+		    	device.close();
+		    	intent.putExtra(Def.EXTRA_SAVE_STATUS_ARY, status);
+		    	intent.putExtra(Def.EXTRA_SAVE_STATUS_FILE_PATH, downloadPath);
+		    	intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, id);
+		    	if (isSuccess) {
+		    		intent.putExtra(Def.EXTRA_SAVE_STATUS, true);
+		    		sendBroadcast(intent);
+		    	} else {
+		    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
+		    		sendBroadcast(intent);
+		    	}
 			} catch (IOException e) {
 				e.printStackTrace();
 				intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
 	    		sendBroadcast(intent);
 			}
-
-	    	int count = url.length;
-	    	boolean isSuccess = true;
-	    	boolean[] status = new boolean[count];
-	    	String[] downloadPath = new String[count];
-	    	for (int i = 0; i < url.length; i++) {
-				status[i] = DVRClient.downloadFileFromURL(url[i], os, mOnProgressChange, i, count);
-	    		//TODO get Actual path 
-				downloadPath[i] = url[i];
-	    		if (!status[i]) {
-	    			isSuccess = false;
-	    		}
-	    	}
-	    	device.close();
-	    	intent.putExtra(Def.EXTRA_SAVE_STATUS_ARY, status);
-	    	intent.putExtra(Def.EXTRA_SAVE_STATUS_FILE_PATH, downloadPath);
-	    	intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, id);
-	    	if (isSuccess) {
-	    		intent.putExtra(Def.EXTRA_SAVE_STATUS, true);
-	    		sendBroadcast(intent);
-	    	} else {
-	    		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
-	    		sendBroadcast(intent);
-	    	}
     	}
 	}
     
@@ -208,9 +222,6 @@ public class DvrInfoService extends IntentService {
             isLocalUrlReachable = false;
     	}
         sendBroadcast(intent);
-       
-
-
         if (isLocalUrlReachable) {
         	
             SharedPreferences SharedPref = getApplicationContext().getSharedPreferences(
@@ -233,7 +244,6 @@ public class DvrInfoService extends IntentService {
 	    	dvrClient.getNetworkSetting();
 	    	dvrClient.getInfoFromADMPage();
         }
-
     }
 	
     private void NotifyRecordingListChange() {

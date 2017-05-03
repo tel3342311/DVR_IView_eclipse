@@ -58,6 +58,7 @@ public class Preview extends Activity {
 	private ImageView mCamera2;
 	private View mCameraloadingIndicator;
 	private View mMenuLoadingIndicator;
+	private Uri mCurrentSnapShotUri;
 	
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -153,6 +154,7 @@ public class Preview extends Activity {
 
         mv.setOnClickListener(mOnClickListener);
         mSnapshot.setOnClickListener(mOnSnapshotClickListener);
+        mThumbnail.setOnClickListener(mOnThumbnailClickListener);
         mRecordings.setOnClickListener(mOnRecordingsClickListener);
         mSettings.setOnClickListener(mOnSettingsClickListener);
         mCamera1.setOnClickListener(mOnCameraClickListener);
@@ -235,7 +237,8 @@ public class Preview extends Activity {
                     super.run();
                     String uri = saveImageToGallery(Preview.this, snapShot());
                     ContentResolver cr = getContentResolver();
-                    long id = ContentUris.parseId(android.net.Uri.parse(uri));
+                    mCurrentSnapShotUri = Uri.parse(uri);
+                    long id = ContentUris.parseId(mCurrentSnapShotUri);
                     final Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
                     runOnUiThread(new Runnable() {
                         @Override
@@ -247,6 +250,14 @@ public class Preview extends Activity {
                 }
             }.start();
         }
+    };
+    
+    private View.OnClickListener mOnThumbnailClickListener = new View.OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+			startActivity(new Intent(Intent.ACTION_VIEW, mCurrentSnapShotUri));
+		}
     };
     
     private View.OnClickListener mOnCameraClickListener = new View.OnClickListener() {
