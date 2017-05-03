@@ -10,16 +10,20 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.ExtractorMediaSource.EventListener;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
@@ -61,6 +65,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -189,6 +194,13 @@ public class VideoPlay extends Activity {
             }
         }
     };
+	private EventListener mediaSourceListener = new EventListener() {
+
+		@Override
+		public void onLoadError(IOException e) {
+			Log.d(TAG, "load error :" + e.getMessage());
+		}
+	};
     
 	private void setListeners() {
 		mPreview.setOnClickListener(mOnPreviewClickListener);
@@ -208,47 +220,23 @@ public class VideoPlay extends Activity {
 	}
 	
 	private void initializePlayer() {
-	    Intent intent = getIntent();
-	    boolean needNewPlayer = player == null;
-	    if (needNewPlayer) {
-	      boolean preferExtensionDecoders = false;
-	      
+		DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+		DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(getApplicationContext(), Util.getUserAgent(this, "iView"));
 
-	      int extensionRendererMode = 0;
-	      DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this,
-	          null, extensionRendererMode);
+		TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
+		DefaultTrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
+		LoadControl loadControl = new DefaultLoadControl();
 
-	      TrackSelection.Factory videoTrackSelectionFactory =
-	          new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
-	      trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-
-	      eventLogger = new EventLogger(trackSelector);
-	      player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
-	      player.addListener(eventLogger);
-	      player.setAudioDebugListener(eventLogger);
-	      player.setVideoDebugListener(eventLogger);
-	      player.setMetadataOutput(eventLogger);
-	      player.setPlayWhenReady(shouldAutoPlay);
-	      //debugViewHelper = new DebugTextViewHelper(player, debugTextView);
-	      //debugViewHelper.start();
-	    }
-	    if (needNewPlayer || needRetrySource) {
-	      Uri[] uris;
-	      uris = new Uri[mDataList.size()];
-	        for (int i = 0; i < mDataList.size(); i++) {
-	          uris[i] = Uri.parse(mDataList.get(i).getUrl());
-	      }
-	      MediaSource[] mediaSources = new MediaSource[mDataList.size()];
-	      for (int i = 0; i < uris.length; i++) {
-	        mediaSources[i] = buildMediaSource(Uri.parse(mp4URL));
-	      }
-	      MediaSource mediaSource = mediaSources.length == 1 ? mediaSources[0]
-	          : new ConcatenatingMediaSource(mediaSources);
-
-	      player.prepare(mediaSource, true, false);
-	      needRetrySource = false;
-	      //updateButtonVisibilities();
-	    }
+		SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(getApplicationContext(), trackSelector, loadControl);
+		player.setVideoSurfaceView(mVideoView);
+		ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+		Uri uri = Uri.parse(mDataList.get(0).getUrl());
+		mainHandler = new Handler(Looper.getMainLooper());
+		MediaSource mediaSource = new ExtractorMediaSource(uri, dataSourceFactory, extractorsFactory, mainHandler, mediaSourceListener); 
+		
+		player.prepare(mediaSource);
+		player.setPlayWhenReady(true);
+		player.addListener(mEventListener); 
 	}
 	
 	private void releasePlayer() {
