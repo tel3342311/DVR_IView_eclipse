@@ -127,7 +127,7 @@ public class DvrInfoService extends IntentService {
     	for (int i = 0; i < url.length; i++) {
     		File file = new File(path, name[i]);
     		try {
-				status[i] = DVRClient.downloadFileFromURL(url[i], new FileOutputStream(file), mOnProgressChange, i, count);
+				status[i] = DVRClient.downloadFileFromURL(url[i], new FileOutputStream(file), mOnProgressChange, i + 1, count);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -181,7 +181,7 @@ public class DvrInfoService extends IntentService {
 		    			file = downloadDir.createFile(name[i]);
 		    		}
 		    		os = UsbFileStreamFactory.createBufferedOutputStream(file, currentFs);
-					status[i] = DVRClient.downloadFileFromURL(url[i], os, mOnProgressChange, i, count);
+					status[i] = DVRClient.downloadFileFromURL(url[i], os, mOnProgressChange, i + 1, count);
 		    		//TODO get Actual path 
 					downloadPath[i] = url[i];
 		    		if (!status[i]) {

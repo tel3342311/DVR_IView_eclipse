@@ -10,38 +10,11 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.DefaultRenderersFactory;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.LoadControl;
-import com.google.android.exoplayer2.PlaybackParameters;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.extractor.ExtractorsFactory;
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.ExtractorMediaSource.EventListener;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
-import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.google.android.exoplayer2.util.Util;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
-import com.liteon.iview.util.EventLogger;
 import com.liteon.iview.util.RecordingItem;
 import com.liteon.iview.util.StatusDialog;
 import com.liteon.iview.util.UsbUtil;
@@ -61,16 +34,15 @@ import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -81,6 +53,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 public class VideoPlay extends Activity {
 
@@ -94,6 +67,7 @@ public class VideoPlay extends Activity {
     private View mSaveToPhone;
     private View mSaveToOTG;
     private View mDelete;
+    private VideoView mVideoView;
     private ViewGroup mViewControlGroup;
     private ImageView mPause;
     private ImageView mRewind;
@@ -113,23 +87,6 @@ public class VideoPlay extends Activity {
     private View mProgressView;
     private UsbManager mUsbManager;
     private PendingIntent mPermissionIntent;
-    private SurfaceView mVideoView;
-    private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
-    private DefaultTrackSelector trackSelector;
-    private EventLogger eventLogger;
-    private SimpleExoPlayer player;
-    private boolean shouldAutoPlay;
-    private boolean needRetrySource;
-    private DataSource.Factory mediaDataSourceFactory;
-    private Handler mainHandler;
-    
-    private int RENDERER_COUNT = 300000;
-    private int minBufferMs =    250000;
-
-    private final int BUFFER_SEGMENT_SIZE = 64 * 1024;
-    private final int BUFFER_SEGMENT_COUNT = 256;
-    
-    private String mp4URL = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -139,8 +96,6 @@ public class VideoPlay extends Activity {
 		setListeners();
 		mHandlerTime = new Handler();
 		mDataList = new ArrayList<RecordingItem>();
-		mainHandler = new Handler();
-		shouldAutoPlay = true;
 	}
 	
 	private void registerOTGEvent() {
@@ -194,13 +149,6 @@ public class VideoPlay extends Activity {
             }
         }
     };
-	private EventListener mediaSourceListener = new EventListener() {
-
-		@Override
-		public void onLoadError(IOException e) {
-			Log.d(TAG, "load error :" + e.getMessage());
-		}
-	};
     
 	private void setListeners() {
 		mPreview.setOnClickListener(mOnPreviewClickListener);
@@ -210,7 +158,6 @@ public class VideoPlay extends Activity {
 		mBackToRecords.setOnClickListener(mOnBackClickListener);
 		//video controls
         mVideoView.setOnTouchListener(mOnVideoViewTouchListener);
-        mVideoView.requestFocus();
         mPause.setOnClickListener(mOnPlayPauseClickListener);
         mRewind.setOnClickListener(mOnRewindClickListener);
         mForward.setOnClickListener(mOnForwardClickListener);
@@ -218,46 +165,7 @@ public class VideoPlay extends Activity {
         mSeekBar.setOnSeekBarChangeListener(mSeekBarChangeListener);
 
 	}
-	
-	private void initializePlayer() {
-		DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-		DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(getApplicationContext(), Util.getUserAgent(this, "iView"));
 
-		TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
-		DefaultTrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-		LoadControl loadControl = new DefaultLoadControl();
-
-		player = ExoPlayerFactory.newSimpleInstance(getApplicationContext(), trackSelector);
-		player.setVideoSurfaceView(mVideoView);
-		ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
-		Uri uri = Uri.parse(getCurrentVideoItem().getUrl());
-		//Uri uri = Uri.parse(mp4URL);
-		mainHandler = new Handler(Looper.getMainLooper());
-		MediaSource mediaSource = new ExtractorMediaSource(uri, dataSourceFactory, extractorsFactory, mainHandler, mediaSourceListener); 
-		
-		player.prepare(mediaSource);
-		player.setPlayWhenReady(true);
-		player.addListener(mEventListener); 
-	}
-	
-	private void releasePlayer() {
-	    if (player != null) {
-//	      debugViewHelper.stop();
-//	      debugViewHelper = null;
-	      shouldAutoPlay = player.getPlayWhenReady();
-	      //updateResumePosition();
-	      player.release();
-	      player = null;
-	      trackSelector = null;
-	      //trackSelectionHelper = null;
-	      eventLogger = null;
-	    }
-	}
-	
-	private MediaSource buildMediaSource(Uri uri) {
-		return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(),
-	            mainHandler, eventLogger);
-	}
 	
     private View.OnTouchListener mOnVideoViewTouchListener = new View.OnTouchListener() {
 
@@ -284,11 +192,11 @@ public class VideoPlay extends Activity {
         @Override
         public void onClick(View v) {
         	mHandlerTime.removeCallbacks(HideUIControl);
-//            if (mVideoView.isPlaying()) {
-//                mVideoView.pause();
-//            } else {
-//                mVideoView.start();
-//            }
+            if (mVideoView.isPlaying()) {
+                mVideoView.pause();
+            } else {
+                mVideoView.start();
+            }
             mHandlerTime.postDelayed(HideUIControl, 1500);
         }
     };
@@ -318,7 +226,7 @@ public class VideoPlay extends Activity {
             if (fromUser) {
                 stopUITimer();
                 int position = mDuration * progress / 100;
-                //mVideoView.seekTo(position);
+                mVideoView.seekTo(position);
                 updateUI();
                 startUITimer();
             }
@@ -382,7 +290,7 @@ public class VideoPlay extends Activity {
         mTitleView = (TextView) findViewById(R.id.toolbar_title);
         mProgressView = findViewById(R.id.progress_view);
         //video controls
-        mVideoView = (SurfaceView) findViewById(R.id.video_view);
+        mVideoView = (VideoView) findViewById(R.id.video_view);
         mViewControlGroup = (ViewGroup) findViewById(R.id.video_control);
         mPause = (ImageView) findViewById(R.id.play_pause);
         mRewind = (ImageView) findViewById(R.id.rewind);
@@ -419,9 +327,9 @@ public class VideoPlay extends Activity {
 		@Override
 		public void onClick(View v) {
 			mProgressView.setVisibility(View.VISIBLE);
-//            if (mVideoView.isPlaying()) {
-//                mVideoView.pause();
-//            }
+            if (mVideoView.isPlaying()) {
+                mVideoView.pause();
+            }
 			RecordingItem item = getCurrentVideoItem();
 			Intent intent = new Intent();
 			intent.setAction(Def.ACTION_SAVE_TO_OTG);
@@ -437,9 +345,9 @@ public class VideoPlay extends Activity {
 		@Override
 		public void onClick(View v) {
 			mProgressView.setVisibility(View.VISIBLE);
-//            if (mVideoView.isPlaying()) {
-//                mVideoView.pause();
-//            }
+            if (mVideoView.isPlaying()) {
+                mVideoView.pause();
+            }
 			RecordingItem item = getCurrentVideoItem();
 			Intent intent = new Intent();
 			intent.setAction(Def.ACTION_SAVE_TO_PHONE);
@@ -469,7 +377,7 @@ public class VideoPlay extends Activity {
     }
 
     private void setDuration(){
-        //mDuration = mVideoView.getDuration();
+        mDuration = mVideoView.getDuration();
         mVideoEndTime.setText(getProgressString(mDuration));
     }
 
@@ -481,9 +389,9 @@ public class VideoPlay extends Activity {
     }
 
     private void updateUI() {
-        //int current = mVideoView.getCurrentPosition();
-        //int progress = current * 100 / mDuration;
-        //mSeekBar.setProgress(progress);
+        int current = mVideoView.getCurrentPosition();
+        int progress = current * 100 / mDuration;
+        mSeekBar.setProgress(progress);
         //mVideoStartTime.setText(getProgressString(current));
     }
 
@@ -492,28 +400,28 @@ public class VideoPlay extends Activity {
         RecordingItem item = getCurrentVideoItem();
         Uri uri = Uri.parse(item.getUrl());
         //Uri uri = Uri.parse("android.resource://"+getActivity().getPackageName()+"/"+R.raw.rtrs);
-//        mVideoView.setVideoURI(uri);
-//        mVideoView.start();
-//        mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-//
-//            @Override
-//            public void onPrepared(MediaPlayer mp) {
-//                setDuration();
-//                startUITimer();
-//                mProgressView.setVisibility(View.GONE);
-//            }
-//        });
+        mVideoView.setVideoURI(uri);
+        mVideoView.start();
+        mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
 
-//        mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-//
-//            @Override
-//            public void onCompletion(MediaPlayer mp) {
-//                isComplete = true;
-//                mSeekBar.setProgress(100);
-//                stopUITimer();
-//            }
-//
-//        });
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                setDuration();
+                startUITimer();
+                mProgressView.setVisibility(View.GONE);
+            }
+        });
+
+        mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                isComplete = true;
+                mSeekBar.setProgress(100);
+                stopUITimer();
+            }
+
+        });
     }
 
     private void stopUITimer() {
@@ -606,7 +514,6 @@ public class VideoPlay extends Activity {
         intentFilter.addAction(Def.ACTION_SAVE_TO_PROGRESS);
         registerReceiver(mBroadcastReceiver, intentFilter);
 		registerOTGEvent();
-		initializePlayer();
 	}
 
     @Override
@@ -621,7 +528,6 @@ public class VideoPlay extends Activity {
         super.onPause();
         unregisterReceiver(mBroadcastReceiver);
         unregisterOTGEvent();
-        releasePlayer();
     }
     private void setMenuVisible(boolean show) {
     	if (show) {
@@ -784,63 +690,5 @@ public class VideoPlay extends Activity {
  	    }
  	    context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + file.getAbsolutePath())));
  	    return uri;
- 	}
- 	
- 	private ExoPlayer.EventListener mEventListener = new ExoPlayer.EventListener() {
-
-		@Override
-		public void onLoadingChanged(boolean arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void onPlaybackParametersChanged(PlaybackParameters arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void onPlayerError(ExoPlaybackException arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void onPlayerStateChanged(boolean arg0, int arg1) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void onPositionDiscontinuity() {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void onTimelineChanged(Timeline arg0, Object arg1) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void onTracksChanged(TrackGroupArray arg0, TrackSelectionArray arg1) {
-			// TODO Auto-generated method stub
-			
-		}
- 		
- 	};
- 	
- 	private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
- 		    
- 		   return new DefaultDataSourceFactory(this, BANDWIDTH_METER,
- 			        buildHttpDataSourceFactory(BANDWIDTH_METER));
- 	}
- 	
- 	public HttpDataSource.Factory buildHttpDataSourceFactory(DefaultBandwidthMeter bandwidthMeter) {
- 		
- 		return new DefaultHttpDataSourceFactory(Util.getUserAgent(this, "iView"), bandwidthMeter);
- 	
  	}
 }

@@ -23,6 +23,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -35,6 +36,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
+import junit.runner.Version;
 
 public class Records extends Activity {
 
@@ -310,7 +312,11 @@ public class Records extends Activity {
 			resetSelectState();
 			Intent intent = new Intent();
 			intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, position);
-			intent.setClass(getApplicationContext(), VideoPlay.class);
+			if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
+				intent.setClass(getApplicationContext(), VideoPlayEX.class);
+			} else {
+				intent.setClass(getApplicationContext(), VideoPlay.class);
+			}
 			startActivity(intent);
 		}
 		
