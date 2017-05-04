@@ -82,9 +82,9 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class VideoPlay extends Activity {
+public class VideoPlayEX extends Activity {
 
-	private final static String TAG = VideoPlay.class.getName();
+	private final static String TAG = VideoPlayEX.class.getName();
     private View mToolbar;
     private View mBottomBar;
     private ImageView mRecordings;
@@ -134,7 +134,7 @@ public class VideoPlay extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_video_play);
+		setContentView(R.layout.activity_video_play_ex);
 		findViews();
 		setListeners();
 		mHandlerTime = new Handler();
@@ -342,7 +342,7 @@ public class VideoPlay extends Activity {
                 @Override
                 public void run() {
                     super.run();
-                    String uri = saveImageToGallery(VideoPlay.this, snapShot());
+                    String uri = saveImageToGallery(VideoPlayEX.this, snapShot());
                     ContentResolver cr = getContentResolver();
                     long id = ContentUris.parseId(android.net.Uri.parse(uri));
                     final Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
@@ -710,9 +710,9 @@ public class VideoPlay extends Activity {
 				int idx = intent.getIntExtra(Def.EXTRA_SAVE_TO_IDX, 1);
 				int count = intent.getIntExtra(Def.EXTRA_SAVE_TO_COUNT, 1);
 				if (count == 1) {
-					Toast.makeText(VideoPlay.this, "Download Progress is "+progress + "%", Toast.LENGTH_LONG).show();
+					Toast.makeText(VideoPlayEX.this, "Download Progress is "+progress + "%", Toast.LENGTH_LONG).show();
 				} else if (count > 1) {
-					Toast.makeText(VideoPlay.this, "Download Progress is "+progress + "% (" + idx + "/" + count + ")", Toast.LENGTH_LONG).show();
+					Toast.makeText(VideoPlayEX.this, "Download Progress is "+progress + "% (" + idx + "/" + count + ")", Toast.LENGTH_LONG).show();
 				}
 			}
 			if (TextUtils.equals(action, Def.ACTION_SAVE_TO_PHONE_STATUS)) {
@@ -744,11 +744,11 @@ public class VideoPlay extends Activity {
     	StatusDialog dialog;
 		if (isSuccess) {
 			if (isSaveToPhone)
-				dialog = new StatusDialog(VideoPlay.this, "Save it to Phone", isSuccess);
+				dialog = new StatusDialog(VideoPlayEX.this, "Save it to Phone", isSuccess);
 			else 
-				dialog = new StatusDialog(VideoPlay.this, "Save it to OTG", isSuccess);
+				dialog = new StatusDialog(VideoPlayEX.this, "Save it to OTG", isSuccess);
 		} else {
-			dialog = new StatusDialog(VideoPlay.this, "Save Failed!", isSuccess);
+			dialog = new StatusDialog(VideoPlayEX.this, "Save Failed!", isSuccess);
 		}
 		dialog.show();
     }
