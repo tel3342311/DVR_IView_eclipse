@@ -59,6 +59,7 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
+import android.graphics.SurfaceTexture;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.media.session.PlaybackState;
@@ -71,7 +72,9 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -114,7 +117,7 @@ public class VideoPlayEX extends Activity {
     private View mProgressView;
     private UsbManager mUsbManager;
     private PendingIntent mPermissionIntent;
-    private SurfaceView mVideoView;
+    private TextureView mVideoView;
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
     private DefaultTrackSelector trackSelector;
     private EventLogger eventLogger;
@@ -124,6 +127,8 @@ public class VideoPlayEX extends Activity {
     private DataSource.Factory mediaDataSourceFactory;
     private Handler mainHandler;
     private int mWindowIndex = 0;
+    private Surface mSurface;
+	private Uri mCurrentSnapShotUri;
     //debug test url
     private String mp4URL = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
     
@@ -205,11 +210,13 @@ public class VideoPlayEX extends Activity {
 		mSaveToPhone.setOnClickListener(mOnSaveToPhoneClickListener);
 		mBackToRecords.setOnClickListener(mOnBackClickListener);
 		//video controls
+		mVideoView.setSurfaceTextureListener(mSurfaceTextureListener);
         mVideoView.setOnTouchListener(mOnVideoViewTouchListener);
         mVideoView.requestFocus();
         mPause.setOnClickListener(mOnPlayPauseClickListener);
         mRewind.setOnClickListener(mOnRewindClickListener);
         mForward.setOnClickListener(mOnForwardClickListener);
+        mThumbnail.setOnClickListener(mOnThumbnailClickListener);
         mSnapshot.setOnClickListener(mOnSnapShotClickListener);
         mSeekBar.setOnSeekBarChangeListener(mSeekBarChangeListener);
 
@@ -223,7 +230,7 @@ public class VideoPlayEX extends Activity {
 		DefaultTrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
 		//LoadControl loadControl = new DefaultLoadControl();
 		player = ExoPlayerFactory.newSimpleInstance(getApplicationContext(), trackSelector);
-		player.setVideoSurfaceView(mVideoView);
+		//player.setVideoSurfaceView(mVideoView);
 		ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
 		//Uri uri = Uri.parse(mp4URL);
 		mainHandler = new Handler(Looper.getMainLooper());
@@ -360,10 +367,7 @@ public class VideoPlayEX extends Activity {
     };
     
     private Bitmap snapShot() {
-    	Bitmap bitmap = Bitmap.createBitmap(mVideoView.getWidth(),
-    			mVideoView.getHeight(), Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        mVideoView.draw(canvas);
+    	Bitmap bitmap = mVideoView.getBitmap();
         return bitmap;
     }
 
@@ -383,7 +387,7 @@ public class VideoPlayEX extends Activity {
         mTitleView = (TextView) findViewById(R.id.toolbar_title);
         mProgressView = findViewById(R.id.progress_view);
         //video controls
-        mVideoView = (SurfaceView) findViewById(R.id.video_view);
+        mVideoView = (TextureView) findViewById(R.id.video_view);
         mViewControlGroup = (ViewGroup) findViewById(R.id.video_control);
         mPause = (ImageView) findViewById(R.id.play_pause);
         mRewind = (ImageView) findViewById(R.id.rewind);
@@ -827,4 +831,42 @@ public class VideoPlayEX extends Activity {
  		return new DefaultHttpDataSourceFactory(Util.getUserAgent(this, "iView"), bandwidthMeter);
  	
  	}
+ 	
+ 	private TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener( ) {
+
+		@Override
+		public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
+			mSurface = new Surface(surfaceTexture);
+			if (player != null) {
+				player.setVideoSurface(mSurface);
+			}
+		}
+
+		@Override
+		public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+			mSurface.release();
+			return true;
+		}
+
+		@Override
+		public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+			// TODO Auto-generated method stub
+			
+		}
+ 		
+ 	};
+ 	
+    private View.OnClickListener mOnThumbnailClickListener = new View.OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+			startActivity(new Intent(Intent.ACTION_VIEW, mCurrentSnapShotUri));
+		}
+    };
 }
