@@ -246,6 +246,9 @@ public class VideoPlayEX extends Activity {
 		player.seekTo(mWindowIndex, 0);
 		player.setPlayWhenReady(true);
 		player.addListener(mEventListener); 
+		if (mSurface != null) { 
+			player.setVideoSurface(mSurface);
+		}
 	}
 	
 	private void releasePlayer() {
