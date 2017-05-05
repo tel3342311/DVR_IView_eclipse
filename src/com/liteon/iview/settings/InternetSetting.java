@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -77,6 +78,7 @@ public class InternetSetting extends Fragment {
         mNumPicker.setMaxValue(mModemList.size() - 1);
         mNumPicker.setDisplayedValues(mModemList.keySet().toArray(new String[0]));
         mNumPicker.setWrapSelectorWheel(false);
+        mNumPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         mNumPicker.setOnValueChangedListener(mOnValueChangeListener);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         layoutParams.gravity = Gravity.CENTER;

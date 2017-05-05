@@ -29,6 +29,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -110,6 +111,9 @@ public class Records extends Activity {
 		mDataList = new ArrayList<RecordingItem>();
 		mVideoItemAdapter.setDataList(mDataList);
 		mVideoItemAdapter.setUiHandler(mHandler);
+		View footerView = ((LayoutInflater)(getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE))).inflate(R.layout.video_item_footer, null, false);
+		//Call this before calling setAdapter
+		mListView.addFooterView(footerView);
 		mListView.setAdapter(mVideoItemAdapter);
 	}
 	
