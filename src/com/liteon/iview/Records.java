@@ -316,11 +316,11 @@ public class Records extends Activity {
 			resetSelectState();
 			Intent intent = new Intent();
 			intent.putExtra(Def.EXTRA_VIDEO_ITEM_ID, position);
-			if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
+//			if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
 				intent.setClass(getApplicationContext(), VideoPlayEX.class);
-			} else {
-				intent.setClass(getApplicationContext(), VideoPlay.class);
-			}
+//			} else {
+//				intent.setClass(getApplicationContext(), VideoPlay.class);
+//			}
 			startActivity(intent);
 		}
 		

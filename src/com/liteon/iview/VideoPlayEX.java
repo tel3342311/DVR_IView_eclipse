@@ -61,6 +61,7 @@ import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -102,7 +103,7 @@ public class VideoPlayEX extends Activity {
     private ImageView mThumbnail;
     private SeekBar   mSeekBar;
     private TextView  mVideoEndTime;
-    private int mDuration;
+    private long mDuration;
     private Timer mUpdateUITimer;
     private boolean isComplete;
     private List<RecordingItem> mDataList;
@@ -122,13 +123,8 @@ public class VideoPlayEX extends Activity {
     private boolean needRetrySource;
     private DataSource.Factory mediaDataSourceFactory;
     private Handler mainHandler;
-    
-    private int RENDERER_COUNT = 300000;
-    private int minBufferMs =    250000;
-
-    private final int BUFFER_SEGMENT_SIZE = 64 * 1024;
-    private final int BUFFER_SEGMENT_COUNT = 256;
-    
+    private int mWindowIndex = 0;
+    //debug test url
     private String mp4URL = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
     
 	@Override
@@ -225,17 +221,22 @@ public class VideoPlayEX extends Activity {
 
 		TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
 		DefaultTrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-		LoadControl loadControl = new DefaultLoadControl();
-
+		//LoadControl loadControl = new DefaultLoadControl();
 		player = ExoPlayerFactory.newSimpleInstance(getApplicationContext(), trackSelector);
 		player.setVideoSurfaceView(mVideoView);
 		ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
-		Uri uri = Uri.parse(getCurrentVideoItem().getUrl());
 		//Uri uri = Uri.parse(mp4URL);
 		mainHandler = new Handler(Looper.getMainLooper());
-		MediaSource mediaSource = new ExtractorMediaSource(uri, dataSourceFactory, extractorsFactory, mainHandler, mediaSourceListener); 
+	    MediaSource[] mediaSources = new MediaSource[mDataList.size()];
+	    mWindowIndex = mDataList.indexOf(getCurrentVideoItem());
+
+	    for (int i = 0; i < mDataList.size(); i++) {
+	    	mediaSources[i] = new ExtractorMediaSource(Uri.parse(mDataList.get(i).getUrl()), dataSourceFactory, extractorsFactory, mainHandler, mediaSourceListener); 
+	    }
+	    MediaSource mediaSource = new ConcatenatingMediaSource(mediaSources);
 		
 		player.prepare(mediaSource);
+		player.seekTo(mWindowIndex, 0);
 		player.setPlayWhenReady(true);
 		player.addListener(mEventListener); 
 	}
@@ -244,12 +245,12 @@ public class VideoPlayEX extends Activity {
 	    if (player != null) {
 //	      debugViewHelper.stop();
 //	      debugViewHelper = null;
+	      stopUITimer();
 	      shouldAutoPlay = player.getPlayWhenReady();
 	      //updateResumePosition();
 	      player.release();
 	      player = null;
 	      trackSelector = null;
-	      //trackSelectionHelper = null;
 	      eventLogger = null;
 	    }
 	}
@@ -284,11 +285,13 @@ public class VideoPlayEX extends Activity {
         @Override
         public void onClick(View v) {
         	mHandlerTime.removeCallbacks(HideUIControl);
-//            if (mVideoView.isPlaying()) {
-//                mVideoView.pause();
-//            } else {
-//                mVideoView.start();
-//            }
+        	if (player.getPlayWhenReady()) {
+        		player.setPlayWhenReady(false);
+        		stopUITimer();
+        	} else {
+        		player.setPlayWhenReady(true);
+        		startUITimer();
+            }
             mHandlerTime.postDelayed(HideUIControl, 1500);
         }
     };
@@ -315,13 +318,7 @@ public class VideoPlayEX extends Activity {
 
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            if (fromUser) {
-                stopUITimer();
-                int position = mDuration * progress / 100;
-                //mVideoView.seekTo(position);
-                updateUI();
-                startUITimer();
-            }
+
         }
 
         @Override
@@ -331,6 +328,10 @@ public class VideoPlayEX extends Activity {
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
+        	if (!player.getPlayWhenReady()) {
+        		player.setPlayWhenReady(true);
+            }
+            player.seekTo(seekBar.getProgress() * 1000);
         	mHandlerTime.postDelayed(HideUIControl, 1500);
         }
     };
@@ -418,10 +419,11 @@ public class VideoPlayEX extends Activity {
 		
 		@Override
 		public void onClick(View v) {
+			
+			if (player.getPlayWhenReady()) {
+				player.setPlayWhenReady(false);
+			}
 			mProgressView.setVisibility(View.VISIBLE);
-//            if (mVideoView.isPlaying()) {
-//                mVideoView.pause();
-//            }
 			RecordingItem item = getCurrentVideoItem();
 			Intent intent = new Intent();
 			intent.setAction(Def.ACTION_SAVE_TO_OTG);
@@ -436,10 +438,11 @@ public class VideoPlayEX extends Activity {
 		
 		@Override
 		public void onClick(View v) {
+			
+			if (player.getPlayWhenReady()) {
+				player.setPlayWhenReady(false);
+			}
 			mProgressView.setVisibility(View.VISIBLE);
-//            if (mVideoView.isPlaying()) {
-//                mVideoView.pause();
-//            }
 			RecordingItem item = getCurrentVideoItem();
 			Intent intent = new Intent();
 			intent.setAction(Def.ACTION_SAVE_TO_PHONE);
@@ -465,18 +468,19 @@ public class VideoPlayEX extends Activity {
                 });
             }
         };
-        mUpdateUITimer.schedule(task, 0, 50);
+        mUpdateUITimer.schedule(task, 0, 1000);
     }
 
     private void setDuration(){
-        //mDuration = mVideoView.getDuration();
+        mDuration = player.getDuration();
         mVideoEndTime.setText(getProgressString(mDuration));
+        mSeekBar.setMax((int) (player.getDuration() / 1000));
     }
 
-    private String getProgressString(int duration) {
+    private String getProgressString(long duration) {
         duration /= 1000;
-        int minutes = (duration / 60);
-        int seconds = duration - (minutes * 60) ;
+        long minutes = (duration / 60);
+        long seconds = duration - (minutes * 60) ;
         return String.format("%02d:%02d", minutes, seconds);
     }
 
@@ -485,35 +489,9 @@ public class VideoPlayEX extends Activity {
         //int progress = current * 100 / mDuration;
         //mSeekBar.setProgress(progress);
         //mVideoStartTime.setText(getProgressString(current));
-    }
-
-    private void setupVideoView() {
-    	stopUITimer();
-        RecordingItem item = getCurrentVideoItem();
-        Uri uri = Uri.parse(item.getUrl());
-        //Uri uri = Uri.parse("android.resource://"+getActivity().getPackageName()+"/"+R.raw.rtrs);
-//        mVideoView.setVideoURI(uri);
-//        mVideoView.start();
-//        mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-//
-//            @Override
-//            public void onPrepared(MediaPlayer mp) {
-//                setDuration();
-//                startUITimer();
-//                mProgressView.setVisibility(View.GONE);
-//            }
-//        });
-
-//        mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-//
-//            @Override
-//            public void onCompletion(MediaPlayer mp) {
-//                isComplete = true;
-//                mSeekBar.setProgress(100);
-//                stopUITimer();
-//            }
-//
-//        });
+    	if (player != null) {
+    		mSeekBar.setProgress((int) player.getCurrentPosition() / 1000);
+    	}
     }
 
     private void stopUITimer() {
@@ -533,30 +511,24 @@ public class VideoPlayEX extends Activity {
 
     private void nextVideo() {
     	mProgressView.setVisibility(View.VISIBLE);
-        RecordingItem item = getCurrentVideoItem();
-        int idx = mDataList.indexOf(item);
-        if (idx == mDataList.size() -1) {
-        	idx = 0;
-        } else {
-        	idx++;
-        }
-        item = mDataList.get(idx);
-        setCurrentVideoItem(item);
-        setupVideoView();
+    	if (mWindowIndex == mDataList.size() - 1) {
+    		mWindowIndex = 0;
+    	} else {
+    		mWindowIndex++;
+    	}
+    	player.seekTo(mWindowIndex, 0);
+    	setCurrentVideoItem(mDataList.get(mWindowIndex));
     }
 
     private void previousVideo() {
     	mProgressView.setVisibility(View.VISIBLE);
-        RecordingItem item = getCurrentVideoItem();
-        int idx = mDataList.indexOf(item);
-        if (idx == 0) {
-            idx = mDataList.size() -1;
-        } else {
-            idx--;
-        }
-        item = mDataList.get(idx);
-        setCurrentVideoItem(item);
-        setupVideoView();
+    	if (mWindowIndex == 0) {
+    		mWindowIndex = mDataList.size() - 1;
+    	} else {
+    		mWindowIndex--;
+    	}
+    	player.seekTo(mWindowIndex, 0);
+    	setCurrentVideoItem(mDataList.get(mWindowIndex));
     }
     
     private RecordingItem getCurrentVideoItem() {
@@ -600,7 +572,6 @@ public class VideoPlayEX extends Activity {
     	Intent intent = getIntent();
     	int position = intent.getIntExtra(Def.EXTRA_VIDEO_ITEM_ID, 0);
     	setCurrentVideoItem(mDataList.get(position));
-    	setupVideoView();
         IntentFilter intentFilter = new IntentFilter(Def.ACTION_SAVE_TO_PHONE_STATUS);
         intentFilter.addAction(Def.ACTION_SAVE_TO_OTG_STATUS);
         intentFilter.addAction(Def.ACTION_SAVE_TO_PROGRESS);
@@ -613,7 +584,6 @@ public class VideoPlayEX extends Activity {
     protected void onStart() {
     	super.onStart();
     	mHandlerTime.postDelayed(HideUIControl, 1500);
-    	//showDialog(true,true);
     }
 
     @Override
@@ -701,18 +671,26 @@ public class VideoPlayEX extends Activity {
     
     BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
 
+    	Toast mToast;
 		@Override
         public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			boolean isSaveToPhone = false;
 			if (TextUtils.equals(Def.ACTION_SAVE_TO_PROGRESS, action)) {
+				mProgressView.setVisibility(View.VISIBLE);
 				int progress = intent.getIntExtra(Def.EXTRA_SAVE_TO_PROGRESS, 0);
 				int idx = intent.getIntExtra(Def.EXTRA_SAVE_TO_IDX, 1);
 				int count = intent.getIntExtra(Def.EXTRA_SAVE_TO_COUNT, 1);
+				if (mToast != null) {
+					mToast.cancel();
+				}
 				if (count == 1) {
-					Toast.makeText(VideoPlayEX.this, "Download Progress is "+progress + "%", Toast.LENGTH_LONG).show();
+					mToast = Toast.makeText(VideoPlayEX.this, "Download Progress is "+progress + "%", Toast.LENGTH_LONG);
 				} else if (count > 1) {
-					Toast.makeText(VideoPlayEX.this, "Download Progress is "+progress + "% (" + idx + "/" + count + ")", Toast.LENGTH_LONG).show();
+					mToast = Toast.makeText(VideoPlayEX.this, "Download Progress is "+progress + "% (" + idx + "/" + count + ")", Toast.LENGTH_LONG);
+				}
+				if (mToast != null) {
+					mToast.show();
 				}
 			}
 			if (TextUtils.equals(action, Def.ACTION_SAVE_TO_PHONE_STATUS)) {
@@ -790,54 +768,60 @@ public class VideoPlayEX extends Activity {
 
 		@Override
 		public void onLoadingChanged(boolean arg0) {
-			// TODO Auto-generated method stub
+        	Log.d(TAG, "[onPlayerStateChanged]  onLoadingChanged " + arg0);
 			
 		}
 
 		@Override
 		public void onPlaybackParametersChanged(PlaybackParameters arg0) {
-			// TODO Auto-generated method stub
+        	Log.d(TAG, "[onPlayerStateChanged]  onPlaybackParametersChanged " + arg0);
 			
 		}
 
 		@Override
-		public void onPlayerError(ExoPlaybackException arg0) {
-			// TODO Auto-generated method stub
-			
+		public void onPlayerError(ExoPlaybackException e) {
+        	Log.d(TAG, "[onPlayerStateChanged]  onPlayerError");
+			Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+			onBackPressed();
 		}
 
 		@Override
-		public void onPlayerStateChanged(boolean arg0, int arg1) {
-			// TODO Auto-generated method stub
-			
+		public void onPlayerStateChanged(boolean arg0, int playbackState) {
+			if (playbackState == PlaybackState.STATE_PLAYING) {
+            	Log.d(TAG, "[onPlayerStateChanged]  STATE_PLAYING");
+				setDuration();
+				startUITimer();
+				mProgressView.setVisibility(View.INVISIBLE);
+            } else if (playbackState == PlaybackState.STATE_PAUSED){
+            	Log.d(TAG, "[onPlayerStateChanged]  STATE_PAUSED");
+            } else if (playbackState == PlaybackState.STATE_SKIPPING_TO_NEXT) {
+            	Log.d(TAG, "[onPlayerStateChanged]  STATE_SKIPPING_TO_NEXT");
+            } else if (playbackState == PlaybackState.STATE_SKIPPING_TO_PREVIOUS) {
+            	Log.d(TAG, "[onPlayerStateChanged]  STATE_SKIPPING_TO_PREVIOUS");
+            }
+            		
 		}
 
 		@Override
 		public void onPositionDiscontinuity() {
-			// TODO Auto-generated method stub
+        	Log.d(TAG, "[onPlayerStateChanged]  onPositionDiscontinuity");
 			
 		}
 
 		@Override
 		public void onTimelineChanged(Timeline arg0, Object arg1) {
-			// TODO Auto-generated method stub
+        	Log.d(TAG, "[onPlayerStateChanged]  onTimelineChanged");
 			
 		}
 
 		@Override
 		public void onTracksChanged(TrackGroupArray arg0, TrackSelectionArray arg1) {
-			// TODO Auto-generated method stub
+        	Log.d(TAG, "[onPlayerStateChanged]  onTracksChanged");
 			
 		}
  		
  	};
- 	
- 	private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
- 		    
- 		   return new DefaultDataSourceFactory(this, BANDWIDTH_METER,
- 			        buildHttpDataSourceFactory(BANDWIDTH_METER));
- 	}
- 	
+
  	public HttpDataSource.Factory buildHttpDataSourceFactory(DefaultBandwidthMeter bandwidthMeter) {
  		
  		return new DefaultHttpDataSourceFactory(Util.getUserAgent(this, "iView"), bandwidthMeter);
