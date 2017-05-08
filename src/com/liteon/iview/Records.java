@@ -155,6 +155,7 @@ public class Records extends Activity {
         mDelete.setEnabled(false);
         mRecordings.setSelected(true);
         checkSystemMode();
+        getRecordingList();
 	}
 	
     @Override
@@ -220,17 +221,15 @@ public class Records extends Activity {
         if (tempList != null) {
         	mDataList.clear();
         	mDataList.addAll(tempList);
-        } else {
-        	RecordingItem item = new RecordingItem("http://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_30mb.mp4",
-        											"big_buck_bunny_720p_30mb.mp4",
-        											"2017/04/27", 
-        											"30mb");
-        	mDataList.add(item);
-        											
         }
         mVideoItemAdapter.notifyDataSetChanged();
     }
     
+    private void getRecordingList() {
+        Intent intent = new Intent(getApplicationContext(), DvrInfoService.class);
+		intent.setAction(Def.ACTION_GET_RECORDING_LIST);
+		startService(intent);
+    }
     
     private View.OnClickListener mOnSelectAllClickListener = new View.OnClickListener() {
 		

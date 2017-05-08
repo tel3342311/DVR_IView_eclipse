@@ -788,7 +788,7 @@ public class VideoPlayEX extends Activity {
 		@Override
 		public void onPlayerError(ExoPlaybackException e) {
         	Log.d(TAG, "[onPlayerStateChanged]  onPlayerError");
-			Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+			Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
 			onBackPressed();
 		}
 

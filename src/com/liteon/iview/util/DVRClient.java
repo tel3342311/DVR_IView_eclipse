@@ -144,7 +144,8 @@ public class DVRClient {
             urlConnection.disconnect();
             //workaround for always 400 response
             if (response == HttpURLConnection.HTTP_OK ||
-            		response == HttpURLConnection.HTTP_NOT_FOUND) {
+            		response == HttpURLConnection.HTTP_NOT_FOUND ||
+            		response == HttpURLConnection.HTTP_BAD_REQUEST) {
                 SharedPreferences.Editor editor = mSharedPref.edit();
                 editor.putString(Def.SP_PREVIEW_CAMERA, mode);
                 editor.commit();
@@ -875,7 +876,9 @@ public class DVRClient {
             Log.i(TAG, "Set recording length to " + recordingLength + ", Set recording Channel to " + recordingChannel + ", Response is " + response);
             urlConnection.disconnect();
             //workaround for always 404 response
-            if (response == HttpURLConnection.HTTP_OK || response == HttpURLConnection.HTTP_NOT_FOUND) {
+            if (response == HttpURLConnection.HTTP_OK || 
+            		response == HttpURLConnection.HTTP_NOT_FOUND ||
+            		response == HttpURLConnection.HTTP_BAD_REQUEST) {
                 SharedPreferences.Editor editor = mSharedPref.edit();
                 editor.putString(Def.SP_RECORDING_LENGTH, recordingLength);
                 editor.putString(Def.SP_RECORDING_CAMERA, recordingChannel);

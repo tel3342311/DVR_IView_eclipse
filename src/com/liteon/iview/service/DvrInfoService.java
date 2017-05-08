@@ -102,10 +102,21 @@ public class DvrInfoService extends IntentService {
                     	handleActionSaveToOTG(url, id, name);
             		};
             	}.start();
+            } else if (Def.ACTION_GET_RECORDING_LIST.equals(action)) {
+            	new Thread() {
+            		public void run() {
+                    	handleActionGetRecordingList();
+            		};
+            	}.start();
             }
         }
     }
 
+    private void handleActionGetRecordingList() {
+    	DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
+    	dvrClient.getRecordingList();
+    	NotifyRecordingListChange();
+    }
     private void handleActionSaveToPhone(String[] url, String[] id, String[] name) {
     	
     	Intent intent = new Intent(Def.ACTION_SAVE_TO_PHONE_STATUS);

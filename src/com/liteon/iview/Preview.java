@@ -92,7 +92,7 @@ public class Preview extends Activity {
     private void checkSystemMode() {
     	SharedPreferences sp = getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
     	String system_mode = sp.getString(Def.SP_SYSTEM_MODE, Def.RECORDING_MODE);
-        if (!TextUtils.equals(system_mode, "uvc")) {
+        if (!TextUtils.equals(system_mode, Def.RECORDING_MODE)) {
         	mMenuLoadingIndicator.setVisibility(View.VISIBLE);
     		Intent intent = new Intent(getApplicationContext(), DvrInfoService.class);
     		intent.setAction(Def.ACTION_SET_SYS_MODE);
@@ -104,9 +104,10 @@ public class Preview extends Activity {
     private void checkCameraStatus() {
     	
     	SharedPreferences sp = getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
-        String recordingChannel = sp.getString(Def.SP_RECORDING_CAMERA, "chab");
-        String previewChannel = sp.getString(Def.SP_PREVIEW_CAMERA, "cha");
-        if (!TextUtils.equals(recordingChannel, "chab")) {
+        String recordingChannel = sp.getString(Def.SP_RECORDING_CAMERA, Def.FRONT_REAR_CAM_MODE);
+        String previewChannel = sp.getString(Def.SP_PREVIEW_CAMERA, Def.FRONT_CAM_MODE);
+        //if recording channel is not front + rear, disable switch button
+        if (!TextUtils.equals(recordingChannel, Def.FRONT_REAR_CAM_MODE)) {
         	mCamera1.setEnabled(false);
         	mCamera2.setEnabled(false);
         } else {
@@ -115,7 +116,7 @@ public class Preview extends Activity {
         }
         mCamera1.setVisibility(View.INVISIBLE);
         mCamera2.setVisibility(View.INVISIBLE);
-        if (TextUtils.equals(previewChannel, "cha")) {
+        if (TextUtils.equals(previewChannel, Def.FRONT_CAM_MODE)) {
         	mTitleView.setText("Camera 1");
         	mCamera2.setVisibility(View.VISIBLE);
         } else {
@@ -307,7 +308,7 @@ public class Preview extends Activity {
 
                 Animation animBottom = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bottom_hide);
                 animBottom.setAnimationListener(mBottomBarAnimation);
-                mBottomBar.startAnimation(animBottom);                
+                mBottomBar.startAnimation(animBottom); 
             }
         }
     };
