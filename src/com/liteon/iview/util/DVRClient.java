@@ -70,7 +70,8 @@ public class DVRClient {
 
     public void setSystemMode(String mode) {
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.system_cgi));
+            URL url = new URL(Def.getSettingURL(Def.system_cgi));
+            
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -113,7 +114,7 @@ public class DVRClient {
     public boolean setCameraMode(String mode) {
 
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.camera_cgi));
+            URL url = new URL(Def.getSettingURL(Def.camera_cgi));
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -162,7 +163,7 @@ public class DVRClient {
     public void setRecordingLength(String length) {
 
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.camera_cgi));
+            URL url = new URL(Def.getSettingURL(Def.camera_cgi));
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -198,7 +199,8 @@ public class DVRClient {
     public String getSystemMode() {
         String mode = "";
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.system_setting));
+            URL url = new URL(Def.getSettingURL(Def.system_setting));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -236,7 +238,8 @@ public class DVRClient {
     public String getCameraMode() {
         String mode = "";
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.camera_setting));
+            URL url = new URL(Def.getSettingURL(Def.camera_setting));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -275,7 +278,7 @@ public class DVRClient {
     public String getRecordingLength() {
         String length = "";
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.camera_setting));
+            URL url = new URL(Def.getSettingURL(Def.camera_setting));
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -311,7 +314,8 @@ public class DVRClient {
     public Map<String, String> get3GModemList() {
         Map<String, String> map = new HashMap<>();
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.net_setting));
+            URL url = new URL(Def.getSettingURL(Def.net_setting));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -352,7 +356,8 @@ public class DVRClient {
         String ntp_server = "";
         String ntp_sync_value = "";
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.adm_setting));
+            URL url = new URL(Def.getSettingURL(Def.adm_setting));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -420,7 +425,8 @@ public class DVRClient {
         //option is [cha,chb]
         String preview_channel = "";
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.camera_setting));
+            URL url = new URL(Def.getSettingURL(Def.camera_setting));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -481,7 +487,8 @@ public class DVRClient {
         String passphase = "";
         String bssid = "";
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.wifi_setting));
+            URL url = new URL(Def.getSettingURL(Def.wifi_setting));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -531,7 +538,8 @@ public class DVRClient {
         String passPhase = "";
         String keyRenew = "";
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.security_setting));
+            URL url = new URL(Def.getSettingURL(Def.security_setting));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -610,7 +618,8 @@ public class DVRClient {
 
 
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.net_setting));
+            URL url = new URL(Def.getSettingURL(Def.net_setting));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -692,7 +701,8 @@ public class DVRClient {
     public Map<String, String> getTimeZoneList() {
         Map<String, String> map = new HashMap<>();
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.adm_setting));
+            URL url = new URL(Def.getSettingURL(Def.adm_setting));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -726,7 +736,7 @@ public class DVRClient {
 
         List<RecordingItem> list = new ArrayList<>();
         try {
-            URL url = new URL(Def.DVR_RECORDINGS_URL);
+            URL url = new URL(Def.getRecordingsURL());
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -739,7 +749,7 @@ public class DVRClient {
             urlConnection.setUseCaches(false);
 
             InputStream is = urlConnection.getInputStream();
-            Document doc = Jsoup.parse(is, "UTF-8", Def.DVR_RECORDINGS_URL);
+            Document doc = Jsoup.parse(is, "UTF-8", Def.getRecordingsURL());
             Elements elements = doc.select("a[href*=.mp4]");
             for (Element element : elements) {
                 String uri = element.attr("abs:href");
@@ -801,7 +811,8 @@ public class DVRClient {
 
     public void setTimezone(String timezone, String ntpServer) {
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.adm_cgi));
+            URL url = new URL(Def.getSettingURL(Def.adm_cgi));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -846,7 +857,8 @@ public class DVRClient {
 
     public void setRecordings(String recordingLength, String recordingChannel) {
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.camera_cgi));
+            URL url = new URL(Def.getSettingURL(Def.camera_cgi));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -892,7 +904,8 @@ public class DVRClient {
     public void setInternets(String apn, String pin, String dial_num, String username, String password, String modem) {
 
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.net_cgi));
+            URL url = new URL(Def.getSettingURL(Def.net_cgi));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -946,7 +959,8 @@ public class DVRClient {
 
     public void setVPNs(String pptpServer, String pptpUsername, String pptpPassword) {
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.net_cgi));
+            URL url = new URL(Def.getSettingURL(Def.net_cgi));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -999,7 +1013,8 @@ public class DVRClient {
 
     private void setWifiBasic(String ssid) {
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.wifi_cgi));
+            URL url = new URL(Def.getSettingURL(Def.wifi_cgi));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
@@ -1043,7 +1058,8 @@ public class DVRClient {
 
     private void setWifiSecurity(String securityMode, String encryptType, String passPhase) {
         try {
-            URL url = new URL(String.format(Def.DVR_Url, Def.wifi_cgi));
+            URL url = new URL(Def.getSettingURL(Def.wifi_cgi));
+
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());

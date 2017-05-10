@@ -2,9 +2,53 @@ package com.liteon.iview.util;
 
 public class Def {
 
-    public final static String DVR_PREVIEW_URL = "http://192.168.10.1:8081/?action=stream";
-    public final static String DVR_RECORDINGS_URL = "http://192.168.10.1:8080/sda1/MBA-CAM/";
-    public final static String DVR_Url = "http://192.168.10.1/%s";
+	public static boolean IS_VPN_MODE = false;
+	public final static String DVR_VPN_IP = "192.168.0.204";
+	public final static String DVR_LOCAL_IP = "192.168.10.1";
+	public static String getPreviewURL() {
+
+		if (IS_VPN_MODE) {
+			return getLocalPreviewURL();
+		} else {
+			return getRemotePreviewURL();
+		}
+	}
+	
+	public static String getLocalPreviewURL() {
+		return String.format(DVR_PREVIEW_URL, DVR_LOCAL_IP);
+	}
+	
+	public static String getRemotePreviewURL() {
+		return String.format(DVR_PREVIEW_URL, DVR_VPN_IP);
+	}
+	
+	public static String getRecordingsURL() {
+		if (IS_VPN_MODE) {
+			return getRemoteRecordingsURL();
+		} else {
+			return getLocalRecordingsURL();
+		}
+	}
+	
+	public static String getLocalRecordingsURL() {
+		return String.format(DVR_RECORDINGS_URL, DVR_LOCAL_IP);
+	}
+	
+	public static String getRemoteRecordingsURL() {
+		return String.format(DVR_RECORDINGS_URL, DVR_VPN_IP);
+	}
+	
+	public static String getSettingURL(String settingHtml) {
+		if (IS_VPN_MODE) {
+			return String.format(DVR_Url, DVR_VPN_IP, settingHtml);
+		} else {
+			return String.format(DVR_Url, DVR_LOCAL_IP, settingHtml);
+		}
+	}
+	
+    private final static String DVR_PREVIEW_URL = "http://%s:8081/?action=stream";
+    private final static String DVR_RECORDINGS_URL = "http://%s:8080/sda1/MBA-CAM/";
+    private final static String DVR_Url = "http://%s/%s";
     //camera setting
     public final static String camera_setting = "camera.shtml";
     public final static String camera_cgi = "cgi-bin/camera.cgi";
@@ -214,6 +258,8 @@ public class Def {
     public final static String EXTRA_SAVE_TO_PROGRESS = "com.liteon.iView.extra.SAVE_TO_PROGRESS";
     public final static String EXTRA_SAVE_TO_IDX = "com.liteon.iView.extra.SAVE_TO_IDX";
     public final static String EXTRA_SAVE_TO_COUNT = "com.liteon.iView.extra.SAVE_TO_COUNT";
+    public final static String EXTRA_IS_DVR_REACHABLE = "com.liteon.iView.service.extra.IS_DVR_REACHABLE";
+
     //Key for sharePreference
     public final static String SHARE_PREFERENCE = "com.liteon.iView.PREFERENCE_FILE_KEY";
     public final static String SP_SSID = "SP_SSID";

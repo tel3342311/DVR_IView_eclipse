@@ -66,7 +66,7 @@ public class Preview extends Activity {
 		setContentView(R.layout.activity_preview);
 		findViews();
 		setListener();
-		new Preview.ReadDVR().execute(Def.DVR_PREVIEW_URL);
+		new Preview.ReadDVR().execute(Def.getPreviewURL());
 		mHandlerTime = new Handler();
 	}
     
@@ -81,7 +81,7 @@ public class Preview extends Activity {
         registerReceiver(mBroadcastReceiver, intentFilter);
         if (mv != null){
         	if ( mIsSuspend ){
-        		new Preview.ReadDVR().execute(Def.DVR_PREVIEW_URL);
+        		new Preview.ReadDVR().execute(Def.getPreviewURL());
         		mIsSuspend = false;
         	}
         }

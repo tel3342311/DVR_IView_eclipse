@@ -43,13 +43,17 @@ public class MainActivity extends Activity {
 		@Override
         public void onReceive(Context context, Intent intent) {
 
-            String mode = intent.getStringExtra(Def.EXTRA_GET_ALL_INFO);
-            mSystemMode = mode;
+            
             Intent intentActivity = new Intent();
-            if (mSystemMode.equals(Def.RECORDING_MODE)) {
-            	intentActivity.setClass(MainActivity.this, Preview.class);
-            } else if (mSystemMode.equals(Def.STORAGE_MODE)) {
-            	intentActivity.setClass(MainActivity.this, Records.class);
+            boolean isDVRReachable = intent.getBooleanExtra(Def.EXTRA_IS_DVR_REACHABLE, false);
+            if (isDVRReachable) {
+            	String mode = intent.getStringExtra(Def.EXTRA_GET_ALL_INFO);
+                mSystemMode = mode;
+	            if (mSystemMode.equals(Def.RECORDING_MODE)) {
+	            	intentActivity.setClass(MainActivity.this, Preview.class);
+	            } else if (mSystemMode.equals(Def.STORAGE_MODE)) {
+	            	intentActivity.setClass(MainActivity.this, Records.class);
+	            } 
             } else {
             	intentActivity.setAction("android.net.vpn.SETTINGS");
             	intentActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

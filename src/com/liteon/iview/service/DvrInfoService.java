@@ -221,19 +221,27 @@ public class DvrInfoService extends IntentService {
 	private void handleActionGetAllInfo() {
     	DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
     	Intent intent = new Intent(Def.ACTION_GET_ALL_INFO);
-    	boolean isLocalUrlReachable = true;
+    	boolean isDVRReachable = true;
     	boolean isStorageMode = false;
-    	if (DVRClient.isURLReachable(getApplicationContext(), Def.DVR_PREVIEW_URL)) {
+    	if (DVRClient.isURLReachable(getApplicationContext(), Def.getLocalPreviewURL())) {
             intent.putExtra(Def.EXTRA_GET_ALL_INFO, Def.RECORDING_MODE);
-    	} else if (DVRClient.isURLReachable(getApplicationContext(), Def.DVR_RECORDINGS_URL)) {
+    	} else if (DVRClient.isURLReachable(getApplicationContext(), Def.getLocalRecordingsURL())) {
             intent.putExtra(Def.EXTRA_GET_ALL_INFO, Def.STORAGE_MODE);
             isStorageMode = true;
     	} else {
-            intent.putExtra(Def.EXTRA_GET_ALL_INFO, Def.VPN_MODE);
-            isLocalUrlReachable = false;
+            Def.IS_VPN_MODE = true;
+            if (DVRClient.isURLReachable(getApplicationContext(), Def.getRemotePreviewURL())) {
+                intent.putExtra(Def.EXTRA_GET_ALL_INFO, Def.RECORDING_MODE);
+        	} else if (DVRClient.isURLReachable(getApplicationContext(), Def.getRemoteRecordingsURL())) {
+                intent.putExtra(Def.EXTRA_GET_ALL_INFO, Def.STORAGE_MODE);
+                isStorageMode = true;
+        	} else {
+        		isDVRReachable = false;
+        	}
     	}
+    	intent.putExtra(Def.EXTRA_IS_DVR_REACHABLE, isDVRReachable);
         sendBroadcast(intent);
-        if (isLocalUrlReachable) {
+        if (isDVRReachable) {
         	
             SharedPreferences SharedPref = getApplicationContext().getSharedPreferences(
                     Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
