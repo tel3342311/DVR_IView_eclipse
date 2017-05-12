@@ -36,6 +36,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import junit.runner.Version;
 
@@ -61,7 +62,7 @@ public class Records extends Activity {
     private PendingIntent mPermissionIntent;
     private boolean mIsOTGReady;
 	private View mMenuLoadingIndicator;
-
+	private TextView mProgressText;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -95,6 +96,7 @@ public class Records extends Activity {
         mSelectAll = findViewById(R.id.select_all);
         mDelete = findViewById(R.id.delete);
         mMenuLoadingIndicator = (View) findViewById(R.id.progress);
+        mProgressText = (TextView) mMenuLoadingIndicator.findViewById(R.id.progress_text);
     }
 	
 	private void setListeners() {
@@ -180,11 +182,12 @@ public class Records extends Activity {
 				int idx = intent.getIntExtra(Def.EXTRA_SAVE_TO_IDX, 1);
 				int count = intent.getIntExtra(Def.EXTRA_SAVE_TO_COUNT, 1);
 				if (count == 1) {
-					Toast.makeText(Records.this, "Download Progress is "+progress + "%", Toast.LENGTH_LONG).show();
+					mProgressText.setText("Download Progress is "+progress + "%");
 				} else if (count > 1) {
-					Toast.makeText(Records.this, "Download Progress is "+progress + "% (" + idx + "/" + count + ")", Toast.LENGTH_LONG).show();
+					mProgressText.setText("Download Progress is "+progress + "% (" + idx + "/" + count + ")");
 				}
 			} else {
+				mProgressText.setText("");
 				boolean isSaveToPhone = false;
 				if (TextUtils.equals(intent.getAction(), Def.ACTION_SAVE_TO_PHONE_STATUS)) {
 					isSaveToPhone = true;

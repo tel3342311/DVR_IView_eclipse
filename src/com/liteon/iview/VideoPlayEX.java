@@ -129,6 +129,7 @@ public class VideoPlayEX extends Activity {
     private int mWindowIndex = 0;
     private Surface mSurface;
 	private Uri mCurrentSnapShotUri;
+	private TextView mProgressText;
     //debug test url
     private String mp4URL = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
 	private Animation animToolbar;
@@ -391,6 +392,7 @@ public class VideoPlayEX extends Activity {
         mBottomBar = findViewById(R.id.bottombar);
         mTitleView = (TextView) findViewById(R.id.toolbar_title);
         mProgressView = findViewById(R.id.progress_view);
+        mProgressText = (TextView) mProgressView.findViewById(R.id.progress_text);
         //video controls
         mVideoView = (TextureView) findViewById(R.id.video_view);
         mViewControlGroup = (ViewGroup) findViewById(R.id.video_control);
@@ -693,16 +695,10 @@ public class VideoPlayEX extends Activity {
 				int progress = intent.getIntExtra(Def.EXTRA_SAVE_TO_PROGRESS, 0);
 				int idx = intent.getIntExtra(Def.EXTRA_SAVE_TO_IDX, 1);
 				int count = intent.getIntExtra(Def.EXTRA_SAVE_TO_COUNT, 1);
-				if (mToast != null) {
-					mToast.cancel();
-				}
 				if (count == 1) {
-					mToast = Toast.makeText(VideoPlayEX.this, "Download Progress is "+progress + "%", Toast.LENGTH_LONG);
+					mProgressText.setText("Download Progress is "+progress + "%");
 				} else if (count > 1) {
-					mToast = Toast.makeText(VideoPlayEX.this, "Download Progress is "+progress + "% (" + idx + "/" + count + ")", Toast.LENGTH_LONG);
-				}
-				if (mToast != null) {
-					mToast.show();
+					mProgressText.setText("Download Progress is "+progress + "% (" + idx + "/" + count + ")");
 				}
 			}
 			if (TextUtils.equals(action, Def.ACTION_SAVE_TO_PHONE_STATUS)) {
