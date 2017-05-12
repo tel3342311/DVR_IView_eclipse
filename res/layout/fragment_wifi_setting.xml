@@ -20,7 +20,8 @@
                 android:layout_width="@dimen/wifi_edit_text_width"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:text="SSID" />
+                android:text="SSID" 
+                android:textSize="@dimen/setting_option_text_size"/>
             <EditText
                 android:id="@+id/edit_ssid"
                 android:layout_width="match_parent"
@@ -30,7 +31,9 @@
                 android:paddingLeft="@dimen/setting_timezone_edit_text_padding_left"
                 android:background="@drawable/setting_lcel_1"
                 android:maxLines="1"
-                android:hint="SSID"/>
+                android:hint="SSID"
+                android:textSize="@dimen/setting_option_text_size"
+                android:textCursorDrawable="@null"/>
         </LinearLayout>
         <!--BSSID Setting-->
         <LinearLayout
@@ -44,7 +47,8 @@
                 android:layout_width="@dimen/wifi_edit_text_width"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:text="BSSID" />
+                android:text="BSSID" 
+                android:textSize="@dimen/setting_option_text_size"/>
             <EditText
                 android:id="@+id/edit_bssid"
                 android:layout_width="match_parent"
@@ -55,7 +59,9 @@
                 android:background="@drawable/setting_lcel_1"
                 android:maxLines="1"
                 android:enabled="false"
-                android:text="xx:xx:xx:xx:xx:xx"/>
+                android:text="xx:xx:xx:xx:xx:xx"
+                android:textSize="@dimen/setting_option_text_size"
+                android:textColor="@color/md_grey_700"/>
         </LinearLayout>
 
         <!--Security Setting-->
@@ -65,7 +71,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:text="Security Mode_WPA-PSK"/>
+            android:text="Security Mode_WPA-PSK"
+            android:textSize="@dimen/setting_option_text_size"/>
 
         <LinearLayout
             android:id="@+id/security_option"
@@ -92,7 +99,8 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="AES"
-                android:textColor="@drawable/text_select_color"/>
+                android:textColor="@drawable/text_select_color"
+                android:textSize="@dimen/setting_option_text_size"/>
 
             <TextView
                 android:id="@+id/tkip_aes"
@@ -101,7 +109,8 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="TKIP &amp; AES"
-                android:textColor="@drawable/text_select_color"/>
+                android:textColor="@drawable/text_select_color"
+                android:textSize="@dimen/setting_option_text_size"/>
 
         </LinearLayout>
 
@@ -118,7 +127,9 @@
                 android:layout_width="@dimen/wifi_edit_text_width"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:text="Pass Phrase" />
+                android:text="Pass Phrase" 
+                android:textSize="@dimen/setting_option_text_size"
+                android:singleLine="true"/>
             <EditText
                 android:id="@+id/edit_pass_phase"
                 android:layout_width="match_parent"
@@ -128,7 +139,9 @@
                 android:paddingLeft="@dimen/setting_timezone_edit_text_padding_left"
                 android:background="@drawable/setting_lcel_1"
                 android:maxLines="1"
-                android:inputType="number"/>
+                android:inputType="number"
+                android:textSize="@dimen/setting_option_text_size"
+                android:textCursorDrawable="@null"/>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

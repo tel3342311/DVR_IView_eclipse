@@ -13,7 +13,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:text="NTP Server" />
+        android:text="NTP Server" 
+        android:textSize="@dimen/setting_timezone_text_normal"/>
     <EditText
         android:id="@+id/edit_ntp_server"
         android:layout_width="match_parent"
@@ -22,7 +23,9 @@
         android:layout_marginRight="@dimen/setting_timezone_edit_text_margin_left"
         android:paddingLeft="@dimen/setting_timezone_edit_text_padding_left"
         android:background="@drawable/setting_lcel_1"
-        android:maxLines="1"/>
+        android:maxLines="1"
+        android:textSize="@dimen/setting_timezone_text_normal"
+        android:textCursorDrawable="@null"/>
     </LinearLayout>
 
     <TextView
@@ -32,7 +35,8 @@
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_below="@id/ntp_sec"
-        android:text="Time Zone" />
+        android:text="Time Zone" 
+        android:textSize="@dimen/setting_option_text_size"/>
 
     <LinearLayout
         android:id="@+id/picker_container"
