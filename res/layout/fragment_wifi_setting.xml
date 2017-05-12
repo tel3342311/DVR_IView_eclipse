@@ -110,7 +110,7 @@
             android:id="@+id/pass_phrase_sec"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/setting_edittext_bottom_margin"
+            android:layout_marginTop="@dimen/wifi_edittext_top_margin"
             android:layout_marginBottom="@dimen/bottombar_height"
             android:orientation="horizontal">
             <TextView
