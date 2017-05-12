@@ -3,14 +3,14 @@ package com.liteon.iview.util;
 public class Def {
 
 	public static boolean IS_VPN_MODE = false;
-	public final static String DVR_VPN_IP = "192.168.0.204";
+	public final static String DVR_VPN_IP = "192.168.0.201";
 	public final static String DVR_LOCAL_IP = "192.168.10.1";
 	public static String getPreviewURL() {
 
 		if (IS_VPN_MODE) {
-			return getLocalPreviewURL();
-		} else {
 			return getRemotePreviewURL();
+		} else {
+			return getLocalPreviewURL();
 		}
 	}
 	

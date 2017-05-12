@@ -131,7 +131,9 @@ public class VideoPlayEX extends Activity {
 	private Uri mCurrentSnapShotUri;
     //debug test url
     private String mp4URL = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
-    
+	private Animation animToolbar;
+	private Animation animBottom;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -511,7 +513,7 @@ public class VideoPlayEX extends Activity {
         if (isShow) {
             mViewControlGroup.setVisibility(View.VISIBLE);
         } else {
-            mViewControlGroup.setVisibility(View.INVISIBLE);
+            mViewControlGroup.setVisibility(View.GONE);
         }
     }
 
@@ -605,8 +607,8 @@ public class VideoPlayEX extends Activity {
     		mToolbar.setVisibility(View.VISIBLE);
     		mBottomBar.setVisibility(View.VISIBLE);
     	} else {
-    		mToolbar.setVisibility(View.INVISIBLE);
-    		mBottomBar.setVisibility(View.INVISIBLE);
+    		mToolbar.setVisibility(View.GONE);
+    		mBottomBar.setVisibility(View.GONE);
     	}
     }
     private void toggleMenu() {
@@ -628,15 +630,18 @@ public class VideoPlayEX extends Activity {
 
             if (mShowingMenu) {
                 mBottomBar.setVisibility(View.GONE);
-
-                Animation animToolbar = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.toolbar_hide);
-                animToolbar.setAnimationListener(mToolbarAnimation);
+                if (animToolbar == null) {
+                	animToolbar = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.toolbar_hide);
+                	animToolbar.setAnimationListener(mToolbarAnimation);
+                }
+                
                 mToolbar.startAnimation(animToolbar);
 
-
-                Animation animBottom = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bottom_hide);
-                animBottom.setAnimationListener(mBottomBarAnimation);
-                mBottomBar.startAnimation(animBottom);                
+                if (animBottom == null) {
+                	animBottom = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bottom_hide);
+                	animBottom.setAnimationListener(mBottomBarAnimation);
+                }
+                mBottomBar.startAnimation(animBottom);               
             }
         }
     };
@@ -644,7 +649,7 @@ public class VideoPlayEX extends Activity {
     private Animation.AnimationListener mToolbarAnimation = new Animation.AnimationListener() {
         @Override
         public void onAnimationStart(Animation animation) {
-        	mToolbar.setVisibility(View.INVISIBLE);
+        	mToolbar.setVisibility(View.GONE);
         }
 
         @Override
@@ -665,7 +670,7 @@ public class VideoPlayEX extends Activity {
 
         @Override
         public void onAnimationEnd(Animation animation) {
-        	mBottomBar.setVisibility(View.INVISIBLE);
+        	mBottomBar.setVisibility(View.GONE);
         	mShowingMenu = false;
         	showVideoControl(false);
         }
@@ -798,7 +803,7 @@ public class VideoPlayEX extends Activity {
             	Log.d(TAG, "[onPlayerStateChanged]  STATE_PLAYING");
 				setDuration();
 				startUITimer();
-				mProgressView.setVisibility(View.INVISIBLE);
+				mProgressView.setVisibility(View.GONE);
             } else if (playbackState == PlaybackState.STATE_PAUSED){
             	Log.d(TAG, "[onPlayerStateChanged]  STATE_PAUSED");
             } else if (playbackState == PlaybackState.STATE_SKIPPING_TO_NEXT) {

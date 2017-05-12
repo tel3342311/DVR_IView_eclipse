@@ -59,6 +59,8 @@ public class Preview extends Activity {
 	private View mCameraloadingIndicator;
 	private View mMenuLoadingIndicator;
 	private Uri mCurrentSnapShotUri;
+	private Animation animToolbar;
+	private Animation animBottom;
 	
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -79,12 +81,7 @@ public class Preview extends Activity {
         IntentFilter intentFilter = new IntentFilter(Def.ACTION_GET_CAM_MODE);
         intentFilter.addAction(Def.ACTION_GET_SYS_MODE);
         registerReceiver(mBroadcastReceiver, intentFilter);
-        if (mv != null){
-        	if ( mIsSuspend ){
-        		new Preview.ReadDVR().execute(Def.getPreviewURL());
-        		mIsSuspend = false;
-        	}
-        }
+        resumeMJpegVideo();
         checkSystemMode();
         checkCameraStatus();
     }
@@ -128,12 +125,7 @@ public class Preview extends Activity {
 	@Override
     protected void onPause() {
     	super.onPause();
-        if(mv!=null){
-        	if(mv.isStreaming()){
-		        mv.stopPlayback();
-		        mIsSuspend = true;
-        	}
-        }
+    	pauseMJpegVideo();
         unregisterReceiver(mBroadcastReceiver);
     }
     
@@ -149,6 +141,24 @@ public class Preview extends Activity {
     protected void onStart() {
     	super.onStart();
     	mHandlerTime.postDelayed(HideUIControl, 1500);
+    }
+    
+    private void pauseMJpegVideo() {
+        if (mv != null) {
+        	if(mv.isStreaming()) {
+		        mv.stopPlayback();
+		        mIsSuspend = true;
+        	}
+        }
+    }
+    
+    private void resumeMJpegVideo() {
+        if (mv != null){
+        	if (mIsSuspend) {
+        		new Preview.ReadDVR().execute(Def.getPreviewURL());
+        		mIsSuspend = false;
+        	}
+        }
     }
     
     public void setListener() {
@@ -190,8 +200,8 @@ public class Preview extends Activity {
     		mToolbar.setVisibility(View.VISIBLE);
     		mBottomBar.setVisibility(View.VISIBLE);
     	} else {
-    		mToolbar.setVisibility(View.INVISIBLE);
-    		mBottomBar.setVisibility(View.INVISIBLE);
+    		mToolbar.setVisibility(View.GONE);
+    		mBottomBar.setVisibility(View.GONE);
     	}
     }
     private void toggleMenu() {
@@ -264,6 +274,7 @@ public class Preview extends Activity {
     private View.OnClickListener mOnCameraClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+        	pauseMJpegVideo();
             final String mode;
             mCameraloadingIndicator.setVisibility(View.VISIBLE);
             
@@ -287,6 +298,7 @@ public class Preview extends Activity {
     		intent.setAction(Def.ACTION_SET_CAM_MODE);
     		intent.putExtra(Def.EXTRA_SET_CAM_MODE, mode);
     		startService(intent);
+    		resumeMJpegVideo();
         }
     };
 
@@ -300,14 +312,17 @@ public class Preview extends Activity {
 
             if (mShowingMenu) {
                 mBottomBar.setVisibility(View.GONE);
-
-                Animation animToolbar = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.toolbar_hide);
-                animToolbar.setAnimationListener(mToolbarAnimation);
+                if (animToolbar == null) {
+                	animToolbar = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.toolbar_hide);
+                	animToolbar.setAnimationListener(mToolbarAnimation);
+                }
+                
                 mToolbar.startAnimation(animToolbar);
 
-
-                Animation animBottom = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bottom_hide);
-                animBottom.setAnimationListener(mBottomBarAnimation);
+                if (animBottom == null) {
+                	animBottom = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bottom_hide);
+                	animBottom.setAnimationListener(mBottomBarAnimation);
+                }
                 mBottomBar.startAnimation(animBottom); 
             }
         }
@@ -316,7 +331,7 @@ public class Preview extends Activity {
     private Animation.AnimationListener mToolbarAnimation = new Animation.AnimationListener() {
         @Override
         public void onAnimationStart(Animation animation) {
-        	mToolbar.setVisibility(View.INVISIBLE);
+        	mToolbar.setVisibility(View.GONE);
         }
 
         @Override
@@ -337,7 +352,7 @@ public class Preview extends Activity {
 
         @Override
         public void onAnimationEnd(Animation animation) {
-        	mBottomBar.setVisibility(View.INVISIBLE);
+        	mBottomBar.setVisibility(View.GONE);
         	mShowingMenu = false;
         }
 
@@ -369,9 +384,9 @@ public class Preview extends Activity {
         protected void onPostExecute(MjpegInputStream result) {
             if (result != null) {
                 mv.setSource(result);
-                //result.setSkip(1);
-                mv.setDisplayMode(MjpegView.SIZE_FULLSCREEN);
-                mv.showFps(true);
+                //result.setSkip(3);
+                mv.setDisplayMode(MjpegView.SIZE_BEST_FIT);
+                //mv.showFps(true);
             } else {
                 Toast.makeText(getApplicationContext(),"Fail to open preview URL", Toast.LENGTH_LONG).show();
             }
@@ -409,12 +424,12 @@ public class Preview extends Activity {
  	        bmp.compress(CompressFormat.JPEG, 100, fos);
  	        fos.flush();
  	        fos.close();
+ 	        
  	    } catch (FileNotFoundException e) {
  	        e.printStackTrace();
  	    } catch (IOException e) {
  	        e.printStackTrace();
  		}
- 	    
  	    try {
  	    	uri = MediaStore.Images.Media.insertImage(context.getContentResolver(),
  					file.getAbsolutePath(), fileName, null);

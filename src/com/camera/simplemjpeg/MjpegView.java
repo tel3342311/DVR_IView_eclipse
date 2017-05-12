@@ -127,12 +127,13 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
 
                 if(surfaceDone) {   
                 	try {
-                		if(bmp==null){
+                			
+                		if (bmp == null){
                 			bmp = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ARGB_8888);
                 		}
                 		int ret = mIn.readMjpegFrame(bmp);
 
-                		if(ret == -1)
+                		if (ret == -1)
                 		{
                 			return;
                 		}
@@ -194,7 +195,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
         overlayTextColor = Color.WHITE;
         overlayBackgroundColor = Color.BLACK;
         ovlPos = MjpegView.POSITION_LOWER_RIGHT;
-        displayMode = MjpegView.SIZE_STANDARD;
+        displayMode = MjpegView.SIZE_FULLSCREEN;
         dispWidth = getWidth();
         dispHeight = getHeight();
     }
