@@ -50,13 +50,6 @@
         <service
             android:name=".service.DvrInfoService"
             android:exported="false" />
-
-        <activity
-            android:name=".VideoPlay"
-            android:label="@string/title_activity_video_play" 
-            android:launchMode="singleTask"
-            android:screenOrientation="landscape">
-        </activity>
         
         <activity
             android:name=".VideoPlayEX"
