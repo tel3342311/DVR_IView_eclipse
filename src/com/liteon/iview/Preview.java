@@ -275,8 +275,9 @@ public class Preview extends Activity {
         @Override
         public void onClick(View view) {
         	pauseMJpegVideo();
+    		mHandlerTime.removeCallbacks(HideUIControl);
             final String mode;
-            mCameraloadingIndicator.setVisibility(View.VISIBLE);
+            //mCameraloadingIndicator.setVisibility(View.VISIBLE);
             
             switch (view.getId()) {
                 case R.id.icon_camera_1:
@@ -299,6 +300,7 @@ public class Preview extends Activity {
     		intent.putExtra(Def.EXTRA_SET_CAM_MODE, mode);
     		startService(intent);
     		resumeMJpegVideo();
+    		mHandlerTime.postDelayed(HideUIControl, 1500);
         }
     };
 
@@ -385,10 +387,10 @@ public class Preview extends Activity {
             if (result != null) {
                 mv.setSource(result);
                 //result.setSkip(3);
-                mv.setDisplayMode(MjpegView.SIZE_BEST_FIT);
+                mv.setDisplayMode(MjpegView.SIZE_FULLSCREEN);
                 //mv.showFps(true);
             } else {
-                Toast.makeText(getApplicationContext(),"Fail to open preview URL", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(),"Fail to open preview URL", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -398,7 +400,14 @@ public class Preview extends Activity {
  		@Override
          public void onReceive(Context context, Intent intent) {
  			if (TextUtils.equals(intent.getAction(), Def.ACTION_GET_CAM_MODE)) {
- 				mCameraloadingIndicator.setVisibility(View.INVISIBLE);
+ 				//Save cam mode to preference here to ensure cam mode is correct
+ 				String mode = intent.getStringExtra(Def.EXTRA_GET_CAM_MODE);
+ 				SharedPreferences sp = getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
+ 				SharedPreferences.Editor editor = sp.edit();
+ 				editor.putString(Def.SP_PREVIEW_CAMERA, mode);
+ 				editor.commit();
+ 				//disable progress view and update camera icon
+ 				//mCameraloadingIndicator.setVisibility(View.GONE);
  				checkCameraStatus();
  			} else if (TextUtils.equals(intent.getAction(), Def.ACTION_GET_SYS_MODE)) {
  				recreate();
