@@ -271,7 +271,7 @@ int Java_com_camera_simplemjpeg_MjpegInputStream_pixeltobmp( JNIEnv* env,jobject
 		int height = IMG_HEIGHT;
 		
 
-			if(bmp==NULL) return;
+			if(bmp==NULL) return -1;
 			if ((ret = AndroidBitmap_getInfo(env, bmp, &info)) < 0) {
 				LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
 				(*env)->ReleaseByteArrayElements(env, jp, p, 0);

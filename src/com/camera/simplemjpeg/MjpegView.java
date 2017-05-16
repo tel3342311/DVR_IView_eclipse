@@ -1,6 +1,8 @@
 package com.camera.simplemjpeg;
 
 import java.io.IOException;
+import java.util.logging.Logger;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -11,6 +13,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -71,8 +74,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                 tempx = (dispWidth / 2) - (bmw / 2);
                 tempy = (dispHeight / 2) - (bmh / 2);
                 return new Rect(tempx, tempy, bmw + tempx, bmh + tempy);
-            }
-            if (displayMode == MjpegView.SIZE_BEST_FIT) {
+            } else if (displayMode == MjpegView.SIZE_BEST_FIT) {
                 float bmasp = (float) bmw / (float) bmh;
                 bmw = dispWidth;
                 bmh = (int) (dispWidth / bmasp);
@@ -83,9 +85,9 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                 tempx = (dispWidth / 2) - (bmw / 2);
                 tempy = (dispHeight / 2) - (bmh / 2);
                 return new Rect(tempx, tempy, bmw + tempx, bmh + tempy);
-            }
-            if (displayMode == MjpegView.SIZE_FULLSCREEN)
+            } else if (displayMode == MjpegView.SIZE_FULLSCREEN) {
                 return new Rect(0, 0, dispWidth, dispHeight);
+            }
             return null;
         }
          
@@ -142,37 +144,34 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                         
                         c = mSurfaceHolder.lockCanvas();
                         synchronized (mSurfaceHolder) {
+                        	c.drawBitmap(bmp, null, destRect, p);
+							if (showFps) {
+								p.setXfermode(mode);
+								if (ovl != null) {
 
-                               	c.drawBitmap(bmp, null, destRect, p);
+									// false indentation to fix forum layout
+									height = ((ovlPos & 1) == 1) ? destRect.top : destRect.bottom - ovl.getHeight();
+									width = ((ovlPos & 8) == 8) ? destRect.left : destRect.right - ovl.getWidth();
 
-                                if(showFps) {
-                                    p.setXfermode(mode);
-                                    if(ovl != null) {
+									c.drawBitmap(ovl, width, height, null);
+								}
+								p.setXfermode(null);
+								frameCounter++;
+								if ((System.currentTimeMillis() - start) >= 1000) {
+									fps = String.valueOf(frameCounter) + "fps";
+									frameCounter = 0;
+									start = System.currentTimeMillis();
+									if (ovl != null)
+										ovl.recycle();
 
-                                    	// false indentation to fix forum layout 	                                	 
-                                    	height = ((ovlPos & 1) == 1) ? destRect.top : destRect.bottom-ovl.getHeight();
-                                    	width  = ((ovlPos & 8) == 8) ? destRect.left : destRect.right -ovl.getWidth();
-
-                                        c.drawBitmap(ovl, width, height, null);
-                                    }
-                                    p.setXfermode(null);
-                                    frameCounter++;
-                                    if((System.currentTimeMillis() - start) >= 1000) {
-                                        fps = String.valueOf(frameCounter)+"fps";
-                                        frameCounter = 0; 
-                                        start = System.currentTimeMillis();
-                                        if(ovl!=null) ovl.recycle();
-                                    	
-                                        ovl = makeFpsOverlay(overlayPaint);
-                                    }
-                                }
-                                
-
+									ovl = makeFpsOverlay(overlayPaint);
+								}
+							}
                         }
 
-                    }catch (IOException e){ 
-                	
-                }finally { 
+                    } catch (IOException e){ 
+                    	Log.d(TAG, e.getMessage());
+                    } finally { 
                     	if (c != null) mSurfaceHolder.unlockCanvasAndPost(c); 
                     }
                 }

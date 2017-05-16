@@ -137,7 +137,9 @@ public class MjpegInputStream extends DataInputStream {
         	return null;
         }
         reset();
-
+        if (headerLen == -1) {
+        	return null;
+        }
         if(header==null || headerLen != headerLenPrev){
         	header = new byte[headerLen];
         	if(DEBUG) Log.d(TAG,"header renewed "+headerLenPrev+" -> "+headerLen);
@@ -204,7 +206,9 @@ public class MjpegInputStream extends DataInputStream {
         	return -1;
         }
         reset();
-
+        if (headerLen == -1) {
+        	return -1;
+        }
         if(header==null || headerLen != headerLenPrev){
         	header = new byte[headerLen];
         	if(DEBUG) Log.d(TAG,"header renewed "+headerLenPrev+" -> "+headerLen);
@@ -256,6 +260,7 @@ public class MjpegInputStream extends DataInputStream {
         if(count++%skip==0){
         	return pixeltobmp(frameData, mContentLength, bmp);
         }else{
+        	//skipBytes(mContentLength);
         	return 0;
         }
     }
