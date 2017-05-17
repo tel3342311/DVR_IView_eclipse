@@ -64,6 +64,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.media.session.PlaybackState;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -408,10 +409,14 @@ public class VideoPlayEX extends Activity {
 	public View.OnClickListener mOnPreviewClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-        	mRecordings.setSelected(true);
+        	mRecordings.setSelected(false);
         	mPreview.setSelected(true);
-        	Intent intent = new Intent(getApplicationContext(), PreviewEx.class);
-    		startActivity(intent);
+        	Intent intent = new Intent();
+        	if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+        		intent.setClass(VideoPlayEX.this, PreviewEx.class);
+        	} else {
+        	    intent.setClass(VideoPlayEX.this, Preview.class);
+        	}    		startActivity(intent);
     		finish();
     	}
     };

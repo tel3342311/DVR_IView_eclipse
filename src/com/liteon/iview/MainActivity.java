@@ -4,11 +4,11 @@ import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -50,7 +50,11 @@ public class MainActivity extends Activity {
             	String mode = intent.getStringExtra(Def.EXTRA_GET_ALL_INFO);
                 mSystemMode = mode;
 	            if (mSystemMode.equals(Def.RECORDING_MODE)) {
-	            	intentActivity.setClass(MainActivity.this, PreviewEx.class);
+	            	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+	            		intentActivity.setClass(MainActivity.this, PreviewEx.class);
+	            	} else {
+	            	    intentActivity.setClass(MainActivity.this, Preview.class);
+	            	}
 	            } else if (mSystemMode.equals(Def.STORAGE_MODE)) {
 	            	intentActivity.setClass(MainActivity.this, Records.class);
 	            } 

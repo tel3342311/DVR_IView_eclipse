@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -208,7 +209,12 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
         public void onClick(View v) {
         	mSettings.setSelected(false);
         	mPreview.setSelected(true);
-        	Intent intent = new Intent(getApplicationContext(), PreviewEx.class);
+        	Intent intent = new Intent();
+        	if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+        		intent.setClass(Settings.this, PreviewEx.class);
+        	} else {
+        	    intent.setClass(Settings.this, Preview.class);
+        	}
     		startActivity(intent);
     		finish();
     	}

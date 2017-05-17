@@ -124,7 +124,12 @@ public class Records extends Activity {
         public void onClick(View v) {
         	mRecordings.setSelected(false);
         	mPreview.setSelected(true);
-        	Intent intent = new Intent(getApplicationContext(), PreviewEx.class);
+        	Intent intent = new Intent();
+        	if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+        		intent.setClass(Records.this, PreviewEx.class);
+        	} else {
+        	    intent.setClass(Records.this, Preview.class);
+        	}
     		startActivity(intent);
     		finish();
     	}

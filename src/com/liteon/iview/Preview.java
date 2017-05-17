@@ -24,40 +24,25 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
-import android.graphics.Bitmap.Config;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.net.http.SslError;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.InputEvent;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.webkit.ClientCertRequest;
-import android.webkit.HttpAuthHandler;
-import android.webkit.SslErrorHandler;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class PreviewEx extends Activity {
+public class Preview extends Activity {
 
-	private static final String TAG = PreviewEx.class.getName();
-	private ImageView mv;
+	private static final String TAG = Preview.class.getName();
+	private MjpegView mv;
     private ImageView mSnapshot;
     private ImageView mThumbnail;
     private View mToolbar;
@@ -76,17 +61,14 @@ public class PreviewEx extends Activity {
 	private Uri mCurrentSnapShotUri;
 	private Animation animToolbar;
 	private Animation animBottom;
-	private WebView mWebView;
-	private final static int RELOAD_TIME = 10000;
-	private final static int HIDE_CONTROL = 1500;
+	
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_preview_ex);
+		setContentView(R.layout.activity_preview);
 		findViews();
 		setListener();
-		setupWebView();
-		new PreviewEx.ReadDVR().execute(Def.getPreviewURL());
+		new Preview.ReadDVR().execute(Def.getPreviewURL());
 		mHandlerTime = new Handler();
 	}
     
@@ -145,18 +127,12 @@ public class PreviewEx extends Activity {
     	super.onPause();
     	pauseMJpegVideo();
         unregisterReceiver(mBroadcastReceiver);
-        mHandlerTime.removeCallbacks(ReloadWebView);
     }
     
-    @SuppressWarnings("deprecation")
-	public void onDestroy() {
-    	if (mWebView != null) {
-            mWebView.clearHistory();
-            mWebView.clearCache(true);
-            mWebView.loadUrl("about:blank");
-            mWebView.freeMemory(); 
-            mWebView.pauseTimers();
-            mWebView = null;
+    public void onDestroy() {
+    	
+    	if (mv!=null){
+    		mv.freeCameraMemory();
     	}
         super.onDestroy();
     }
@@ -164,32 +140,30 @@ public class PreviewEx extends Activity {
     @Override
     protected void onStart() {
     	super.onStart();
-    	mHandlerTime.postDelayed(HideUIControl, HIDE_CONTROL);
-    	mHandlerTime.postDelayed(ReloadWebView, RELOAD_TIME);
+    	mHandlerTime.postDelayed(HideUIControl, 1500);
     }
     
     private void pauseMJpegVideo() {
-
-        if (mWebView != null) {
-        	Bitmap bitmap = snapShot();
-			BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
-			mv.setBackground(bitmapDrawable);
-			mWebView.setVisibility(View.GONE);
-            mWebView.stopLoading();
+        if (mv != null) {
+        	if(mv.isStreaming()) {
+		        mv.stopPlayback();
+		        mIsSuspend = true;
+        	}
         }
     }
     
     private void resumeMJpegVideo() {
-
-        if (mWebView != null) {
-            mWebView.reload();
+        if (mv != null){
+        	if (mIsSuspend) {
+        		new Preview.ReadDVR().execute(Def.getPreviewURL());
+        		mIsSuspend = false;
+        	}
         }
     }
     
     public void setListener() {
 
         mv.setOnClickListener(mOnClickListener);
-    	mWebView.setOnTouchListener(mOnTouchListener);
         mSnapshot.setOnClickListener(mOnSnapshotClickListener);
         mThumbnail.setOnClickListener(mOnThumbnailClickListener);
         mRecordings.setOnClickListener(mOnRecordingsClickListener);
@@ -199,7 +173,7 @@ public class PreviewEx extends Activity {
     }
     
 	private void findViews() {
-		mv = (ImageView) findViewById(R.id.preview);
+		mv = (MjpegView) findViewById(R.id.preview);
         mSnapshot = (ImageView) findViewById(R.id.snapshot);
         mThumbnail = (ImageView) findViewById(R.id.thumbnail);
         mToolbar = findViewById(R.id.toolbar_preview);
@@ -212,7 +186,6 @@ public class PreviewEx extends Activity {
         mCamera2 = (ImageView) findViewById(R.id.icon_camera_2);
         mCameraloadingIndicator = (View) findViewById(R.id.icon_loading);
         mMenuLoadingIndicator = (View) findViewById(R.id.progress);
-        mWebView = (WebView) findViewById(R.id.web_view);
    }
 
 	public View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -237,7 +210,7 @@ public class PreviewEx extends Activity {
     		mHandlerTime.removeCallbacks(HideUIControl);
     	} else {
     		setMenuVisible(true);
-    		mHandlerTime.postDelayed(HideUIControl, HIDE_CONTROL);
+    		mHandlerTime.postDelayed(HideUIControl, 1500);
     	}
     	mShowingMenu = !mShowingMenu;
     }
@@ -273,7 +246,7 @@ public class PreviewEx extends Activity {
                 @Override
                 public void run() {
                     super.run();
-                    String uri = saveImageToGallery(PreviewEx.this, snapShot());
+                    String uri = saveImageToGallery(Preview.this, snapShot());
                     ContentResolver cr = getContentResolver();
                     mCurrentSnapShotUri = Uri.parse(uri);
                     long id = ContentUris.parseId(mCurrentSnapShotUri);
@@ -301,8 +274,7 @@ public class PreviewEx extends Activity {
     private View.OnClickListener mOnCameraClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-        	//pauseMJpegVideo();
-        	mHandlerTime.removeCallbacks(ReloadWebView);
+        	pauseMJpegVideo();
     		mHandlerTime.removeCallbacks(HideUIControl);
             final String mode;
             //mCameraloadingIndicator.setVisibility(View.VISIBLE);
@@ -327,19 +299,13 @@ public class PreviewEx extends Activity {
     		intent.setAction(Def.ACTION_SET_CAM_MODE);
     		intent.putExtra(Def.EXTRA_SET_CAM_MODE, mode);
     		startService(intent);
-    		//resumeMJpegVideo();
-    		mHandlerTime.postDelayed(HideUIControl, HIDE_CONTROL);
-        	mHandlerTime.postDelayed(ReloadWebView, RELOAD_TIME);
-
+    		resumeMJpegVideo();
+    		mHandlerTime.postDelayed(HideUIControl, 1500);
         }
     };
 
     private Bitmap snapShot() {
-        //return mv.getBitmap();
-    	 Bitmap bitmap = Bitmap.createBitmap(mWebView.getWidth(), mWebView.getHeight(), Config.ARGB_8888);
-         Canvas canvas = new Canvas(bitmap);
-         mWebView.draw(canvas);
-         return bitmap;
+        return mv.getBitmap();
     }
     
     public Runnable HideUIControl = new Runnable()
@@ -364,19 +330,6 @@ public class PreviewEx extends Activity {
         }
     };
     
-    public Runnable ReloadWebView = new Runnable() {
-    	public void run() {
-    		if (mWebView != null) {
-    			
-    			Bitmap bitmap = snapShot();
-    			BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
-    			mv.setBackground(bitmapDrawable);
-    			mWebView.setVisibility(View.GONE);
-    			mWebView.reload();
-    		}
-    		mHandlerTime.postDelayed(ReloadWebView, RELOAD_TIME);
-		}
-    };
     private Animation.AnimationListener mToolbarAnimation = new Animation.AnimationListener() {
         @Override
         public void onAnimationStart(Animation animation) {
@@ -414,9 +367,6 @@ public class PreviewEx extends Activity {
     public class ReadDVR extends AsyncTask<String, Void, MjpegInputStream> {
         protected MjpegInputStream doInBackground(String... url) {
 
-
-        	if (url[0] != null)
-        		return null;
             try {
                 URL _url = new URL(url[0]);
                 HttpURLConnection urlConnection = (HttpURLConnection) _url.openConnection();
@@ -435,16 +385,12 @@ public class PreviewEx extends Activity {
 
         protected void onPostExecute(MjpegInputStream result) {
             if (result != null) {
-
+                mv.setSource(result);
+                //result.setSkip(3);
+                mv.setDisplayMode(MjpegView.SIZE_FULLSCREEN);
+                //mv.showFps(true);
             } else {
                 //Toast.makeText(getApplicationContext(),"Fail to open preview URL", Toast.LENGTH_LONG).show();
-            	mWebView.getSettings().setLoadWithOverviewMode(true);
-        		mWebView.getSettings().setUseWideViewPort(true);
-        		mWebView.setWebViewClient(myWebViewClient);
-            	//mWebView.loadUrl(Def.getPreviewURL());
-        		//mWebView.loadDataWithBaseURL("http://192.168.10.1:8081", testPreviewHtml, "text/html", "utf-8", null);
-        		mWebView.loadData(getPreviewHtml(Def.getPreviewURL()), "text/html", "utf-8");
-        		mHandlerTime.postDelayed(ReloadWebView, RELOAD_TIME);
             }
         }
     }
@@ -503,155 +449,4 @@ public class PreviewEx extends Activity {
  	    return uri;
  	}
  	
- 	private OnTouchListener mOnTouchListener = new OnTouchListener() {
-		
-		@Override
-		public boolean onTouch(View v, MotionEvent event) {
-			
-			if (MotionEvent.ACTION_UP == event.getAction() ) {
-				toggleMenu();
-			}
-			return false;
-		}
-	};
-	
-	private void setupWebView() {
-		mWebView.setWebViewClient(myWebViewClient);
-	}
-	
-	private class MyWebViewClient extends WebViewClient {
-		
-	    
-	    @Override
-		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-	    	Log.d(TAG, "shouldOverrideUrlLoading");
-	    	return super.shouldOverrideUrlLoading(view, url);
-		}
-
-		@Override
-		public void onPageStarted(WebView view, String url, Bitmap favicon) {
-	    	Log.d(TAG, "onPageStarted");
-			super.onPageStarted(view, url, favicon);
-		}
-
-		@Override
-		public void onPageFinished(WebView view, String url) {
-	    	Log.d(TAG, "onPageFinished");
-			super.onPageFinished(view, url);
-			mHandlerTime.postDelayed(new Runnable() {
-				
-				@Override
-				public void run() {
-					if (mWebView != null) {
-						mWebView.setVisibility(View.VISIBLE);
-					}
-				}
-			}, 500);
-		}
-
-		@Override
-		public void onLoadResource(WebView view, String url) {
-	    	Log.d(TAG, "onLoadResource");
-			super.onLoadResource(view, url);
-		}
-
-		@Override
-		public void onPageCommitVisible(WebView view, String url) {
-	    	Log.d(TAG, "onPageCommitVisible");
-			super.onPageCommitVisible(view, url);
-		}
-
-		@Override
-		public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-	    	Log.d(TAG, "shouldInterceptRequest");
-			return super.shouldInterceptRequest(view, request);
-		}
-
-		@Override
-		public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
-	    	Log.d(TAG, "onReceivedHttpError");
-			super.onReceivedHttpError(view, request, errorResponse);
-		}
-
-		@Override
-		public void onFormResubmission(WebView view, Message dontResend, Message resend) {
-	    	Log.d(TAG, "onFormResubmission");
-			super.onFormResubmission(view, dontResend, resend);
-		}
-
-		@Override
-		public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
-	    	Log.d(TAG, "doUpdateVisitedHistory");
-			super.doUpdateVisitedHistory(view, url, isReload);
-		}
-
-		@Override
-		public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-	    	Log.d(TAG, "onReceivedSslError");
-			super.onReceivedSslError(view, handler, error);
-		}
-
-		@Override
-		public void onReceivedClientCertRequest(WebView view, ClientCertRequest request) {
-	    	Log.d(TAG, "onReceivedClientCertRequest");
-			super.onReceivedClientCertRequest(view, request);
-		}
-
-		@Override
-		public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
-	    	Log.d(TAG, "onReceivedHttpAuthRequest");
-			super.onReceivedHttpAuthRequest(view, handler, host, realm);
-		}
-
-		@Override
-		public boolean shouldOverrideKeyEvent(WebView view, KeyEvent event) {
-	    	Log.d(TAG, "shouldOverrideKeyEvent");
-			return super.shouldOverrideKeyEvent(view, event);
-		}
-
-		@Override
-		public void onUnhandledInputEvent(WebView view, InputEvent event) {
-	    	Log.d(TAG, "onUnhandledInputEvent");
-			super.onUnhandledInputEvent(view, event);
-		}
-
-		@Override
-		public void onScaleChanged(WebView view, float oldScale, float newScale) {
-	    	Log.d(TAG, "onScaleChanged");
-			super.onScaleChanged(view, oldScale, newScale);
-		}
-
-		@Override
-		public void onReceivedLoginRequest(WebView view, String realm, String account, String args) {
-	    	Log.d(TAG, "onReceivedLoginRequest");
-			super.onReceivedLoginRequest(view, realm, account, args);
-		}
-
-		@Override
-	    public void onReceivedError (WebView view, int errorCode, 
-	        String description, String failingUrl) {
-	    	Log.d(TAG, "onReceivedLoginRequest , Error Code : " + errorCode);
-
-	        if (errorCode == ERROR_TIMEOUT) {
-	            view.loadData(timeOutMessageHtml, "text/html", "utf-8");
-	        }
-	    }
-	};
-	
-	private MyWebViewClient myWebViewClient = new MyWebViewClient();
-	
-	public static final String offlineMessageHtml = "<html><body bgcolor=\"#000000\"><table width=\"100%\" height=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">"
-            + "<tr>"
-            + "<td><div align=\"center\"><font color=\"white\" size=\"20pt\">Your device don't have active internet connection</font></div></td>"
-            + "</tr>" + "</table></body></html>";
-	
-	public static final String timeOutMessageHtml = "<html><body bgcolor=\"#000000\"><table width=\"100%\" height=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">"
-            + "<tr>"
-            + "<td><div align=\"center\"><font color=\"white\" size=\"20pt\">Connect to DVR timeout</font></div></td>"
-            + "</tr>" + "</table></body></html>";
-	public static final String previewHtml = "<html><body bgcolor=#000000><img src=\"%s\" height=\"100%\" width=\"100%\"></body></html>";
-	
-	private String getPreviewHtml(String url) {
-		return "<html><body bgcolor=#000000><img src=\"" + url + "\" height=\"100%\" width=\"100%\"></body></html>";
-	}
 }
