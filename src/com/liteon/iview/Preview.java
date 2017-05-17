@@ -132,7 +132,7 @@ public class Preview extends Activity {
     public void onDestroy() {
     	
     	if (mv!=null){
-    		mv.freeCameraMemory();
+    		//mv.freeCameraMemory();
     	}
         super.onDestroy();
     }
@@ -374,7 +374,7 @@ public class Preview extends Activity {
                 if (is == null) {
                     return null;
                 }
-                return MjpegInputStream.read(is);
+                return MjpegInputStream.read(url[0]);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -387,8 +387,8 @@ public class Preview extends Activity {
             if (result != null) {
                 mv.setSource(result);
                 //result.setSkip(3);
-                mv.setDisplayMode(MjpegView.SIZE_FULLSCREEN);
-                //mv.showFps(true);
+                mv.setDisplayMode(MjpegView.SIZE_BEST_FIT);
+                mv.showFps(true);
             } else {
                 //Toast.makeText(getApplicationContext(),"Fail to open preview URL", Toast.LENGTH_LONG).show();
             }
