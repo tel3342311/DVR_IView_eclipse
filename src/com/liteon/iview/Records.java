@@ -124,7 +124,7 @@ public class Records extends Activity {
         public void onClick(View v) {
         	mRecordings.setSelected(false);
         	mPreview.setSelected(true);
-        	Intent intent = new Intent(getApplicationContext(), Preview.class);
+        	Intent intent = new Intent(getApplicationContext(), PreviewEx.class);
     		startActivity(intent);
     		finish();
     	}

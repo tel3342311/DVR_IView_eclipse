@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
             	String mode = intent.getStringExtra(Def.EXTRA_GET_ALL_INFO);
                 mSystemMode = mode;
 	            if (mSystemMode.equals(Def.RECORDING_MODE)) {
-	            	intentActivity.setClass(MainActivity.this, Preview.class);
+	            	intentActivity.setClass(MainActivity.this, PreviewEx.class);
 	            } else if (mSystemMode.equals(Def.STORAGE_MODE)) {
 	            	intentActivity.setClass(MainActivity.this, Records.class);
 	            } 

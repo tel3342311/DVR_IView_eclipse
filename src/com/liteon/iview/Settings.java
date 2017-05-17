@@ -208,7 +208,7 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
         public void onClick(View v) {
         	mSettings.setSelected(false);
         	mPreview.setSelected(true);
-        	Intent intent = new Intent(getApplicationContext(), Preview.class);
+        	Intent intent = new Intent(getApplicationContext(), PreviewEx.class);
     		startActivity(intent);
     		finish();
     	}

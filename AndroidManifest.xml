@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Preview"
+            android:name=".PreviewEx"
             android:label="@string/title_activity_preview"
             android:launchMode="singleTask"
             android:screenOrientation="landscape" >

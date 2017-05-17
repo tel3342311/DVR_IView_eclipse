@@ -410,7 +410,7 @@ public class VideoPlayEX extends Activity {
         public void onClick(View v) {
         	mRecordings.setSelected(true);
         	mPreview.setSelected(true);
-        	Intent intent = new Intent(getApplicationContext(), Preview.class);
+        	Intent intent = new Intent(getApplicationContext(), PreviewEx.class);
     		startActivity(intent);
     		finish();
     	}

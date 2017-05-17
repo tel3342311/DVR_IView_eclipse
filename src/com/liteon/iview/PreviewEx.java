@@ -26,6 +26,7 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.AsyncTask;
@@ -53,10 +54,10 @@ import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class Preview extends Activity {
+public class PreviewEx extends Activity {
 
-	private static final String TAG = Preview.class.getName();
-	private MjpegView mv;
+	private static final String TAG = PreviewEx.class.getName();
+	private ImageView mv;
     private ImageView mSnapshot;
     private ImageView mThumbnail;
     private View mToolbar;
@@ -84,7 +85,7 @@ public class Preview extends Activity {
 		findViews();
 		setListener();
 		setupWebView();
-		new Preview.ReadDVR().execute(Def.getPreviewURL());
+		new PreviewEx.ReadDVR().execute(Def.getPreviewURL());
 		mHandlerTime = new Handler();
 	}
     
@@ -143,12 +144,18 @@ public class Preview extends Activity {
     	super.onPause();
     	pauseMJpegVideo();
         unregisterReceiver(mBroadcastReceiver);
+        mHandlerTime.removeCallbacks(ReloadWebView);
     }
     
-    public void onDestroy() {
-    	
-    	if (mv!=null){
-    		mv.freeCameraMemory();
+    @SuppressWarnings("deprecation")
+	public void onDestroy() {
+    	if (mWebView != null) {
+            mWebView.clearHistory();
+            mWebView.clearCache(true);
+            mWebView.loadUrl("about:blank");
+            mWebView.freeMemory(); 
+            mWebView.pauseTimers();
+            mWebView = null;
     	}
         super.onDestroy();
     }
@@ -157,23 +164,25 @@ public class Preview extends Activity {
     protected void onStart() {
     	super.onStart();
     	mHandlerTime.postDelayed(HideUIControl, 1500);
+    	mHandlerTime.postDelayed(ReloadWebView, 10000);
     }
     
     private void pauseMJpegVideo() {
-        if (mv != null) {
-        	if(mv.isStreaming()) {
-		        mv.stopPlayback();
-		        mIsSuspend = true;
-        	}
+
+        if (mWebView != null) {
+            mWebView.stopLoading();
         }
     }
     
     private void resumeMJpegVideo() {
         if (mv != null){
         	if (mIsSuspend) {
-        		new Preview.ReadDVR().execute(Def.getPreviewURL());
+        		new PreviewEx.ReadDVR().execute(Def.getPreviewURL());
         		mIsSuspend = false;
         	}
+        }
+        if (mWebView != null) {
+            mWebView.reload();
         }
     }
     
@@ -190,7 +199,7 @@ public class Preview extends Activity {
     }
     
 	private void findViews() {
-		mv = (MjpegView) findViewById(R.id.preview);
+		mv = (ImageView) findViewById(R.id.preview);
         mSnapshot = (ImageView) findViewById(R.id.snapshot);
         mThumbnail = (ImageView) findViewById(R.id.thumbnail);
         mToolbar = findViewById(R.id.toolbar_preview);
@@ -264,7 +273,7 @@ public class Preview extends Activity {
                 @Override
                 public void run() {
                     super.run();
-                    String uri = saveImageToGallery(Preview.this, snapShot());
+                    String uri = saveImageToGallery(PreviewEx.this, snapShot());
                     ContentResolver cr = getContentResolver();
                     mCurrentSnapShotUri = Uri.parse(uri);
                     long id = ContentUris.parseId(mCurrentSnapShotUri);
@@ -352,6 +361,19 @@ public class Preview extends Activity {
         }
     };
     
+    public Runnable ReloadWebView = new Runnable() {
+    	public void run() {
+    		if (mWebView != null) {
+    			
+    			Bitmap bitmap = snapShot();
+    			BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
+    			mv.setBackground(bitmapDrawable);
+    			mWebView.setVisibility(View.GONE);
+    			mWebView.reload();
+    		}
+    		mHandlerTime.postDelayed(ReloadWebView, 20000);
+		}
+    };
     private Animation.AnimationListener mToolbarAnimation = new Animation.AnimationListener() {
         @Override
         public void onAnimationStart(Animation animation) {
@@ -410,17 +432,16 @@ public class Preview extends Activity {
 
         protected void onPostExecute(MjpegInputStream result) {
             if (result != null) {
-                mv.setSource(result);
-                //result.setSkip(3);
-                mv.setDisplayMode(MjpegView.SIZE_FULLSCREEN);
-                //mv.showFps(true);
+
             } else {
                 //Toast.makeText(getApplicationContext(),"Fail to open preview URL", Toast.LENGTH_LONG).show();
             	mWebView.getSettings().setLoadWithOverviewMode(true);
         		mWebView.getSettings().setUseWideViewPort(true);
         		mWebView.setWebViewClient(myWebViewClient);
             	//mWebView.loadUrl(Def.getPreviewURL());
-        		mWebView.loadDataWithBaseURL("http://192.168.10.1:8081", testPreviewHtml, "text/html", "utf-8", null);
+        		//mWebView.loadDataWithBaseURL("http://192.168.10.1:8081", testPreviewHtml, "text/html", "utf-8", null);
+        		mWebView.loadData(getPreviewHtml(Def.getPreviewURL()), "text/html", "utf-8");
+        		mHandlerTime.postDelayed(ReloadWebView, 60000);
             }
         }
     }
@@ -514,11 +535,20 @@ public class Preview extends Activity {
 		public void onPageFinished(WebView view, String url) {
 	    	Log.d(TAG, "onPageFinished");
 			super.onPageFinished(view, url);
+			mHandlerTime.postDelayed(new Runnable() {
+				
+				@Override
+				public void run() {
+					if (mWebView != null) {
+						mWebView.setVisibility(View.VISIBLE);
+					}
+				}
+			}, 2000);
 		}
 
 		@Override
 		public void onLoadResource(WebView view, String url) {
-	    	Log.d(TAG, "onPageFinished");
+	    	Log.d(TAG, "onLoadResource");
 			super.onLoadResource(view, url);
 		}
 
@@ -616,5 +646,9 @@ public class Preview extends Activity {
             + "<tr>"
             + "<td><div align=\"center\"><font color=\"white\" size=\"20pt\">Connect to DVR timeout</font></div></td>"
             + "</tr>" + "</table></body></html>";
-	public static final String testPreviewHtml = "<html><body bgcolor=#000000><img src=\"/?action=stream\" height=\"100%\" width=\"100%\"></body></html>";
+	public static final String previewHtml = "<html><body bgcolor=#000000><img src=\"%s\" height=\"100%\" width=\"100%\"></body></html>";
+	
+	private String getPreviewHtml(String url) {
+		return "<html><body bgcolor=#000000><img src=\"" + url + "\" height=\"100%\" width=\"100%\"></body></html>";
+	}
 }
