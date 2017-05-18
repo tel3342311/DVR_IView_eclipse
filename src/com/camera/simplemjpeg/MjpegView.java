@@ -211,7 +211,19 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
     }
-
+    
+    public void freeCameraMemory(){
+    	if (mIn != null){
+    		//mIn.freeCameraMemory();
+    		mBitmap.recycle();
+    		try {
+				mIn.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
+    }
+    
     public MjpegView(Context context, AttributeSet attrs) { 
     	super(context, attrs); init(context); 
     	

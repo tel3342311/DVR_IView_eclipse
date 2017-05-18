@@ -132,7 +132,7 @@ public class Preview extends Activity {
     public void onDestroy() {
     	
     	if (mv!=null){
-    		//mv.freeCameraMemory();
+    		mv.freeCameraMemory();
     	}
         super.onDestroy();
     }
