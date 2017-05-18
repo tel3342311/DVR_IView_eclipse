@@ -1126,7 +1126,7 @@ public class DVRClient {
             try {
                 URL url = new URL(Url);   // Change to "http://google.com" for www  test.
                 HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
-                urlc.setConnectTimeout(10 * 1000);          // 10 s.
+                urlc.setConnectTimeout(1000);          // 1 s.
                 urlc.connect();
                 int responseCode = urlc.getResponseCode();
                 if (responseCode == 200) {        // 200 = "OK" code (http connection is fine).
