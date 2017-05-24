@@ -10,12 +10,9 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
@@ -55,10 +52,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
-import android.graphics.Bitmap.Config;
-import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -71,9 +68,10 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Display;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.Surface;
-import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -81,6 +79,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -135,7 +135,7 @@ public class VideoPlayEX extends Activity {
     private String mp4URL = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
 	private Animation animToolbar;
 	private Animation animBottom;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -223,7 +223,12 @@ public class VideoPlayEX extends Activity {
         mThumbnail.setOnClickListener(mOnThumbnailClickListener);
         mSnapshot.setOnClickListener(mOnSnapShotClickListener);
         mSeekBar.setOnSeekBarChangeListener(mSeekBarChangeListener);
-
+	}
+	
+	private void updateTextureViewSize(int viewWidth, int viewHeight) {
+		LayoutParams params = new FrameLayout.LayoutParams(viewWidth, viewHeight);
+		params.gravity = Gravity.CENTER;
+		mVideoView.setLayoutParams(params);
 	}
 	
 	private void initializePlayer() {
@@ -249,7 +254,8 @@ public class VideoPlayEX extends Activity {
 		player.prepare(mediaSource);
 		player.seekTo(mWindowIndex, 0);
 		player.setPlayWhenReady(true);
-		player.addListener(mEventListener); 
+		player.addListener(mEventListener);
+		player.setVideoListener(mVideoListener);
 		if (mSurface != null) { 
 			player.setVideoSurface(mSurface);
 		}
@@ -786,7 +792,7 @@ public class VideoPlayEX extends Activity {
 		@Override
 		public void onPlaybackParametersChanged(PlaybackParameters arg0) {
         	Log.d(TAG, "[onPlayerStateChanged]  onPlaybackParametersChanged " + arg0);
-			
+        	
 		}
 
 		@Override
@@ -802,6 +808,7 @@ public class VideoPlayEX extends Activity {
             	Log.d(TAG, "[onPlayerStateChanged]  STATE_PLAYING");
 				setDuration();
 				startUITimer();
+				applyAspectRatio(player);
 				mProgressView.setVisibility(View.GONE);
             } else if (playbackState == PlaybackState.STATE_PAUSED){
             	Log.d(TAG, "[onPlayerStateChanged]  STATE_PAUSED");
@@ -809,8 +816,7 @@ public class VideoPlayEX extends Activity {
             	Log.d(TAG, "[onPlayerStateChanged]  STATE_SKIPPING_TO_NEXT");
             } else if (playbackState == PlaybackState.STATE_SKIPPING_TO_PREVIOUS) {
             	Log.d(TAG, "[onPlayerStateChanged]  STATE_SKIPPING_TO_PREVIOUS");
-            }
-            		
+            } 	
 		}
 
 		@Override
@@ -850,9 +856,8 @@ public class VideoPlayEX extends Activity {
 		}
 
 		@Override
-		public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-			// TODO Auto-generated method stub
-			
+		public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height) {
+
 		}
 
 		@Override
@@ -863,7 +868,6 @@ public class VideoPlayEX extends Activity {
 
 		@Override
 		public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-			// TODO Auto-generated method stub
 			
 		}
  		
@@ -875,5 +879,49 @@ public class VideoPlayEX extends Activity {
 		public void onClick(View v) {
 			startActivity(new Intent(Intent.ACTION_VIEW, mCurrentSnapShotUri));
 		}
+    };
+    
+    public void onConfigurationChanged(android.content.res.Configuration newConfig) {
+    	super.onConfigurationChanged(newConfig);
+    	if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+    		setMenuVisible(false);
+    		showVideoControl(false);
+    		mHandlerTime.removeCallbacks(HideUIControl);
+    		mVideoView.setOnTouchListener(null);
+        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
+        	
+    		mVideoView.setOnTouchListener(mOnVideoViewTouchListener);
+        }
+    	applyAspectRatio(player);
+    };
+    
+    private void applyAspectRatio(SimpleExoPlayer exoPlayer) {
+        float videoRatio = (float) exoPlayer.getVideoFormat().width/exoPlayer.getVideoFormat().height;
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        float displayRatio = (float) size.x / size.y;
+
+        if (videoRatio > displayRatio) {
+            Log.d(TAG, "applying " + videoRatio + "aspectRatio");
+        	updateTextureViewSize(size.x , (int) (size.x / videoRatio));
+        } else {
+        	updateTextureViewSize((int)(videoRatio * size.y) , size.y);
+        }
+    }
+    
+    private SimpleExoPlayer.VideoListener mVideoListener = new SimpleExoPlayer.VideoListener() {
+
+		@Override
+		public void onRenderedFirstFrame() {
+			applyAspectRatio(player);
+		}
+
+		@Override
+		public void onVideoSizeChanged(int arg0, int arg1, int arg2, float arg3) {
+			applyAspectRatio(player);
+		}
+    	
     };
 }

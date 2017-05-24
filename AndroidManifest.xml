@@ -55,7 +55,7 @@
             android:name=".VideoPlayEX"
             android:label="@string/title_activity_video_play" 
             android:launchMode="singleTask"
-            android:screenOrientation="landscape">
+            android:configChanges="orientation|screenSize|layoutDirection">
         </activity>
     </application>
 
