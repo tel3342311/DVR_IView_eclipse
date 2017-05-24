@@ -78,6 +78,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -589,6 +590,7 @@ public class VideoPlayEX extends Activity {
         registerReceiver(mBroadcastReceiver, intentFilter);
 		registerOTGEvent();
 		initializePlayer();
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
     @Override
@@ -603,6 +605,7 @@ public class VideoPlayEX extends Activity {
         unregisterReceiver(mBroadcastReceiver);
         unregisterOTGEvent();
         releasePlayer();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
     private void setMenuVisible(boolean show) {
     	if (show) {

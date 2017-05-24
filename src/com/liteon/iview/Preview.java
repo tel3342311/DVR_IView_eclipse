@@ -33,6 +33,7 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -84,6 +85,7 @@ public class Preview extends Activity {
         resumeMJpegVideo();
         checkSystemMode();
         checkCameraStatus();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
     
     private void checkSystemMode() {
@@ -127,6 +129,7 @@ public class Preview extends Activity {
     	super.onPause();
     	pauseMJpegVideo();
         unregisterReceiver(mBroadcastReceiver);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
     
     public void onDestroy() {
