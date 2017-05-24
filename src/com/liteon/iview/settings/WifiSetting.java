@@ -3,8 +3,12 @@ package com.liteon.iview.settings;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.app.Activity;
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
@@ -18,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.liteon.iview.R;
+import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 
 public class WifiSetting extends Fragment {
@@ -40,6 +45,8 @@ public class WifiSetting extends Fragment {
     private TextView mTextViewAES;
     private TextView mTextViewTKIPAES;
     private ImageView mConfirm;
+    private IntentFilter mIntenFilter;
+    private View mProgressView;
     
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -68,6 +75,7 @@ public class WifiSetting extends Fragment {
         security_map.put("AES", mTextViewAES);
         security_map.put("TKIPAES", mTextViewTKIPAES);
         mConfirm = (ImageView) getActivity().findViewById(R.id.confirm_icon);
+        mProgressView = (View) getActivity().findViewById(R.id.progress_view);
     }
 
     private TextWatcher mSSIDTextWater = new TextWatcher() {
@@ -151,23 +159,23 @@ public class WifiSetting extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        SharedPreferences sp = getActivity().getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
-        mSsid = sp.getString(Def.SP_SSID, "SSID");
-        mBssid = sp.getString(Def.SP_BSSID, "BSSID");
-        mSecurityMode = sp.getString(Def.SP_SECURITY, "OPEN");
-        mEncryptType = sp.getString(Def.SP_ENCRYPTTYPE, "NONE");
-        mPassPhase = sp.getString(Def.SP_PASSPHASE, "");
-        //Toast.makeText(getActivity(), "SSID " + mSsid + ", BSSID " + mBssid + ", Security mode " + mSecurityMode + ", Encrypt Type " + mEncryptType, Toast.LENGTH_LONG).show();
-        mEditTextSSid.setText(mSsid);
-        mEditTextBssid.setText(mBssid);
-        mEditTextPassPhase.setText(mPassPhase);
-        TextView encrypt = security_map.get(mEncryptType);
-        if (encrypt != null) {
-            encrypt.setSelected(true);
-        }
-        mConfirm.setEnabled(false);
+        registerBroadcastRecevier();
+        //get basic wifi setting
+        Intent intent = new Intent(Def.ACTION_GET_SECURITY);
+        intent.setClass(getActivity(), DvrInfoService.class);
+        getActivity().startService(intent);
+        //get security wifi setting
+        intent = new Intent(Def.ACTION_GET_WIRELESS);
+        intent.setClass(getActivity(), DvrInfoService.class);
+        getActivity().startService(intent);
+        mProgressView.setVisibility(View.VISIBLE);
     }
     
+    @Override
+    public void onPause() {
+    	super.onPause();
+    	unregisterBroadcastReceiver();
+    }
 	public String getCurrentSsid() {
         return currentSsid;
     }
@@ -184,4 +192,41 @@ public class WifiSetting extends Fragment {
         return currentPassPhase;
     }
 
+    private void registerBroadcastRecevier() {
+    	Activity activity = getActivity();
+    	if (mIntenFilter == null) {
+    		mIntenFilter = new IntentFilter(Def.ACTION_GET_SECURITY);
+    	}
+    	activity.registerReceiver(mBroadcastReceiver, mIntenFilter);
+    }
+    
+    private void unregisterBroadcastReceiver() {
+    	Activity activity = getActivity();
+    	activity.unregisterReceiver(mBroadcastReceiver);
+    }
+    
+    BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+
+		@Override
+        public void onReceive(Context context, Intent intent) {
+	        mProgressView.setVisibility(View.GONE);
+
+	        SharedPreferences sp = getActivity().getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
+	        mSsid = sp.getString(Def.SP_SSID, "SSID");
+	        mBssid = sp.getString(Def.SP_BSSID, "BSSID");
+	        mSecurityMode = sp.getString(Def.SP_SECURITY, "OPEN");
+	        mEncryptType = sp.getString(Def.SP_ENCRYPTTYPE, "NONE");
+	        mPassPhase = sp.getString(Def.SP_PASSPHASE, "");
+	        //Toast.makeText(getActivity(), "SSID " + mSsid + ", BSSID " + mBssid + ", Security mode " + mSecurityMode + ", Encrypt Type " + mEncryptType, Toast.LENGTH_LONG).show();
+	        mEditTextSSid.setText(mSsid);
+	        mEditTextBssid.setText(mBssid);
+	        mEditTextPassPhase.setText(mPassPhase);
+	        TextView encrypt = security_map.get(mEncryptType);
+	        if (encrypt != null) {
+	            encrypt.setSelected(true);
+	        }
+	        mConfirm.setEnabled(false);
+        }
+    };
+    
 }

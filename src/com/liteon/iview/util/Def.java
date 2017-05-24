@@ -209,10 +209,11 @@ public class Def {
     public final static String ACTION_SET_SYS_MODE = "com.liteon.iView.service.action.SET_SYS";
     public final static String ACTION_GET_CAM_MODE = "com.liteon.iView.service.action.GET_CAM";
     public final static String ACTION_SET_CAM_MODE = "com.liteon.iView.service.action.SET_CAM";
-    public final static String ACTION_GET_INTERNET = "com.liteon.iView.service.action.GET_INET";
+    public final static String ACTION_GET_NETWORKING = "com.liteon.iView.service.action.GET_INET";
     public final static String ACTION_GET_WIRELESS = "com.liteon.iView.service.action.GET_WIRELESS";
     public final static String ACTION_GET_SECURITY = "com.liteon.iView.service.action.GET_SECURITY";
     public final static String ACTION_GET_ADMIN    = "com.liteon.iView.service.action.GET_ADMIN";
+    public final static String ACTION_GET_RECORDINGS = "com.liteon.iView.service.action.GET_RECORDINGS";
     public final static String ACTION_SET_TIMEZONE = "com.liteon.iView.service.action.SET_TIMEZONE";
     public final static String ACTION_SET_RECORDINGS = "com.liteon.iView.service.action.SET_RECORDINGS";
     public final static String ACTION_SET_INTERNET = "com.liteon.iView.service.action.SET_INTERNET";
@@ -288,5 +289,7 @@ public class Def {
     public final static String SP_PREVIEW_CAMERA = "SP_PREVIEW_CAMERA";
     public final static String SP_RECORDING_LIST = "SP_RECORDING_LIST";
     public final static String SP_SYSTEM_MODE = "SP_SYSTEM_MODE";
+    public final static String SP_SDK_VERSION = "SP_SDK_VERSION";
+    public final static String SP_CLIENT_IP = "SP_SDK_VERSION";
 	//
 }

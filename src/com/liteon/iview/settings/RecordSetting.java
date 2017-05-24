@@ -1,10 +1,15 @@
 package com.liteon.iview.settings;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.app.Activity;
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,7 +18,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.liteon.iview.R;
+import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 
 public class RecordSetting extends Fragment {
@@ -32,6 +41,8 @@ public class RecordSetting extends Fragment {
     private String currentRecordingChannel;
     private Map<String, TextView> lenght_map = new HashMap<String, TextView>();
     private Map<String, TextView> camera_map = new HashMap<String, TextView>();
+    private IntentFilter mIntenFilter;
+    private View mProgressView;
     
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -43,6 +54,7 @@ public class RecordSetting extends Fragment {
 	
     private void findViews(View rootView) {
         mConfirm = (ImageView) getActivity().findViewById(R.id.confirm_icon);
+        mProgressView = (View) getActivity().findViewById(R.id.progress_view);
         mTextView2m = (TextView) rootView.findViewById(R.id.two_min);
         mTextView3m = (TextView) rootView.findViewById(R.id.three_min);
         mTextView5m = (TextView) rootView.findViewById(R.id.five_min);
@@ -122,17 +134,17 @@ public class RecordSetting extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        SharedPreferences sp = getActivity().getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
-        mRecordingLength = sp.getString(Def.SP_RECORDING_LENGTH, "2m");
-        mRecordingChannel = sp.getString(Def.SP_RECORDING_CAMERA, "chab");
-        mPreviewChannel = sp.getString(Def.SP_PREVIEW_CAMERA, "cha");
-        //Toast.makeText(getContext(), "mRecordingLength " + mRecordingLength + ", mRecordingChannel " + mRecordingChannel + ", mPreviewChannel " + mPreviewChannel, Toast.LENGTH_LONG).show();
-        //setup default value
-        lenght_map.get(mRecordingLength).setSelected(true);
-        camera_map.get(mRecordingChannel).setSelected(true);
-        currentRecordingLength = mRecordingLength;
-        currentRecordingChannel = mRecordingChannel;
-        mConfirm.setEnabled(false);
+        registerBroadcastRecevier();
+        Intent intent = new Intent(Def.ACTION_GET_RECORDINGS);
+        intent.setClass(getActivity(), DvrInfoService.class);
+        getActivity().startService(intent);
+        mProgressView.setVisibility(View.VISIBLE);
+    }
+    
+    @Override
+    public void onPause() {
+    	super.onPause();
+    	unregisterBroadcastReceiver();
     }
 
     private void isSettingchanged() {
@@ -151,5 +163,37 @@ public class RecordSetting extends Fragment {
     public String getRecordingChannel() {
         return currentRecordingChannel;
     }
+    
+    private void registerBroadcastRecevier() {
+    	Activity activity = getActivity();
+    	if (mIntenFilter == null) {
+    		mIntenFilter = new IntentFilter(Def.ACTION_GET_RECORDINGS);
+    	}
+    	activity.registerReceiver(mBroadcastReceiver, mIntenFilter);
+    }
+    
+    private void unregisterBroadcastReceiver() {
+    	Activity activity = getActivity();
+    	activity.unregisterReceiver(mBroadcastReceiver);
+    }
+    
+    BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
 
+		@Override
+        public void onReceive(Context context, Intent intent) {
+	        mProgressView.setVisibility(View.GONE);
+
+	        SharedPreferences sp = getActivity().getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
+	        mRecordingLength = sp.getString(Def.SP_RECORDING_LENGTH, "2m");
+	        mRecordingChannel = sp.getString(Def.SP_RECORDING_CAMERA, "chab");
+	        mPreviewChannel = sp.getString(Def.SP_PREVIEW_CAMERA, "cha");
+	        //Toast.makeText(getContext(), "mRecordingLength " + mRecordingLength + ", mRecordingChannel " + mRecordingChannel + ", mPreviewChannel " + mPreviewChannel, Toast.LENGTH_LONG).show();
+	        //setup default value
+	        lenght_map.get(mRecordingLength).setSelected(true);
+	        camera_map.get(mRecordingChannel).setSelected(true);
+	        currentRecordingLength = mRecordingLength;
+	        currentRecordingChannel = mRecordingChannel;
+	        mConfirm.setEnabled(false);
+        }
+    };
 }

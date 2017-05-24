@@ -55,7 +55,7 @@ public class DvrInfoService extends IntentService {
                 Intent intentResponse = new Intent(Def.ACTION_GET_CAM_MODE);
                 intentResponse.putExtra(Def.EXTRA_GET_CAM_MODE, mode);
                 sendBroadcast(intentResponse);
-            } else if (Def.ACTION_GET_INTERNET.equals(action)) {
+            } else if (Def.ACTION_GET_NETWORKING.equals(action)) {
                 handleActionGetInternet();
             } else if (Def.ACTION_GET_WIRELESS.equals(action)) {
                 handleActionGetWireless();
@@ -63,6 +63,8 @@ public class DvrInfoService extends IntentService {
                 handleActionGetSecurity();
             } else if (Def.ACTION_GET_ADMIN.equals(action)) {
                 handleActionGetAdmin();
+            } else if (Def.ACTION_GET_RECORDINGS.equals(action)) {
+            	handleActionGetRecordings();
             } else if (Def.ACTION_SET_TIMEZONE.equals(action)) {
                 String timezone = intent.getStringExtra(Def.EXTRA_TIMEZONE);
                 String ntpServer = intent.getStringExtra(Def.EXTRA_NTP_SERVER);
@@ -263,7 +265,7 @@ public class DvrInfoService extends IntentService {
                 editor.putString(Def.SP_SYSTEM_MODE, Def.RECORDING_MODE);
             }
             editor.commit();
-            
+	    	dvrClient.getStatusInfo();
 	    	dvrClient.getCameraSetting();
         	dvrClient.getWifiBasic();
 	    	dvrClient.getWifiSecurity();
@@ -316,22 +318,42 @@ public class DvrInfoService extends IntentService {
 
     private void handleActionGetInternet(){
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        Map map = dvrClient.get3GModemList();
-        Log.v(TAG, "[handleActionGetInternet] get3GModemList is " + map.toString());
+        dvrClient.getNetworkSetting();
+        Log.v(TAG, "[handleActionGetInternet] ");
+        Intent intent = new Intent(Def.ACTION_GET_NETWORKING);
+        sendBroadcast(intent);
     }
 
     private void handleActionGetWireless(){
-
+        DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
+    	dvrClient.getWifiBasic();
+        Log.v(TAG, "[handleActionGetWireless] ");
+        Intent intent = new Intent(Def.ACTION_GET_WIRELESS);
+        sendBroadcast(intent);
     }
 
     private void handleActionGetSecurity(){
-
+        DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
+    	dvrClient.getWifiSecurity();
+        Log.v(TAG, "[handleActionGetSecurity] ");
+        Intent intent = new Intent(Def.ACTION_GET_SECURITY);
+        sendBroadcast(intent);
     }
 
     private void handleActionGetAdmin(){
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        Map map = dvrClient.getTimeZoneList();
-        Log.v(TAG, "[handleActionGetAdmin] getTimeZoneList is " + map.toString());
+        dvrClient.getInfoFromADMPage();
+        Log.v(TAG, "[handleActionGetAdmin] ");
+        Intent intent = new Intent(Def.ACTION_GET_ADMIN);
+        sendBroadcast(intent);
+    }
+    
+    private void handleActionGetRecordings(){
+    	DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
+        dvrClient.getCameraSetting();
+        Log.v(TAG, "[handleActionGetRecordings] ");
+        Intent intent = new Intent(Def.ACTION_GET_RECORDINGS);
+        sendBroadcast(intent);
     }
 
     private void handleActionSetTimezone(String timezone, String ntpServer) {

@@ -6,8 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.app.Activity;
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
@@ -27,6 +31,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.liteon.iview.R;
+import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 import com.liteon.iview.util.ExtendNumberPicker;
 
@@ -55,6 +60,8 @@ public class InternetSetting extends Fragment {
     private String currentPassword;
     private String currentModem;
     private ExtendNumberPicker mNumPicker;
+    private IntentFilter mIntenFilter;
+    private View mProgressView;
     
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -74,9 +81,11 @@ public class InternetSetting extends Fragment {
 	
 	private void setupPicker() {
         mNumPicker = new ExtendNumberPicker(getActivity(), null);
+    	List<String> list = new ArrayList(mModemList.keySet());
         mNumPicker.setMinValue(0);
-        mNumPicker.setMaxValue(mModemList.size() - 1);
-        mNumPicker.setDisplayedValues(mModemList.keySet().toArray(new String[0]));
+        mNumPicker.setMaxValue(list.size() - 1);
+        mNumPicker.setDisplayedValues(list.toArray(new String[0]));
+        mNumPicker.setValue(list.indexOf(mModemTitle));
         mNumPicker.setWrapSelectorWheel(false);
         mNumPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         mNumPicker.setOnValueChangedListener(mOnValueChangeListener);
@@ -106,44 +115,23 @@ public class InternetSetting extends Fragment {
         mTextViewPassword = (TextView) view.findViewById(R.id.edit_password);
         mPicker = (ViewGroup) view.findViewById(R.id.picker_container);
         mConfirm = (ImageView) getActivity().findViewById(R.id.confirm_icon);
+        mProgressView = (View) getActivity().findViewById(R.id.progress_view);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        SharedPreferences sp = getActivity().getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
-        mAPN = sp.getString(Def.SP_APN3G, "APN");
-        mPIN = sp.getString(Def.SP_PIN3G, "PIN");
-        mDial_Num = sp.getString(Def.SP_USER3G, "User name");
-        mUsername = sp.getString(Def.SP_PASSWORD3G, "Password");
-        mPassword = sp.getString(Def.SP_DIAL3G, "Dial number");
-        mModem = sp.getString(Def.SP_MODEM_NAME, "AUTO");
-        String json = sp.getString(Def.SP_MODEM_LIST_JSON, "");
-        Type typeOfHashMap = new TypeToken<Map<String, String>>() { }.getType();
-        Gson gson = new GsonBuilder().create();
-        mModemList = gson.fromJson(json, typeOfHashMap);
-        if (mModemList == null) {
-            mModemList = new HashMap<>();
-            mModemList.put("AUTO","AUTO");
-            mModemList.put("HTC","HTC");
-            mModemList.put("CHT","CHT");
-        }
-        mModemTitle = "";
-        for(Map.Entry entry: mModemList.entrySet()){
-            if(mModem.equals(entry.getValue())){
-                mModemTitle = (String)entry.getKey();
-                break;
-            }
-        }
-        setupPicker();
-        //Toast.makeText(getContext(), "APN " + mAPN + ", PIN " + mPIN + ", Dial_Num " + mDial_Num + ", User Name " + mUsername + ", Password " + mPassword + " modem list " + mModemList.toString(), Toast.LENGTH_LONG).show();
-        //Set Default value
-        mTextViewAPN.setText(mAPN);
-        mTextViewPIN.setText(mPIN);
-        mTextViewDialNum.setText(mDial_Num);
-        mTextViewUserName.setText(mUsername);
-        mTextViewPassword.setText(mPassword);
-
+        registerBroadcastRecevier();
+        Intent intent = new Intent(Def.ACTION_GET_NETWORKING);
+        intent.setClass(getActivity(), DvrInfoService.class);
+        getActivity().startService(intent);
+        mProgressView.setVisibility(View.VISIBLE);
+    }
+    
+    @Override
+    public void onPause() {
+    	super.onPause();
+    	unregisterBroadcastReceiver();
     }
 
     private TextWatcher mTextWatcherAPN = new TextWatcher() {
@@ -273,4 +261,57 @@ public class InternetSetting extends Fragment {
         return currentModem;
     }
 
+    private void registerBroadcastRecevier() {
+    	Activity activity = getActivity();
+    	if (mIntenFilter == null) {
+    		mIntenFilter = new IntentFilter(Def.ACTION_GET_NETWORKING);
+    	}
+    	activity.registerReceiver(mBroadcastReceiver, mIntenFilter);
+    }
+    
+    private void unregisterBroadcastReceiver() {
+    	Activity activity = getActivity();
+    	activity.unregisterReceiver(mBroadcastReceiver);
+    }
+    
+    BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+
+		@Override
+        public void onReceive(Context context, Intent intent) {
+	        mProgressView.setVisibility(View.GONE);
+
+	        SharedPreferences sp = getActivity().getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
+	        mAPN = sp.getString(Def.SP_APN3G, "APN");
+	        mPIN = sp.getString(Def.SP_PIN3G, "PIN");
+	        mDial_Num = sp.getString(Def.SP_USER3G, "User name");
+	        mUsername = sp.getString(Def.SP_PASSWORD3G, "Password");
+	        mPassword = sp.getString(Def.SP_DIAL3G, "Dial number");
+	        mModem = sp.getString(Def.SP_MODEM_NAME, "AUTO");
+	        String json = sp.getString(Def.SP_MODEM_LIST_JSON, "");
+	        Type typeOfHashMap = new TypeToken<Map<String, String>>() { }.getType();
+	        Gson gson = new GsonBuilder().create();
+	        mModemList = gson.fromJson(json, typeOfHashMap);
+	        if (mModemList == null) {
+	            mModemList = new HashMap<>();
+	            mModemList.put("AUTO","AUTO");
+	            mModemList.put("HTC","HTC");
+	            mModemList.put("CHT","CHT");
+	        }
+	        mModemTitle = "";
+	        for(Map.Entry entry: mModemList.entrySet()){
+	            if(mModem.equals(entry.getValue())){
+	                mModemTitle = (String)entry.getKey();
+	                break;
+	            }
+	        }
+	        setupPicker();
+	        //Toast.makeText(getContext(), "APN " + mAPN + ", PIN " + mPIN + ", Dial_Num " + mDial_Num + ", User Name " + mUsername + ", Password " + mPassword + " modem list " + mModemList.toString(), Toast.LENGTH_LONG).show();
+	        //Set Default value
+	        mTextViewAPN.setText(mAPN);
+	        mTextViewPIN.setText(mPIN);
+	        mTextViewDialNum.setText(mDial_Num);
+	        mTextViewUserName.setText(mUsername);
+	        mTextViewPassword.setText(mPassword);
+        }
+    };
 }

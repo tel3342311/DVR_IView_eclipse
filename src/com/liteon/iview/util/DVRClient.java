@@ -399,17 +399,17 @@ public class DVRClient {
             Log.i(TAG, "getInfoFromADMPage NTPServerIP " + ntp_server);
             Log.i(TAG, "getInfoFromADMPage NTP Sync value " + ntp_sync_value);
 
-            int response = urlConnection.getResponseCode();
-            Log.i(TAG, "getInfoFromADMPage, Response is " + response);
-            is.close();
-            urlConnection.disconnect();
-
             SharedPreferences.Editor editor = mSharedPref.edit();
             editor.putString(Def.SP_TIMEZONE_LIST, timeZoneListJson);
             editor.putString(Def.SP_TIMEZONE, timeZone);
             editor.putString(Def.SP_NTPSERVER, ntp_server);
             editor.putString(Def.SP_NTP_SYNC_VALUE, ntp_sync_value);
             editor.commit();
+            
+            int response = urlConnection.getResponseCode();
+            Log.i(TAG, "getInfoFromADMPage, Response is " + response);
+            is.close();
+            urlConnection.disconnect();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -467,15 +467,17 @@ public class DVRClient {
             Log.i(TAG, "getCameraSetting recording_camera, camera is " + recording_channel);
             Log.i(TAG, "getCameraSetting camera_mode, mode is " + preview_channel);
 
-            int response = urlConnection.getResponseCode();
-            Log.i(TAG, "getCameraSetting, Response is " + response);
-            is.close();
-            urlConnection.disconnect();
             SharedPreferences.Editor editor = mSharedPref.edit();
             editor.putString(Def.SP_RECORDING_LENGTH, length);
             editor.putString(Def.SP_RECORDING_CAMERA, recording_channel);
             editor.putString(Def.SP_PREVIEW_CAMERA, preview_channel);
             editor.commit();
+            
+            int response = urlConnection.getResponseCode();
+            Log.i(TAG, "getCameraSetting, Response is " + response);
+            is.close();
+            urlConnection.disconnect();
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -517,14 +519,16 @@ public class DVRClient {
             bssid = element.text().replace("\u00a0","");
             Log.i(TAG, "Get BSSID is " + bssid);
 
-            int response = urlConnection.getResponseCode();
-            Log.i(TAG, "Get getWifiBasic , Response is " + response);
-            is.close();
-            urlConnection.disconnect();
             SharedPreferences.Editor editor = mSharedPref.edit();
             editor.putString(Def.SP_SSID, ssid);
             editor.putString(Def.SP_BSSID, bssid);
             editor.commit();
+            
+            int response = urlConnection.getResponseCode();
+            Log.i(TAG, "Get getWifiBasic , Response is " + response);
+            is.close();
+            urlConnection.disconnect();
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -584,17 +588,20 @@ public class DVRClient {
             Log.i(TAG, "Get passphase is " + passPhase);
             Log.i(TAG, "Get securityMode is " + securityMode);
             Log.i(TAG, "Get encrypType is " + encryptType);
-            int response = urlConnection.getResponseCode();
-            Log.i(TAG, "Get wifi security, Response is " + response);
-
-            is.close();
-            urlConnection.disconnect();
+            
             SharedPreferences.Editor editor = mSharedPref.edit();
             editor.putString(Def.SP_SECURITY, securityMode);
             editor.putString(Def.SP_ENCRYPTTYPE, encryptType);
             editor.putString(Def.SP_PASSPHASE, passPhase);
             editor.putString(Def.SP_KEYRENEW, keyRenew);
             editor.commit();
+            
+            int response = urlConnection.getResponseCode();
+            Log.i(TAG, "Get wifi security, Response is " + response);
+
+            is.close();
+            urlConnection.disconnect();
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -765,40 +772,21 @@ public class DVRClient {
                 list.add(item);
             }
             is.close();
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            String recordingListJson = mGson.toJson(list);
+            editor.putString(Def.SP_RECORDING_LIST, recordingListJson);
+            editor.commit();
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "Get recording clips , Response is " + response);
             urlConnection.disconnect();
-            String recordingListJson = mGson.toJson(list);
+            
             if (response == HttpURLConnection.HTTP_OK) {
-                SharedPreferences.Editor editor = mSharedPref.edit();
-                editor.putString(Def.SP_RECORDING_LIST, recordingListJson);
-                editor.commit();
+
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return list;
-    }
-
-    private void testInputData(InputStream is) {
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(
-                    new InputStreamReader(is, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        String line;
-        try {
-            while ((line = reader.readLine()) != null) {
-                Log.d(TAG, line);
-            }
-            reader.close();
-            is.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 
     private String getAuthorizationHeader() {
@@ -840,15 +828,17 @@ public class DVRClient {
             writer.close();
             os.close();
 
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            editor.putString(Def.SP_TIMEZONE, timezone);
+            editor.putString(Def.SP_NTPSERVER, ntpServer);
+            editor.commit();
+            
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "setTimezone to " + timezone + ", Response is " + response);
             urlConnection.disconnect();
             //Save to share preference
             if (response == HttpURLConnection.HTTP_OK) {
-                SharedPreferences.Editor editor = mSharedPref.edit();
-                editor.putString(Def.SP_TIMEZONE, timezone);
-                editor.putString(Def.SP_NTPSERVER, ntpServer);
-                editor.commit();
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -884,6 +874,11 @@ public class DVRClient {
             writer.close();
             os.close();
 
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            editor.putString(Def.SP_RECORDING_LENGTH, recordingLength);
+            editor.putString(Def.SP_RECORDING_CAMERA, recordingChannel);
+            editor.commit();
+            
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "Set recording length to " + recordingLength + ", Set recording Channel to " + recordingChannel + ", Response is " + response);
             urlConnection.disconnect();
@@ -891,10 +886,7 @@ public class DVRClient {
             if (response == HttpURLConnection.HTTP_OK || 
             		response == HttpURLConnection.HTTP_NOT_FOUND ||
             		response == HttpURLConnection.HTTP_BAD_REQUEST) {
-                SharedPreferences.Editor editor = mSharedPref.edit();
-                editor.putString(Def.SP_RECORDING_LENGTH, recordingLength);
-                editor.putString(Def.SP_RECORDING_CAMERA, recordingChannel);
-                editor.commit();
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -911,6 +903,10 @@ public class DVRClient {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
+            String pptpServer = mSharedPref.getString(Def.SP_PPTPSERVER, "serverIP");
+            String pptpUsername = mSharedPref.getString(Def.SP_PPTPUSER, "User name");
+            String pptpPassword = mSharedPref.getString(Def.SP_PPTPPASS, "Password");
+	        
             Uri.Builder builder = mUri.buildUpon()
                     .appendQueryParameter(Def.PAGE, Def.KEY_PAGE_WAN)
                     .appendQueryParameter(Def.CONNECTIONTYPE, "3G")
@@ -919,55 +915,7 @@ public class DVRClient {
                     .appendQueryParameter(Def.DIAL3G, dial_num)
                     .appendQueryParameter(Def.USER3G, username)
                     .appendQueryParameter(Def.PASSWORD3G, password)
-                    .appendQueryParameter(Def.DEV3G, modem);
-
-            String query = builder.build().getEncodedQuery();
-            urlConnection.setRequestMethod("POST");
-            urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            urlConnection.setDoInput(true);
-            urlConnection.setDoOutput(true);
-            urlConnection.setUseCaches(false);
-            urlConnection.setRequestProperty("Content-Length", Integer.toString(query.getBytes().length));
-
-            OutputStream os = urlConnection.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(os, "UTF-8"));
-            writer.write(query);
-            writer.flush();
-            writer.close();
-            os.close();
-
-            int response = urlConnection.getResponseCode();
-            Log.i(TAG, "Set Internets to, Response is " + response);
-            urlConnection.disconnect();
-            //Save to share preference
-            if (response == HttpURLConnection.HTTP_OK) {
-                SharedPreferences.Editor editor = mSharedPref.edit();
-                editor.putString(Def.SP_APN3G, apn);
-                editor.putString(Def.SP_PIN3G, pin);
-                editor.putString(Def.SP_DIAL3G, dial_num);
-                editor.putString(Def.SP_USER3G, username);
-                editor.putString(Def.SP_PASSWORD3G, password);
-                editor.putString(Def.SP_MODEM_NAME, modem);
-                editor.commit();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setVPNs(String pptpServer, String pptpUsername, String pptpPassword) {
-        try {
-            URL url = new URL(Def.getSettingURL(Def.net_cgi));
-
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
-                urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
-            }
-
-            Uri.Builder builder = mUri.buildUpon()
-                    .appendQueryParameter(Def.PAGE, Def.KEY_PAGE_WAN)
+                    .appendQueryParameter(Def.DEV3G, modem)
                     .appendQueryParameter(Def.PPTPSERVER, pptpServer)
                     .appendQueryParameter(Def.PPTPUSER, pptpUsername)
                     .appendQueryParameter(Def.PPTPPASS, pptpPassword);
@@ -988,16 +936,84 @@ public class DVRClient {
             writer.close();
             os.close();
 
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            editor.putString(Def.SP_APN3G, apn);
+            editor.putString(Def.SP_PIN3G, pin);
+            editor.putString(Def.SP_DIAL3G, dial_num);
+            editor.putString(Def.SP_USER3G, username);
+            editor.putString(Def.SP_PASSWORD3G, password);
+            editor.putString(Def.SP_MODEM_NAME, modem);
+            editor.commit();
+            
+            int response = urlConnection.getResponseCode();
+            Log.i(TAG, "Set Internets to, Response is " + response);
+            urlConnection.disconnect();
+            //Save to share preference
+            if (response == HttpURLConnection.HTTP_OK) {
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setVPNs(String pptpServer, String pptpUsername, String pptpPassword) {
+        try {
+            URL url = new URL(Def.getSettingURL(Def.net_cgi));
+
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            if (!TextUtils.isEmpty(password)) {
+                urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
+            }
+            String apn = mSharedPref.getString(Def.SP_APN3G, "APN");
+            String pin = mSharedPref.getString(Def.SP_PIN3G, "PIN");
+            String dial_num = mSharedPref.getString(Def.SP_USER3G, "User name");
+            String username = mSharedPref.getString(Def.SP_PASSWORD3G, "Password");
+            String password = mSharedPref.getString(Def.SP_DIAL3G, "Dial number");
+            String modem = mSharedPref.getString(Def.SP_MODEM_NAME, "AUTO");
+	        
+            Uri.Builder builder = mUri.buildUpon()
+                    .appendQueryParameter(Def.PAGE, Def.KEY_PAGE_WAN)
+                    .appendQueryParameter(Def.CONNECTIONTYPE, "3G")
+                    .appendQueryParameter(Def.APN3G, apn)
+                    .appendQueryParameter(Def.PIN3G, pin)
+                    .appendQueryParameter(Def.DIAL3G, dial_num)
+                    .appendQueryParameter(Def.USER3G, username)
+                    .appendQueryParameter(Def.PASSWORD3G, password)
+                    .appendQueryParameter(Def.DEV3G, modem)
+                    .appendQueryParameter(Def.PPTPSERVER, pptpServer)
+                    .appendQueryParameter(Def.PPTPUSER, pptpUsername)
+                    .appendQueryParameter(Def.PPTPPASS, pptpPassword);
+
+            String query = builder.build().getEncodedQuery();
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            urlConnection.setDoInput(true);
+            urlConnection.setDoOutput(true);
+            urlConnection.setUseCaches(false);
+            urlConnection.setRequestProperty("Content-Length", Integer.toString(query.getBytes().length));
+
+            OutputStream os = urlConnection.getOutputStream();
+            BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(os, "UTF-8"));
+            writer.write(query);
+            writer.flush();
+            writer.close();
+            os.close();
+
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            editor.putString(Def.SP_PPTPSERVER, pptpServer);
+            editor.putString(Def.SP_PPTPUSER, pptpUsername);
+            editor.putString(Def.SP_PPTPPASS, pptpPassword);
+            editor.commit();
+            
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "Set VPNs to , Response is " + response);
             urlConnection.disconnect();
             //Save to share preference
             if (response == HttpURLConnection.HTTP_OK) {
-                SharedPreferences.Editor editor = mSharedPref.edit();
-                editor.putString(Def.SP_PPTPSERVER, pptpServer);
-                editor.putString(Def.SP_PPTPUSER, pptpUsername);
-                editor.putString(Def.SP_PPTPPASS, pptpPassword);
-                editor.commit();
+
             }
 
         } catch (IOException e) {
@@ -1041,14 +1057,16 @@ public class DVRClient {
             writer.close();
             os.close();
 
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            editor.putString(Def.SP_SSID, ssid);
+            editor.commit();
+            
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "Set setWifiBasic SSID to " + ssid + ", Response is " + response);
             urlConnection.disconnect();
             //Save to share preference
             if (response == HttpURLConnection.HTTP_OK) {
-                SharedPreferences.Editor editor = mSharedPref.edit();
-                editor.putString(Def.SP_SSID, ssid);
-                editor.commit();
+
             }
 
         } catch (IOException e) {
@@ -1102,16 +1120,18 @@ public class DVRClient {
             writer.close();
             os.close();
 
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            editor.putString(Def.SP_SECURITY, securityMode);
+            editor.putString(Def.SP_PASSPHASE, passPhase);
+            editor.putString(Def.SP_ENCRYPTTYPE,encryptType);
+            editor.commit();
+            
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "Set setWifiSecurity securityMode to " + securityMode + ", Response is " + response);
             urlConnection.disconnect();
             //Save to share preference
             if (response == HttpURLConnection.HTTP_OK) {
-                SharedPreferences.Editor editor = mSharedPref.edit();
-                editor.putString(Def.SP_SECURITY, securityMode);
-                editor.putString(Def.SP_PASSPHASE, passPhase);
-                editor.putString(Def.SP_ENCRYPTTYPE,encryptType);
-                editor.commit();
+
             }
 
         } catch (IOException e) {
@@ -1185,6 +1205,50 @@ public class DVRClient {
 			return false;
 		}
 		return true;
+    }
+    
+    public void getStatusInfo() {
+    	String securityMode = "";
+        String encryptType = "";
+        String passPhase = "";
+        String keyRenew = "";
+        try {
+            URL url = new URL(Def.getSettingURL(Def.status_page));
+
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            if (!TextUtils.isEmpty(password)) {
+                urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
+            }
+
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            urlConnection.setDoInput(true);
+            urlConnection.setDoOutput(true);
+            urlConnection.setUseCaches(false);
+
+            InputStream is = urlConnection.getInputStream();
+            Document doc = Jsoup.parse(is, "UTF-8", url.toString());
+            Elements elements = doc.select("td[id=statusLANIPAddr] + td");
+            String client_ip = elements.text();
+
+            elements = doc.select("td[id=statusSDKVersion] + td");
+            String sdkVersion = elements.text();
+            
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            editor.putString(Def.SP_SDK_VERSION, sdkVersion);
+            editor.putString(Def.SP_CLIENT_IP, client_ip);
+            editor.commit();
+            
+            int response = urlConnection.getResponseCode();
+            Log.i(TAG, "Get Status Info, Response is " + response);
+
+            is.close();
+            urlConnection.disconnect();
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     public interface ProgressChangeCallback {
