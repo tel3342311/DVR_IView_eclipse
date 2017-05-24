@@ -67,7 +67,7 @@ public class MjpegInputStream extends DataInputStream {
         mark(FRAME_MAX_LENGTH);
         headerLen = getStartOfSequence(this, SOI_MARKER);
         reset();
-        if (headerLen > HEADER_MAX_LENGTH) {
+        if (headerLen > header.length) {
         	header = new byte[headerLen];
         }
         readFully(header, 0, headerLen);
@@ -92,7 +92,7 @@ public class MjpegInputStream extends DataInputStream {
 		}
 
         reset();
-        if (mContentLength > FRAME_MAX_LENGTH) {
+        if (mContentLength > frameData.length) {
         	frameData = new byte[mContentLength];
         }	
         skipBytes(headerLen);
