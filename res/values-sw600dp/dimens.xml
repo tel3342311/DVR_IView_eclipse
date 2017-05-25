@@ -1,5 +1,8 @@
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="main_loading_icon_size">166dp</dimen>
+    <dimen name="version_text_size">22sp</dimen>
+    <dimen name="version_text_margin_top">60dp</dimen> 
     <dimen name="menu_icon_size">65dp</dimen>
     <dimen name="text_margin">16dp</dimen>
     <dimen name="toolbar_height">83dp</dimen>
