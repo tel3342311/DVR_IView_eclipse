@@ -160,9 +160,11 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
             } else if (fragment instanceof RecordSetting) {
                 String recordingLength = ((RecordSetting)fragment).getRecordingLength();
                 String recordingChannel = ((RecordSetting)fragment).getRecordingChannel();
+                String recordingOutput = ((RecordSetting)fragment).getRecordingOutput();
                 intent.setAction(Def.ACTION_SET_RECORDINGS);
                 intent.putExtra(Def.EXTRA_RECORDING_LENGTH, recordingLength);
                 intent.putExtra(Def.EXTRA_RECORDING_CHANNEL, recordingChannel);
+                intent.putExtra(Def.EXTRA_RECORDING_OUTPUT, recordingOutput);
             } else if (fragment instanceof InternetSetting) {
                 String apn = ((InternetSetting)fragment).getCurrentAPN();
                 String pin = ((InternetSetting)fragment).getCurrentPIN();

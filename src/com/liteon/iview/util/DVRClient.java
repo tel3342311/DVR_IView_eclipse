@@ -424,6 +424,8 @@ public class DVRClient {
         String recording_channel = "";
         //option is [cha,chb]
         String preview_channel = "";
+        //option is [hdmi, uvc, both]
+        String video_output = "";
         try {
             URL url = new URL(Def.getSettingURL(Def.camera_setting));
 
@@ -463,14 +465,23 @@ public class DVRClient {
                 preview_channel = matcher.group(1);
             }
 
+            pattern = Pattern.compile("var videoout  = \"(.*)\";");
+            matcher = pattern.matcher(data);
+
+            if (matcher.find()) {
+            	video_output = matcher.group(1);
+            }
+
             Log.i(TAG, "getCameraSetting recording length, length is " + length);
             Log.i(TAG, "getCameraSetting recording_camera, camera is " + recording_channel);
             Log.i(TAG, "getCameraSetting camera_mode, mode is " + preview_channel);
+            Log.i(TAG, "getCameraSetting video_output, mode is " + video_output);
 
             SharedPreferences.Editor editor = mSharedPref.edit();
             editor.putString(Def.SP_RECORDING_LENGTH, length);
             editor.putString(Def.SP_RECORDING_CAMERA, recording_channel);
             editor.putString(Def.SP_PREVIEW_CAMERA, preview_channel);
+            editor.putString(Def.SP_RECORDING_OUTPUT, video_output);
             editor.commit();
             
             int response = urlConnection.getResponseCode();
@@ -845,7 +856,7 @@ public class DVRClient {
         }
     }
 
-    public void setRecordings(String recordingLength, String recordingChannel) {
+    public void setRecordings(String recordingLength, String recordingChannel, String recordingOutput) {
         try {
             URL url = new URL(Def.getSettingURL(Def.camera_cgi));
 
@@ -856,7 +867,8 @@ public class DVRClient {
             Uri.Builder builder = mUri.buildUpon()
                     .appendQueryParameter(Def.PAGE, Def.KEY_PAGE_RECORDINGS)
                     .appendQueryParameter(Def.VIDEO_LENGTH, recordingLength)
-                    .appendQueryParameter(Def.RECORDING_CHANNEL, recordingChannel);
+                    .appendQueryParameter(Def.RECORDING_CHANNEL, recordingChannel)
+            		.appendQueryParameter(Def.VIDEO_OUTPUT, recordingOutput);
 
             String query = builder.build().getEncodedQuery();
             urlConnection.setRequestMethod("POST");
@@ -877,6 +889,7 @@ public class DVRClient {
             SharedPreferences.Editor editor = mSharedPref.edit();
             editor.putString(Def.SP_RECORDING_LENGTH, recordingLength);
             editor.putString(Def.SP_RECORDING_CAMERA, recordingChannel);
+            editor.putString(Def.SP_RECORDING_OUTPUT, recordingOutput);
             editor.commit();
             
             int response = urlConnection.getResponseCode();

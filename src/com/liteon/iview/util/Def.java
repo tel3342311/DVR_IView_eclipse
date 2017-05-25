@@ -91,6 +91,7 @@ public class Def {
     public final static String VIDEO_LENGTH = "listbox_video_length";
     public final static String RECORDING_CHANNEL = "listbox_resolution";
     public final static String LIVE_CHANNEL = "listbox_capture";
+    public final static String VIDEO_OUTPUT = "listbox_videoout";
     //wireless
     public final static String KEY_PAGE_BASIC = "basic";
     public final static String WLAN_CONF = "wlan_conf";
@@ -235,8 +236,9 @@ public class Def {
     public final static String EXTRA_SET_CAM_MODE = "com.liteon.iView.service.extra.SET_CAM";
     public final static String EXTRA_TIMEZONE     = "com.liteon.iView.service.extra.TIMEZONE";
     public final static String EXTRA_NTP_SERVER   = "com.liteon.iView.service.extra.NTP_SERVER";
-    public final static String EXTRA_RECORDING_LENGTH = "com.liteon.iView.service.extra.RECORDING_LENGTH";;
+    public final static String EXTRA_RECORDING_LENGTH = "com.liteon.iView.service.extra.RECORDING_LENGTH";
     public final static String EXTRA_RECORDING_CHANNEL = "com.liteon.iView.service.extra.RECORDING_CHANNEL";
+    public final static String EXTRA_RECORDING_OUTPUT = "com.liteon.iView.service.extra.RECORDING_OUTPUT";
     public final static String EXTRA_APN = "com.liteon.iView.service.extra.APN";
     public final static String EXTRA_PIN = "com.liteon.iView.service.extra.PIN";
     public final static String EXTRA_DIAL_NUM = "com.liteon.iView.service.extra.DIAL_NUM";
@@ -286,6 +288,7 @@ public class Def {
     public final static String SP_NTP_SYNC_VALUE = "SP_NTP_SYNC_VALUE";
     public final static String SP_RECORDING_LENGTH = "SP_RECORDING_LENGTH";
     public final static String SP_RECORDING_CAMERA = "SP_RECORDING_CAMERA";
+    public final static String SP_RECORDING_OUTPUT = "SP_RECORDING_OUTPUT";
     public final static String SP_PREVIEW_CAMERA = "SP_PREVIEW_CAMERA";
     public final static String SP_RECORDING_LIST = "SP_RECORDING_LIST";
     public final static String SP_SYSTEM_MODE = "SP_SYSTEM_MODE";

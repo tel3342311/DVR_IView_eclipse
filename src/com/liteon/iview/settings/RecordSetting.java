@@ -30,6 +30,7 @@ public class RecordSetting extends Fragment {
 	private String mRecordingLength;
     private String mRecordingChannel;
     private String mPreviewChannel;
+    private String mRecordingOutput;
     private TextView mTextView2m;
     private TextView mTextView3m;
     private TextView mTextView5m;
@@ -39,10 +40,16 @@ public class RecordSetting extends Fragment {
     private ImageView mConfirm;
     private String currentRecordingLength;
     private String currentRecordingChannel;
+    private String currentRecordingOutput;
     private Map<String, TextView> lenght_map = new HashMap<String, TextView>();
     private Map<String, TextView> camera_map = new HashMap<String, TextView>();
+    private Map<String, TextView> videoOut_map = new HashMap<String, TextView>();
     private IntentFilter mIntenFilter;
     private View mProgressView;
+    //For Demo
+    private TextView mTextHdmi;
+    private TextView mTextUvc;
+    private TextView mTextBoth;
     
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -69,6 +76,12 @@ public class RecordSetting extends Fragment {
         camera_map.put("chb", mTextViewRear);
         camera_map.put("chab", mTextViewFrontRear);
 
+        mTextHdmi = (TextView) rootView.findViewById(R.id.hdmi_out);
+        mTextUvc = (TextView) rootView.findViewById(R.id.uvc_out);
+        mTextBoth = (TextView) rootView.findViewById(R.id.both_out);
+        videoOut_map.put("hdmi", mTextHdmi);
+        videoOut_map.put("uvc", mTextUvc);
+        videoOut_map.put("both", mTextBoth);
     }
 
     private void setListeners() {
@@ -79,6 +92,11 @@ public class RecordSetting extends Fragment {
         mTextViewFront.setOnClickListener(mOnCameraClickListener);
         mTextViewRear.setOnClickListener(mOnCameraClickListener);
         mTextViewFrontRear.setOnClickListener(mOnCameraClickListener);
+        
+        mTextHdmi.setOnClickListener(mOnVideoOutClickListener);
+        mTextUvc.setOnClickListener(mOnVideoOutClickListener);
+        mTextBoth.setOnClickListener(mOnVideoOutClickListener);
+        
     }
     
     private View.OnClickListener mOnRecordingLenghtClickListener = new View.OnClickListener() {
@@ -131,6 +149,30 @@ public class RecordSetting extends Fragment {
         }
     };
 
+    private View.OnClickListener mOnVideoOutClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            for (TextView tv : videoOut_map.values()) {
+                tv.setSelected(false);
+            }
+
+            v.setSelected(true);
+
+            switch (v.getId()) {
+                case R.id.hdmi_out:
+                	currentRecordingOutput = "hdmi";
+                    break;
+                case R.id.uvc_out:
+                	currentRecordingOutput = "uvc";
+                    break;
+                case R.id.both_out:
+                	currentRecordingOutput = "both";
+                    break;
+            }
+            isSettingchanged();
+        }
+    };
     @Override
     public void onResume() {
         super.onResume();
@@ -149,7 +191,8 @@ public class RecordSetting extends Fragment {
 
     private void isSettingchanged() {
         if (camera_map.get(mRecordingChannel).isSelected() &&
-                lenght_map.get(mRecordingLength).isSelected()) {
+                lenght_map.get(mRecordingLength).isSelected() && 
+                videoOut_map.get(mRecordingOutput).isSelected()) {
             mConfirm.setEnabled(false);
         } else {
             mConfirm.setEnabled(true);
@@ -162,6 +205,10 @@ public class RecordSetting extends Fragment {
 
     public String getRecordingChannel() {
         return currentRecordingChannel;
+    }
+    
+    public String getRecordingOutput() {
+    	return currentRecordingOutput;
     }
     
     private void registerBroadcastRecevier() {
@@ -187,12 +234,15 @@ public class RecordSetting extends Fragment {
 	        mRecordingLength = sp.getString(Def.SP_RECORDING_LENGTH, "2m");
 	        mRecordingChannel = sp.getString(Def.SP_RECORDING_CAMERA, "chab");
 	        mPreviewChannel = sp.getString(Def.SP_PREVIEW_CAMERA, "cha");
+	        mRecordingOutput = sp.getString(Def.SP_RECORDING_OUTPUT, "hdmi");
 	        //Toast.makeText(getContext(), "mRecordingLength " + mRecordingLength + ", mRecordingChannel " + mRecordingChannel + ", mPreviewChannel " + mPreviewChannel, Toast.LENGTH_LONG).show();
 	        //setup default value
 	        lenght_map.get(mRecordingLength).setSelected(true);
 	        camera_map.get(mRecordingChannel).setSelected(true);
+	        videoOut_map.get(mRecordingOutput).setSelected(true);
 	        currentRecordingLength = mRecordingLength;
 	        currentRecordingChannel = mRecordingChannel;
+	        currentRecordingOutput = mRecordingOutput;
 	        mConfirm.setEnabled(false);
         }
     };

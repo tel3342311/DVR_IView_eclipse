@@ -72,7 +72,8 @@ public class DvrInfoService extends IntentService {
             } else if (Def.ACTION_SET_RECORDINGS.equals(action)) {
                 String recordingLength = intent.getStringExtra(Def.EXTRA_RECORDING_LENGTH);
                 String recordingChannel = intent.getStringExtra(Def.EXTRA_RECORDING_CHANNEL);
-                handleActionSetRecordings(recordingLength, recordingChannel);
+                String recordingOutput = intent.getStringExtra(Def.EXTRA_RECORDING_OUTPUT);
+                handleActionSetRecordings(recordingLength, recordingChannel, recordingOutput);
             } else if (Def.ACTION_SET_INTERNET.equals(action)) {
                 String apn = intent.getStringExtra(Def.EXTRA_APN);
                 String pin = intent.getStringExtra(Def.EXTRA_PIN);
@@ -361,9 +362,9 @@ public class DvrInfoService extends IntentService {
         dvrClient.setTimezone(timezone, ntpServer);
     }
 
-    private void handleActionSetRecordings(String recordingLength, String recordingChannel) {
+    private void handleActionSetRecordings(String recordingLength, String recordingChannel, String recordingOutput) {
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        dvrClient.setRecordings(recordingLength, recordingChannel);
+        dvrClient.setRecordings(recordingLength, recordingChannel, recordingOutput);
     }
 
     private void handleActionSetInternet(String apn, String pin, String dial_num, String username, String password, String modem) {
