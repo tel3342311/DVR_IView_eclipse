@@ -2,6 +2,9 @@ package com.camera.simplemjpeg;
 
 import java.io.IOException;
 
+import com.liteon.iview.Preview;
+
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -117,6 +120,17 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                             try {
                                 bm = mIn.readMjpegFrame();
                                 mBitmap = bm;
+                                if (bm == null) {
+                                	
+                                	((Activity)saved_context).runOnUiThread(new Runnable() {
+										
+										@Override
+										public void run() {
+											((Activity)saved_context).recreate();
+										}
+									});
+                                	return;
+                                }
                                 destRect = destRect(bm.getWidth(),bm.getHeight());
                                 c.drawColor(Color.BLACK);
                                 c.drawBitmap(bm, null, destRect, p);

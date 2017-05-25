@@ -70,6 +70,12 @@ public class MjpegInputStream extends DataInputStream {
         if (headerLen > header.length) {
         	header = new byte[headerLen];
         }
+
+        if (headerLen == -1) {
+			Log.d(TAG, "Error Length of headerLen in parseContentLength");
+			reset();
+			return null;
+        }
         readFully(header, 0, headerLen);
         try {
             mContentLength = parseContentLength(header, 0, headerLen);
@@ -96,6 +102,11 @@ public class MjpegInputStream extends DataInputStream {
         	frameData = new byte[mContentLength];
         }	
         skipBytes(headerLen);
+        if (mContentLength == -1) {
+			Log.d(TAG, "Error Length of mContentLength in parseContentLength");
+			reset();
+			return null;
+        }
         readFully(frameData, 0, mContentLength); 
     	//pixeltobmp(frameData, mContentLength, bmp);
     	//return bmp;
