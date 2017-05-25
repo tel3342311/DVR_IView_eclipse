@@ -56,6 +56,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -76,6 +77,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -135,7 +137,7 @@ public class VideoPlayEX extends Activity {
     private String mp4URL = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
 	private Animation animToolbar;
 	private Animation animBottom;
-
+	private View mRootView;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -359,11 +361,12 @@ public class VideoPlayEX extends Activity {
     private View.OnClickListener mOnSnapShotClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+        	final Bitmap bmp = snapShot();
         	new Thread() {
                 @Override
                 public void run() {
                     super.run();
-                    String uri = saveImageToGallery(VideoPlayEX.this, snapShot());
+                    String uri = saveImageToGallery(VideoPlayEX.this, bmp);
                     ContentResolver cr = getContentResolver();
                     long id = ContentUris.parseId(android.net.Uri.parse(uri));
                     final Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
@@ -897,14 +900,21 @@ public class VideoPlayEX extends Activity {
     
     private void applyAspectRatio(SimpleExoPlayer exoPlayer) {
         float videoRatio = (float) exoPlayer.getVideoFormat().width/exoPlayer.getVideoFormat().height;
-
+        Rect rectgle= new Rect();
+        Window window= getWindow();
+        window.getDecorView().getWindowVisibleDisplayFrame(rectgle);
+        int StatusBarHeight= rectgle.top;
+        
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
+        size.y -= StatusBarHeight;
         float displayRatio = (float) size.x / size.y;
-
-        if (videoRatio > displayRatio) {
-            Log.d(TAG, "applying " + videoRatio + "aspectRatio");
+    	Log.d(TAG, "Screen Ration " + displayRatio + "aspectRatio");        
+    	Log.d(TAG, "applying " + videoRatio + "aspectRatio");        
+        if (videoRatio == displayRatio) {
+        	updateTextureViewSize(size.x , (int) (size.x / videoRatio));
+        } else if (videoRatio > displayRatio) {
         	updateTextureViewSize(size.x , (int) (size.x / videoRatio));
         } else {
         	updateTextureViewSize((int)(videoRatio * size.y) , size.y);
