@@ -283,9 +283,9 @@ public class InternetSetting extends Fragment {
 	        SharedPreferences sp = getActivity().getSharedPreferences(Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
 	        mAPN = sp.getString(Def.SP_APN3G, "APN");
 	        mPIN = sp.getString(Def.SP_PIN3G, "PIN");
-	        mDial_Num = sp.getString(Def.SP_USER3G, "User name");
-	        mUsername = sp.getString(Def.SP_PASSWORD3G, "Password");
-	        mPassword = sp.getString(Def.SP_DIAL3G, "Dial number");
+	        mDial_Num = sp.getString(Def.SP_DIAL3G, "Dial number");
+	        mUsername = sp.getString(Def.SP_USER3G, "User name");
+	        mPassword = sp.getString(Def.SP_PASSWORD3G, "Password");
 	        mModem = sp.getString(Def.SP_MODEM_NAME, "AUTO");
 	        String json = sp.getString(Def.SP_MODEM_LIST_JSON, "");
 	        Type typeOfHashMap = new TypeToken<Map<String, String>>() { }.getType();
