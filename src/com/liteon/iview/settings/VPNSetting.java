@@ -210,7 +210,7 @@ public class VPNSetting extends Fragment {
 	        mPPTPUsername = sp.getString(Def.SP_PPTPUSER, "User name");
 	        mPPTPPassword = sp.getString(Def.SP_PPTPPASS, "Password");
 	        //mPPTPClientIP = sp.getString(Def.SP_PPTPCLIENT, "clientIP");
-	        mPPTPClientIP = sp.getString(Def.SP_CLIENT_IP, "clientIP");
+	        mPPTPClientIP = sp.getString(Def.SP_VPN_IP, Def.DVR_VPN_IP);
 	        //Toast.makeText(getActivity(), "serverIP " + mPPTPServer + ", User name " + mPPTPUsername + ", PPTP Password " + mPPTPPassword, Toast.LENGTH_LONG).show();
 	        mEditTextPPTPServer.setText(mPPTPServer);
 	        mEditTextPPTPUsername.setText(mPPTPUsername);

@@ -183,10 +183,12 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
                 String pPTPServer = ((VPNSetting)fragment).getCurrentServer();
                 String pPTPUsername = ((VPNSetting)fragment).getCurrentUsername();
                 String pPTPPassword = ((VPNSetting)fragment).getCurrentPassword();
+                String pPTPClientIp = ((VPNSetting)fragment).getCurrentClientIP();
                 intent.setAction(Def.ACTION_SET_VPN);
                 intent.putExtra(Def.EXTRA_PPTP_SERVER, pPTPServer);
                 intent.putExtra(Def.EXTRA_PPTP_USERNAME,pPTPUsername);
                 intent.putExtra(Def.EXTRA_PPTP_PASSWORD,pPTPPassword);
+                intent.putExtra(Def.EXTRA_PPTP_CLIENT_IP, pPTPClientIp);
             } else if (fragment instanceof WifiSetting) {
                 String ssid = ((WifiSetting)fragment).getCurrentSsid();
                 String securityMode = ((WifiSetting)fragment).getCurrentSecurityMode();

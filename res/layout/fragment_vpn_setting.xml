@@ -110,8 +110,6 @@
             android:background="@drawable/setting_lcel_1"
             android:maxLines="1"
             android:hint="Client IP"
-            android:enabled="false"
-            android:textColor="@color/md_grey_700"
             android:textSize="@dimen/setting_option_text_size"
             android:textCursorDrawable="@null"/>
     </LinearLayout>

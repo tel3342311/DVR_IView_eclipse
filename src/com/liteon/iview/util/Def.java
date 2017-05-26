@@ -3,8 +3,8 @@ package com.liteon.iview.util;
 public class Def {
 
 	public static boolean IS_VPN_MODE = false;
-	public final static String DVR_VPN_IP = "192.168.0.201";
-	public final static String DVR_LOCAL_IP = "192.168.10.1";
+	public static String DVR_VPN_IP = "192.168.0.201";
+	public static String DVR_LOCAL_IP = "192.168.10.1";
 	public static String getPreviewURL() {
 
 		if (IS_VPN_MODE) {
@@ -18,9 +18,19 @@ public class Def {
 		return String.format(DVR_PREVIEW_URL, DVR_LOCAL_IP);
 	}
 	
+	public static void setLocalPreviewURL(String ip) {
+		DVR_LOCAL_IP = ip;
+	}
+	
 	public static String getRemotePreviewURL() {
 		return String.format(DVR_PREVIEW_URL, DVR_VPN_IP);
 	}
+	
+	public static void setRemotePreviewURL(String ip) {
+		DVR_VPN_IP = ip;
+	}
+	
+	
 	
 	public static String getRecordingsURL() {
 		if (IS_VPN_MODE) {
@@ -248,6 +258,7 @@ public class Def {
     public final static String EXTRA_PPTP_SERVER = "com.liteon.iView.service.extra.pptpserver";
     public final static String EXTRA_PPTP_USERNAME = "com.liteon.iView.service.extra.pptpusername";
     public final static String EXTRA_PPTP_PASSWORD = "com.liteon.iView.service.extra.pptppassword";
+    public final static String EXTRA_PPTP_CLIENT_IP = "com.liteon.iView.service.extra.pptppassword";
     public final static String EXTRA_SSID = "com.liteon.iView.service.extra.ssid";
     public final static String EXTRA_SECURITYMODE = "com.liteon.iView.service.extra.securitymode";
     public final static String EXTRA_ENCRYPTTYPE = "com.liteon.iView.service.extra.encrypttype";
@@ -293,6 +304,7 @@ public class Def {
     public final static String SP_RECORDING_LIST = "SP_RECORDING_LIST";
     public final static String SP_SYSTEM_MODE = "SP_SYSTEM_MODE";
     public final static String SP_SDK_VERSION = "SP_SDK_VERSION";
-    public final static String SP_CLIENT_IP = "SP_SDK_VERSION";
+    public final static String SP_LOCAL_IP = "SP_LOCAL_IP";
+    public final static String SP_VPN_IP = "SP_VPN_IP";
 	//
 }

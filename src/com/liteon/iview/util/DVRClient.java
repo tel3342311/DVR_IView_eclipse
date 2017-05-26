@@ -1249,7 +1249,7 @@ public class DVRClient {
             
             SharedPreferences.Editor editor = mSharedPref.edit();
             editor.putString(Def.SP_SDK_VERSION, sdkVersion);
-            editor.putString(Def.SP_CLIENT_IP, client_ip);
+            editor.putString(Def.SP_LOCAL_IP, client_ip);
             editor.commit();
             
             int response = urlConnection.getResponseCode();

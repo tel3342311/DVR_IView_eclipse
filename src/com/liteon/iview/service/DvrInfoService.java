@@ -86,7 +86,8 @@ public class DvrInfoService extends IntentService {
                 String PPTPServer = intent.getStringExtra(Def.EXTRA_PPTP_SERVER);
                 String PPTPUsername = intent.getStringExtra(Def.EXTRA_PPTP_USERNAME);
                 String PPTPPassword = intent.getStringExtra(Def.EXTRA_PPTP_PASSWORD);
-                handleActionSetVPN(PPTPServer, PPTPUsername, PPTPPassword);
+                String PPTPClientIP = intent.getStringExtra(Def.EXTRA_PPTP_CLIENT_IP);
+                handleActionSetVPN(PPTPServer, PPTPUsername, PPTPPassword, PPTPClientIP);
             } else if (Def.ACTION_SET_WIFI.equals(action)) {
                 String ssid = intent.getStringExtra(Def.EXTRA_SSID);
                 String securityMode = intent.getStringExtra(Def.EXTRA_SECURITYMODE);
@@ -233,6 +234,10 @@ public class DvrInfoService extends IntentService {
     	Intent intent = new Intent(Def.ACTION_GET_ALL_INFO);
     	boolean isDVRReachable = true;
     	boolean isStorageMode = false;
+    	SharedPreferences SharedPref = getApplicationContext().getSharedPreferences(
+                Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = SharedPref.edit();
+        Def.DVR_VPN_IP = SharedPref.getString(Def.SP_VPN_IP, Def.DVR_VPN_IP);
     	if (DVRClient.isURLReachable(getApplicationContext(), Def.getLocalPreviewURL())) {
             intent.putExtra(Def.EXTRA_GET_ALL_INFO, Def.RECORDING_MODE);
     	} else if (DVRClient.isURLReachable(getApplicationContext(), Def.getLocalRecordingsURL())) {
@@ -252,10 +257,6 @@ public class DvrInfoService extends IntentService {
     	intent.putExtra(Def.EXTRA_IS_DVR_REACHABLE, isDVRReachable);
         sendBroadcast(intent);
         if (isDVRReachable) {
-        	
-            SharedPreferences SharedPref = getApplicationContext().getSharedPreferences(
-                    Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = SharedPref.edit();
             
             if (isStorageMode) {
             	dvrClient.getRecordingList();
@@ -372,8 +373,14 @@ public class DvrInfoService extends IntentService {
         dvrClient.setInternets(apn, pin, dial_num, username, password, modem);
     }
 
-    private void handleActionSetVPN(String pptpServer, String pptpUsername, String pptpPassword) {
+    private void handleActionSetVPN(String pptpServer, String pptpUsername, String pptpPassword, String pptpClientIP) {
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
+        Def.setRemotePreviewURL(pptpClientIP);
+        SharedPreferences SharedPref = getApplicationContext().getSharedPreferences(
+                Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = SharedPref.edit();
+        editor.putString(Def.SP_VPN_IP, pptpClientIP);
+        editor.commit();
         dvrClient.setVPNs(pptpServer,pptpUsername,pptpPassword);
     }
 
