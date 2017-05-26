@@ -188,6 +188,7 @@ public class TimezoneSetting extends Fragment {
 	        mEdTextNtpServer.setText(mNTPServer);
 	        setupPicker();
 	        mConfirm.setEnabled(false);
+	        currentTimeZone = mTimeZone;
         }
     };
 }

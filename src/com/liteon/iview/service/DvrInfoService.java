@@ -66,9 +66,13 @@ public class DvrInfoService extends IntentService {
             } else if (Def.ACTION_GET_RECORDINGS.equals(action)) {
             	handleActionGetRecordings();
             } else if (Def.ACTION_SET_TIMEZONE.equals(action)) {
-                String timezone = intent.getStringExtra(Def.EXTRA_TIMEZONE);
-                String ntpServer = intent.getStringExtra(Def.EXTRA_NTP_SERVER);
-                handleActionSetTimezone(timezone, ntpServer);
+                final String timezone = intent.getStringExtra(Def.EXTRA_TIMEZONE);
+                final String ntpServer = intent.getStringExtra(Def.EXTRA_NTP_SERVER);
+                new Thread() {
+            		public void run() {
+                        handleActionSetTimezone(timezone, ntpServer);
+            		};
+            	}.start();
             } else if (Def.ACTION_SET_RECORDINGS.equals(action)) {
                 String recordingLength = intent.getStringExtra(Def.EXTRA_RECORDING_LENGTH);
                 String recordingChannel = intent.getStringExtra(Def.EXTRA_RECORDING_CHANNEL);

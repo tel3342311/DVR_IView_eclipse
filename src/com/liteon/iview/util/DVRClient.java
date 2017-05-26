@@ -816,7 +816,10 @@ public class DVRClient {
             if (!TextUtils.isEmpty(password)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
-            String syncValue = mSharedPref.getString(Def.SP_NTP_SYNC_VALUE, "300");
+            String syncValue = mSharedPref.getString(Def.SP_NTP_SYNC_VALUE, "1");
+            if (!TextUtils.isEmpty(ntpServer) && TextUtils.isEmpty(syncValue)) {
+            	syncValue = "1";
+            }
             Uri.Builder builder = mUri.buildUpon()
                     .appendQueryParameter(Def.PAGE, Def.KEY_PAGE_TIMEZONE)
                     .appendQueryParameter("time_zone", timezone)
@@ -842,6 +845,7 @@ public class DVRClient {
             SharedPreferences.Editor editor = mSharedPref.edit();
             editor.putString(Def.SP_TIMEZONE, timezone);
             editor.putString(Def.SP_NTPSERVER, ntpServer);
+            editor.putString(Def.SP_NTP_SYNC_VALUE, syncValue);
             editor.commit();
             
             int response = urlConnection.getResponseCode();
