@@ -305,6 +305,7 @@ public class InternetSetting extends Fragment {
 	            }
 	        }
 	        setupPicker();
+	        currentModem = mModem;
 	        //Toast.makeText(getContext(), "APN " + mAPN + ", PIN " + mPIN + ", Dial_Num " + mDial_Num + ", User Name " + mUsername + ", Password " + mPassword + " modem list " + mModemList.toString(), Toast.LENGTH_LONG).show();
 	        //Set Default value
 	        mTextViewAPN.setText(mAPN);
@@ -312,6 +313,7 @@ public class InternetSetting extends Fragment {
 	        mTextViewDialNum.setText(mDial_Num);
 	        mTextViewUserName.setText(mUsername);
 	        mTextViewPassword.setText(mPassword);
+	        mConfirm.setEnabled(false);
         }
     };
 }
