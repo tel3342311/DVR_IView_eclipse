@@ -1178,29 +1178,57 @@ public class DVRClient {
     }
     
     public static boolean downloadFileFromURL(String Url, OutputStream fileSaveTo, ProgressChangeCallback callback, int idx, int file_count) {
+    	return downloadFileFromURL(Url, fileSaveTo, callback, idx, file_count, 8192);
+    }
+    
+    public static boolean downloadFileFromURL(String Url, OutputStream fileSaveTo, ProgressChangeCallback callback, int idx, int file_count, int buffer_size) {
+    	
     	URL url;
 		try {
 			url = new URL(Url);
 	    	HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
 	    	urlc.connect();
 	    	int lengthOfFile = urlc.getContentLength();
-	    	InputStream is = new BufferedInputStream(urlc.getInputStream(), 8192);
+	    	InputStream is = new BufferedInputStream(urlc.getInputStream(),4096);
 	    	OutputStream os = fileSaveTo;
-	    	byte data[] = new byte[1024];
+	    	byte data[] = new byte[4096];
 	    	int count = 0;
 	    	long total = 0;
 	    	int currentProgress = 0;
+	    	long startTime = System.currentTimeMillis();
+	    	long endTime;
 	    	while ((count = is.read(data)) != -1) {
 		    	total += count;
+		    	// writing data to file
+		    	long writeStart = System.currentTimeMillis();
+		    	if (data.length == count) {
+		    		os.write(data);
+		    	} else {
+		    		os.write(data, 0, count);
+		    	}
+		    	long elapsedTime = System.currentTimeMillis() - writeStart;
+		    	Log.d(TAG, elapsedTime + "ms to Write " + count + "bytes");
+		    	
 		    	// publishing the progress….
 		    	int progress = (int)((total*100)/lengthOfFile);
-		    	Log.d(TAG, "[downloadFileFromURL] Progress is " + progress + "%, current bytes :" + total);
 		    	if (currentProgress != progress) {
+		    		Log.d(TAG, "[downloadFileFromURL] Progress is " + progress + "%, current bytes :" + total);
 		    		currentProgress = progress;
 		    		callback.onProgressChange(currentProgress, idx, file_count);
+		    		startTime = endTime = System.currentTimeMillis();
+		    	} else {
+		    		endTime = System.currentTimeMillis();
+		    		if (endTime - startTime > 15000) {
+		    	    	// flushing output
+		    	    	os.flush();
+
+		    	    	// closing streams
+		    	    	os.close();
+		    	    	is.close();
+		    	    	urlc.disconnect();
+		    	    	return false;
+		    		}
 		    	}
-		    	// writing data to file
-		    	os.write(data, 0, count);
 	    	}
 
 	    	// flushing output
@@ -1209,6 +1237,7 @@ public class DVRClient {
 	    	// closing streams
 	    	os.close();
 	    	is.close();
+	    	urlc.disconnect();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return false;

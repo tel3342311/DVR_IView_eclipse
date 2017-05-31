@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Map;
 
 import com.github.mjdev.libaums.UsbMassStorageDevice;
@@ -206,8 +208,15 @@ public class DvrInfoService extends IntentService {
 		    		if ( file == null) {
 		    			file = downloadDir.createFile(name[i]);
 		    		}
+					URL _url = new URL(url[i]);
+			    	HttpURLConnection urlc = (HttpURLConnection) _url.openConnection();
+			    	urlc.connect();
+			    	int size = urlc.getContentLength();
+			    	file.setLength(size);
+			    	urlc.disconnect();
+			    	int buffer_size = currentFs.getChunkSize();
 		    		os = UsbFileStreamFactory.createBufferedOutputStream(file, currentFs);
-					status[i] = DVRClient.downloadFileFromURL(url[i], os, mOnProgressChange, i + 1, count);
+					status[i] = DVRClient.downloadFileFromURL(url[i], os, mOnProgressChange, i + 1, count, buffer_size);
 		    		//TODO get Actual path 
 					downloadPath[i] = url[i];
 		    		if (!status[i]) {
