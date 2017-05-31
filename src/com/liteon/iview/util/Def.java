@@ -258,7 +258,7 @@ public class Def {
     public final static String EXTRA_PPTP_SERVER = "com.liteon.iView.service.extra.pptpserver";
     public final static String EXTRA_PPTP_USERNAME = "com.liteon.iView.service.extra.pptpusername";
     public final static String EXTRA_PPTP_PASSWORD = "com.liteon.iView.service.extra.pptppassword";
-    public final static String EXTRA_PPTP_CLIENT_IP = "com.liteon.iView.service.extra.pptppassword";
+    public final static String EXTRA_PPTP_CLIENT_IP = "com.liteon.iView.service.extra.pptpclientip";
     public final static String EXTRA_SSID = "com.liteon.iView.service.extra.ssid";
     public final static String EXTRA_SECURITYMODE = "com.liteon.iView.service.extra.securitymode";
     public final static String EXTRA_ENCRYPTTYPE = "com.liteon.iView.service.extra.encrypttype";
