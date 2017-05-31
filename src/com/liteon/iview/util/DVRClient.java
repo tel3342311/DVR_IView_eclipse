@@ -905,7 +905,7 @@ public class DVRClient {
         }
     }
 
-    public void setInternets(String apn, String pin, String dial_num, String username, String password, String modem) {
+    public void setInternets(String apn, String pin, String dial_num, String username3g, String password3g, String modem) {
 
         try {
             URL url = new URL(Def.getSettingURL(Def.net_cgi));
@@ -925,8 +925,8 @@ public class DVRClient {
                     .appendQueryParameter(Def.APN3G, apn)
                     .appendQueryParameter(Def.PIN3G, pin)
                     .appendQueryParameter(Def.DIAL3G, dial_num)
-                    .appendQueryParameter(Def.USER3G, username)
-                    .appendQueryParameter(Def.PASSWORD3G, password)
+                    .appendQueryParameter(Def.USER3G, username3g)
+                    .appendQueryParameter(Def.PASSWORD3G, password3g)
                     .appendQueryParameter(Def.DEV3G, modem)
                     .appendQueryParameter(Def.PPTPSERVER, pptpServer)
                     .appendQueryParameter(Def.PPTPUSER, pptpUsername)
@@ -952,8 +952,8 @@ public class DVRClient {
             editor.putString(Def.SP_APN3G, apn);
             editor.putString(Def.SP_PIN3G, pin);
             editor.putString(Def.SP_DIAL3G, dial_num);
-            editor.putString(Def.SP_USER3G, username);
-            editor.putString(Def.SP_PASSWORD3G, password);
+            editor.putString(Def.SP_USER3G, username3g);
+            editor.putString(Def.SP_PASSWORD3G, password3g);
             editor.putString(Def.SP_MODEM_NAME, modem);
             editor.commit();
             
@@ -981,8 +981,8 @@ public class DVRClient {
             String apn = mSharedPref.getString(Def.SP_APN3G, "APN");
             String pin = mSharedPref.getString(Def.SP_PIN3G, "PIN");
             String dial_num = mSharedPref.getString(Def.SP_DIAL3G, "Dial number");
-            String username = mSharedPref.getString(Def.SP_USER3G, "User name"); 
-            String password = mSharedPref.getString(Def.SP_PASSWORD3G, "Password");
+            String username3g = mSharedPref.getString(Def.SP_USER3G, "User name"); 
+            String password3g = mSharedPref.getString(Def.SP_PASSWORD3G, "Password");
             String modem = mSharedPref.getString(Def.SP_MODEM_NAME, "AUTO");
 	        
             Uri.Builder builder = mUri.buildUpon()
@@ -991,8 +991,8 @@ public class DVRClient {
                     .appendQueryParameter(Def.APN3G, apn)
                     .appendQueryParameter(Def.PIN3G, pin)
                     .appendQueryParameter(Def.DIAL3G, dial_num)
-                    .appendQueryParameter(Def.USER3G, username)
-                    .appendQueryParameter(Def.PASSWORD3G, password)
+                    .appendQueryParameter(Def.USER3G, username3g)
+                    .appendQueryParameter(Def.PASSWORD3G, password3g)
                     .appendQueryParameter(Def.DEV3G, modem)
                     .appendQueryParameter(Def.PPTPSERVER, pptpServer)
                     .appendQueryParameter(Def.PPTPUSER, pptpUsername)
