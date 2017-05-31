@@ -367,6 +367,7 @@ public class VideoPlayEX extends Activity {
                 public void run() {
                     super.run();
                     String uri = saveImageToGallery(VideoPlayEX.this, bmp);
+                    mCurrentSnapShotUri = Uri.parse(uri);
                     ContentResolver cr = getContentResolver();
                     long id = ContentUris.parseId(android.net.Uri.parse(uri));
                     final Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
@@ -899,6 +900,9 @@ public class VideoPlayEX extends Activity {
     };
     
     private void applyAspectRatio(SimpleExoPlayer exoPlayer) {
+    	if (exoPlayer == null) {
+    		return ;
+    	}
         float videoRatio = (float) exoPlayer.getVideoFormat().width/exoPlayer.getVideoFormat().height;
         Rect rectgle= new Rect();
         Window window= getWindow();
