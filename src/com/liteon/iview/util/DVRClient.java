@@ -1,13 +1,9 @@
 package com.liteon.iview.util;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -26,18 +22,17 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.telecom.Call;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 
 public class DVRClient {
@@ -985,9 +980,9 @@ public class DVRClient {
             }
             String apn = mSharedPref.getString(Def.SP_APN3G, "APN");
             String pin = mSharedPref.getString(Def.SP_PIN3G, "PIN");
-            String dial_num = mSharedPref.getString(Def.SP_USER3G, "User name");
-            String username = mSharedPref.getString(Def.SP_PASSWORD3G, "Password");
-            String password = mSharedPref.getString(Def.SP_DIAL3G, "Dial number");
+            String dial_num = mSharedPref.getString(Def.SP_DIAL3G, "Dial number");
+            String username = mSharedPref.getString(Def.SP_USER3G, "User name"); 
+            String password = mSharedPref.getString(Def.SP_PASSWORD3G, "Password");
             String modem = mSharedPref.getString(Def.SP_MODEM_NAME, "AUTO");
 	        
             Uri.Builder builder = mUri.buildUpon()
