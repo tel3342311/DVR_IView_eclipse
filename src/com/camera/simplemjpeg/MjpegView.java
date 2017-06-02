@@ -1,6 +1,8 @@
 package com.camera.simplemjpeg;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.math.MathContext;
 
 import com.liteon.iview.Preview;
 
@@ -45,16 +47,16 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
 	private boolean suspending = false;
 	private Bitmap mBitmap;
     private SurfaceHolder holder;
-	private Context saved_context;
 	
-    public class MjpegViewThread extends Thread {
-        private SurfaceHolder mSurfaceHolder;
+    private final class MjpegViewThread extends Thread {
+        private final WeakReference<SurfaceHolder> mSurfaceHolder;
         private int frameCounter = 0;
         private long start;
         private Bitmap ovl;
-         
+        private final WeakReference<Context> mContext; 
         public MjpegViewThread(SurfaceHolder surfaceHolder, Context context) { 
-        	mSurfaceHolder = surfaceHolder; 
+        	mSurfaceHolder = new WeakReference<SurfaceHolder>(surfaceHolder);
+        	mContext = new WeakReference<Context>(context);
         }
 
         private Rect destRect(int bmw, int bmh) {
@@ -113,22 +115,26 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
             Paint p = new Paint();
             String fps = "";
             while (mRun) {
-                if(surfaceDone) {
+                if(surfaceDone && mSurfaceHolder.get() != null) {
                     try {
-                        c = mSurfaceHolder.lockCanvas();
-                        synchronized (mSurfaceHolder) {
+                        c = mSurfaceHolder.get().lockCanvas();
+                        if (c == null) {
+                        	continue;
+                        }
+                        synchronized (mSurfaceHolder.get()) {
                             try {
                                 bm = mIn.readMjpegFrame();
                                 mBitmap = bm;
                                 if (bm == null) {
-                                	
-                                	((Activity)saved_context).runOnUiThread(new Runnable() {
-										
-										@Override
-										public void run() {
-											((Activity)saved_context).recreate();
-										}
-									});
+                                	if (mContext.get() != null) {
+	                                	((Activity)mContext.get()).runOnUiThread(new Runnable() {
+											
+											@Override
+											public void run() {
+												((Activity)mContext.get()).recreate();
+											}
+										});
+                                	}
                                 	return;
                                 }
                                 destRect = destRect(bm.getWidth(),bm.getHeight());
@@ -152,7 +158,9 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                                 }
                             } catch (IOException e) {}
                         }
-                    } finally { if (c != null) mSurfaceHolder.unlockCanvasAndPost(c); }
+                    } finally { 
+                    	if (c != null) mSurfaceHolder.get().unlockCanvasAndPost(c); 
+                    }
                 }
             }
         }
@@ -161,7 +169,6 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     private void init(Context context) {
         holder = getHolder();
         holder.addCallback(this);
-    	saved_context = context;
         thread = new MjpegViewThread(holder, context);
         setFocusable(true);
         overlayPaint = new Paint();
@@ -183,7 +190,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
         if (mIn != null) {
             mRun = true;
             if(thread==null){
-            	thread = new MjpegViewThread(holder, saved_context);
+            	thread = new MjpegViewThread(holder, getContext());
             }
             thread.start();    		
         }
@@ -219,7 +226,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                 mRun = true;
                 holder = getHolder();
                 holder.addCallback(this);
-                thread = new MjpegViewThread(holder, saved_context);		
+                thread = new MjpegViewThread(holder, getContext());		
                 thread.start();
                 suspending=false;
             }

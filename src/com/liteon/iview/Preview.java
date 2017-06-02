@@ -5,12 +5,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.PublicKey;
 
 import com.camera.simplemjpeg.MjpegInputStream;
 import com.camera.simplemjpeg.MjpegView;
+import com.google.android.exoplayer2.metadata.scte35.PrivateCommand;
 import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 
@@ -27,6 +30,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
@@ -60,8 +64,7 @@ public class Preview extends Activity {
 	private View mCameraloadingIndicator;
 	private View mMenuLoadingIndicator;
 	private Uri mCurrentSnapShotUri;
-	private Animation animToolbar;
-	private Animation animBottom;
+
 	
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -130,6 +133,7 @@ public class Preview extends Activity {
     	pauseMJpegVideo();
         unregisterReceiver(mBroadcastReceiver);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        mHandlerTime.removeCallbacks(HideUIControl);
     }
     
     public void onDestroy() {
@@ -137,6 +141,7 @@ public class Preview extends Activity {
     	if (mv!=null){
     		mv.freeCameraMemory();
     	}
+        mHandlerTime.removeCallbacks(HideUIControl);
         super.onDestroy();
     }
 
@@ -311,79 +316,94 @@ public class Preview extends Activity {
         return mv.getBitmap();
     }
     
-    public Runnable HideUIControl = new Runnable()
+    public HideUIControlRunnable HideUIControl = new HideUIControlRunnable(this);
+    public static class HideUIControlRunnable implements Runnable
     {
+    	private Animation animToolbar;
+    	private Animation animBottom;
+        private WeakReference<Preview> preview;
+
+        public HideUIControlRunnable(Preview activity) {
+        	preview = new WeakReference<Preview>(activity);
+        }
+        
         public void run() {
 
-            if (mShowingMenu) {
-                mBottomBar.setVisibility(View.GONE);
+            if (preview.get() != null && preview.get().mShowingMenu) {
+            	preview.get().mBottomBar.setVisibility(View.GONE);
                 if (animToolbar == null) {
-                	animToolbar = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.toolbar_hide);
+                	animToolbar = AnimationUtils.loadAnimation(preview.get(), R.anim.toolbar_hide);
                 	animToolbar.setAnimationListener(mToolbarAnimation);
                 }
                 
-                mToolbar.startAnimation(animToolbar);
+                preview.get().mToolbar.startAnimation(animToolbar);
 
                 if (animBottom == null) {
-                	animBottom = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bottom_hide);
+                	animBottom = AnimationUtils.loadAnimation(preview.get(), R.anim.bottom_hide);
                 	animBottom.setAnimationListener(mBottomBarAnimation);
                 }
-                mBottomBar.startAnimation(animBottom); 
+                preview.get().mBottomBar.startAnimation(animBottom); 
             }
         }
-    };
-    
-    private Animation.AnimationListener mToolbarAnimation = new Animation.AnimationListener() {
-        @Override
-        public void onAnimationStart(Animation animation) {
-        	mToolbar.setVisibility(View.GONE);
-        }
+        
+        private Animation.AnimationListener mToolbarAnimation = new Animation.AnimationListener() {
+            
+        	@Override
+            public void onAnimationStart(Animation animation) {
+            	//mToolbar.setVisibility(View.GONE);
+        		if (preview.get() != null) {
+        			preview.get().mToolbar.setVisibility(View.GONE);
+        		}
+            }
 
-        @Override
-        public void onAnimationEnd(Animation animation) {
-        }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+            }
 
-        @Override
-        public void onAnimationRepeat(Animation animation) {
+            @Override
+            public void onAnimationRepeat(Animation animation) {
 
-        }
-    };
+            }
+        };
+        
+        private Animation.AnimationListener mBottomBarAnimation = new Animation.AnimationListener() {
+        	@Override
+            public void onAnimationStart(Animation animation) {
 
-    private Animation.AnimationListener mBottomBarAnimation = new Animation.AnimationListener() {
-        @Override
-        public void onAnimationStart(Animation animation) {
+            }
 
-        }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+            	if (preview.get() != null) {
+            		preview.get().mBottomBar.setVisibility(View.GONE);
+            		preview.get().mShowingMenu = false;
+            	}
+            }
 
-        @Override
-        public void onAnimationEnd(Animation animation) {
-        	mBottomBar.setVisibility(View.GONE);
-        	mShowingMenu = false;
-        }
+            @Override
+            public void onAnimationRepeat(Animation animation) {
 
-        @Override
-        public void onAnimationRepeat(Animation animation) {
-
-        }
+            }
+        };
     };
     
     public class ReadDVR extends AsyncTask<String, Void, MjpegInputStream> {
         protected MjpegInputStream doInBackground(String... url) {
 
-            try {
-                URL _url = new URL(url[0]);
-                HttpURLConnection urlConnection = (HttpURLConnection) _url.openConnection();
-                InputStream is = urlConnection.getInputStream();
-                if (is == null) {
-                    return null;
-                }
+//            try {
+//                URL _url = new URL(url[0]);
+//                HttpURLConnection urlConnection = (HttpURLConnection) _url.openConnection();
+//                InputStream is = urlConnection.getInputStream();
+//                if (is == null) {
+//                    return null;
+//                }
                 return MjpegInputStream.read(url[0]);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            return null;
         }
 
         protected void onPostExecute(MjpegInputStream result) {
