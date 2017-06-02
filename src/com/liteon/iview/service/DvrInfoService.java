@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.util.Log;
 
 public class DvrInfoService extends IntentService {
@@ -48,15 +49,30 @@ public class DvrInfoService extends IntentService {
             } else if (Def.ACTION_GET_CAM_MODE.equals(action)) {
                 handleActionGetCamMode();
             } else if (Def.ACTION_SET_CAM_MODE.equals(action)) {
-                final String mode = intent.getStringExtra(Def.EXTRA_SET_CAM_MODE);
-            	new Thread() {
-            		public void run() {
-            			handleActionSetCamInfo(mode);
-            		};
-            	}.start();
+                
+            	final String mode = intent.getStringExtra(Def.EXTRA_SET_CAM_MODE);
                 Intent intentResponse = new Intent(Def.ACTION_GET_CAM_MODE);
                 intentResponse.putExtra(Def.EXTRA_GET_CAM_MODE, mode);
                 sendBroadcast(intentResponse);
+            	//new Thread() {
+            	//	public void run() {
+                handleActionSetCamInfo(mode);
+                DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
+                int retry = 3;
+				while (retry > 0) {
+					
+					String after_setting = dvrClient.getCameraMode();
+					if (!TextUtils.equals(mode, after_setting)) {
+						Log.d(TAG, "Cam not changed, Retry "+ retry);
+						handleActionSetCamInfo(mode);
+					} else {
+						break;
+					}
+					retry--;
+				}
+            	//	};
+            	//}.start();
+
             } else if (Def.ACTION_GET_NETWORKING.equals(action)) {
                 handleActionGetInternet();
             } else if (Def.ACTION_GET_WIRELESS.equals(action)) {

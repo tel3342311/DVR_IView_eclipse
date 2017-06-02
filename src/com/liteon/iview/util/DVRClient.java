@@ -250,7 +250,7 @@ public class DVRClient {
             Document doc = Jsoup.parse(is, "UTF-8", url.toString());
             Elements element = doc.getElementsByAttributeValue("language", "JavaScript");
             String data = element.first().data();
-            Pattern pattern= Pattern.compile("var resol  = \"(.*)\";");
+            Pattern pattern= Pattern.compile("var dspch  = \"(.*)\";");
             Matcher matcher = pattern.matcher(data);
 
             if (matcher.find()) {
