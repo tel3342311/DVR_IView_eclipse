@@ -40,8 +40,8 @@ public class DVRClient {
     private final static String TAG = DVRClient.class.getName();
     private static DVRClient mDVRClient;
     private Context mContext;
-    private String username = "admin";
-    private String password = "admin";
+    private String mAuthUser = "admin";
+    private String mAuthPassword = "admin";
     private Uri mUri;
     private String mCameraMode = Def.FRONT_CAM_MODE;
     private SharedPreferences mSharedPref;
@@ -68,7 +68,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.system_cgi));
             
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
             Uri.Builder builder = mUri.buildUpon()
@@ -111,7 +111,7 @@ public class DVRClient {
         try {
             URL url = new URL(Def.getSettingURL(Def.camera_cgi));
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
             Uri.Builder builder = mUri.buildUpon()
@@ -160,7 +160,7 @@ public class DVRClient {
         try {
             URL url = new URL(Def.getSettingURL(Def.camera_cgi));
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
             Uri.Builder builder = mUri.buildUpon()
@@ -197,7 +197,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.system_setting));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -236,7 +236,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.camera_setting));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -275,7 +275,7 @@ public class DVRClient {
         try {
             URL url = new URL(Def.getSettingURL(Def.camera_setting));
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -312,7 +312,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.net_setting));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -354,7 +354,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.adm_setting));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -425,7 +425,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.camera_setting));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -498,7 +498,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.wifi_setting));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -551,7 +551,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.security_setting));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -634,7 +634,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.net_setting));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -717,7 +717,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.adm_setting));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -751,7 +751,7 @@ public class DVRClient {
         try {
             URL url = new URL(Def.getRecordingsURL());
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -797,7 +797,7 @@ public class DVRClient {
 
     private String getAuthorizationHeader() {
         try {
-            return "Basic " + new String(Base64.encode((username + ":" + password).getBytes("UTF-8"), Base64.NO_WRAP));
+            return "Basic " + new String(Base64.encode((mAuthUser + ":" + mAuthPassword).getBytes("UTF-8"), Base64.NO_WRAP));
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -808,7 +808,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.adm_cgi));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
             String syncValue = mSharedPref.getString(Def.SP_NTP_SYNC_VALUE, "1");
@@ -860,7 +860,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.camera_cgi));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
             Uri.Builder builder = mUri.buildUpon()
@@ -911,7 +911,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.net_cgi));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -975,7 +975,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.net_cgi));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
             String apn = mSharedPref.getString(Def.SP_APN3G, "APN");
@@ -1044,7 +1044,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.wifi_cgi));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 
@@ -1091,7 +1091,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.wifi_cgi));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
             String cipher = "0";
@@ -1257,7 +1257,7 @@ public class DVRClient {
             URL url = new URL(Def.getSettingURL(Def.status_page));
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            if (!TextUtils.isEmpty(password)) {
+            if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
 

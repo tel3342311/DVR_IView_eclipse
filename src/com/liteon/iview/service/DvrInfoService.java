@@ -100,10 +100,10 @@ public class DvrInfoService extends IntentService {
                 String apn = intent.getStringExtra(Def.EXTRA_APN);
                 String pin = intent.getStringExtra(Def.EXTRA_PIN);
                 String dial_Num = intent.getStringExtra(Def.EXTRA_DIAL_NUM);
-                String username = intent.getStringExtra(Def.EXTRA_USERNAME_3G);
-                String password = intent.getStringExtra(Def.EXTRA_PASSWORD_3G);
+                String username3g = intent.getStringExtra(Def.EXTRA_USERNAME_3G);
+                String password3g = intent.getStringExtra(Def.EXTRA_PASSWORD_3G);
                 String modem =intent.getStringExtra(Def.EXTRA_MODEM);
-                handleActionSetInternet(apn, pin, dial_Num, username, password, modem);
+                handleActionSetInternet(apn, pin, dial_Num, username3g, password3g, modem);
             } else if (Def.ACTION_SET_VPN.equals(action)) {
                 String PPTPServer = intent.getStringExtra(Def.EXTRA_PPTP_SERVER);
                 String PPTPUsername = intent.getStringExtra(Def.EXTRA_PPTP_USERNAME);
@@ -158,7 +158,7 @@ public class DvrInfoService extends IntentService {
     		sendBroadcast(intent);
     		return ;
     	}
-    	File path = getAlbumStorageDir(getString(R.string.app_name)) ;   	
+    	File path = getAlbumStorageDir(getString(R.string.app_name));   	
     	if (!path.exists()) {
     		intent.putExtra(Def.EXTRA_SAVE_STATUS, false);
     		sendBroadcast(intent);
@@ -397,9 +397,9 @@ public class DvrInfoService extends IntentService {
         dvrClient.setRecordings(recordingLength, recordingChannel, recordingOutput);
     }
 
-    private void handleActionSetInternet(String apn, String pin, String dial_num, String username, String password, String modem) {
+    private void handleActionSetInternet(String apn, String pin, String dial_num, String username3g, String password3g, String modem) {
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        dvrClient.setInternets(apn, pin, dial_num, username, password, modem);
+        dvrClient.setInternets(apn, pin, dial_num, username3g, password3g, modem);
     }
 
     private void handleActionSetVPN(String pptpServer, String pptpUsername, String pptpPassword, String pptpClientIP) {
