@@ -249,7 +249,13 @@ public class VideoPlayEX extends Activity {
 	    mWindowIndex = mDataList.indexOf(getCurrentVideoItem());
 
 	    for (int i = 0; i < mDataList.size(); i++) {
-	    	mediaSources[i] = new ExtractorMediaSource(Uri.parse(mDataList.get(i).getUrl()), dataSourceFactory, extractorsFactory, mainHandler, mediaSourceListener); 
+	    	File path = getAlbumStorageDir(getString(R.string.app_name));   
+	    	File file = new File(path, mDataList.get(i).getName());
+	    	if (file.exists()) {
+	    		mediaSources[i] = new ExtractorMediaSource(Uri.fromFile(file), dataSourceFactory, extractorsFactory, mainHandler, mediaSourceListener);
+	    	} else {
+	    		mediaSources[i] = new ExtractorMediaSource(Uri.parse(mDataList.get(i).getUrl()), dataSourceFactory, extractorsFactory, mainHandler, mediaSourceListener);
+	    	}
 	    }
 	    MediaSource mediaSource = new ConcatenatingMediaSource(mediaSources);
 		
@@ -262,6 +268,16 @@ public class VideoPlayEX extends Activity {
 			player.setVideoSurface(mSurface);
 		}
 	}
+	
+	private File getAlbumStorageDir(String albumName) {
+        // Get the directory for the user's public pictures directory.
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS), albumName);
+        if (!file.mkdirs()) {
+            Log.e(TAG, "Directory not created");
+        }
+        return file;
+    }
 	
 	private void releasePlayer() {
 	    if (player != null) {
