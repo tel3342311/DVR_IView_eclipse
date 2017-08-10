@@ -43,7 +43,7 @@
             android:layout_width="@dimen/vpn_edit_text_width"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:text="Username" 
+            android:text="DVR Account" 
             android:textSize="@dimen/setting_option_text_size"/>
         <EditText
             android:id="@+id/edit_username"
@@ -54,7 +54,7 @@
             android:paddingLeft="@dimen/setting_timezone_edit_text_padding_left"
             android:background="@drawable/setting_lcel_1"
             android:maxLines="1"
-            android:hint="Username"
+            android:hint="DVR Account"
             android:textSize="@dimen/setting_option_text_size"
             android:textCursorDrawable="@null"/>
     </LinearLayout>
@@ -70,7 +70,7 @@
             android:layout_width="@dimen/vpn_edit_text_width"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:text="Password" 
+            android:text="DVR Password" 
             android:textSize="@dimen/setting_option_text_size"/>
         <EditText
             android:id="@+id/edit_password"
@@ -82,7 +82,7 @@
             android:background="@drawable/setting_lcel_1"
             android:maxLines="1"
             android:inputType="textPassword"
-            android:hint="Password"
+            android:hint="DVR Password"
             android:textSize="@dimen/setting_option_text_size"
             android:textCursorDrawable="@null"/>
     </LinearLayout>
@@ -98,7 +98,7 @@
             android:layout_width="@dimen/vpn_edit_text_width"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:text="Client IP" 
+            android:text="DVR IP" 
             android:textSize="@dimen/setting_option_text_size"/>
         <EditText
             android:id="@+id/edit_client_ip"
@@ -109,7 +109,7 @@
             android:paddingLeft="@dimen/setting_timezone_edit_text_padding_left"
             android:background="@drawable/setting_lcel_1"
             android:maxLines="1"
-            android:hint="Client IP"
+            android:hint="DVR IP"
             android:textSize="@dimen/setting_option_text_size"
             android:textCursorDrawable="@null"/>
     </LinearLayout>

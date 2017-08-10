@@ -47,12 +47,12 @@
     <dimen name="recording_option_height">83dp</dimen>
     <dimen name="setting_option_text_size">26sp</dimen>
     <!--setting internet-->
-    <dimen name="internet_edit_text_width">148dp</dimen>
+    <dimen name="internet_edit_text_width">180dp</dimen>
     <!--setting wifi-->
-    <dimen name="wifi_edit_text_width">148dp</dimen>
+    <dimen name="wifi_edit_text_width">180dp</dimen>
     <dimen name="wifi_edittext_top_margin">16dp</dimen>
     <!--setting vpn-->
-    <dimen name="vpn_edit_text_width">148dp</dimen>
+    <dimen name="vpn_edit_text_width">180dp</dimen>
 	<!--dialog   -->
 	<dimen name="dialog_background_width">300dp</dimen>
 	<dimen name="dialog_background_height">225dp</dimen>
