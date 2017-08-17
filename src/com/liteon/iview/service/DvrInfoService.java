@@ -5,7 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Map;
 
@@ -296,12 +299,12 @@ public class DvrInfoService extends IntentService {
                 editor.putString(Def.SP_SYSTEM_MODE, Def.RECORDING_MODE);
             }
             editor.commit();
-	    	dvrClient.getStatusInfo();
-	    	dvrClient.getCameraSetting();
-        	dvrClient.getWifiBasic();
-	    	dvrClient.getWifiSecurity();
-	    	dvrClient.getNetworkSetting();
-	    	dvrClient.getInfoFromADMPage();
+            dvrClient.getStatusInfo();
+//	    	dvrClient.getCameraSetting();
+//        	dvrClient.getWifiBasic();
+//	    	dvrClient.getWifiSecurity();
+//	    	dvrClient.getNetworkSetting();
+//	    	dvrClient.getInfoFromADMPage();
         }
     }
 	
@@ -348,74 +351,198 @@ public class DvrInfoService extends IntentService {
     }
 
     private void handleActionGetInternet(){
-        DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        dvrClient.getNetworkSetting();
         Log.v(TAG, "[handleActionGetInternet] ");
         Intent intent = new Intent(Def.ACTION_GET_NETWORKING);
+        DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
+        try {
+        	dvrClient.getNetworkSetting();
+        } catch (SocketTimeoutException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "Connection timeout.");
+		} catch (ConnectException e) {
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+			e.printStackTrace();
+		} catch (SocketException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+		}
         sendBroadcast(intent);
     }
 
     private void handleActionGetWireless(){
+    	Log.v(TAG, "[handleActionGetWireless] ");
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-    	dvrClient.getWifiBasic();
-        Log.v(TAG, "[handleActionGetWireless] ");
         Intent intent = new Intent(Def.ACTION_GET_WIRELESS);
+        try {
+        	dvrClient.getWifiBasic();
+        } catch (SocketTimeoutException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "Connection timeout.");
+		} catch (ConnectException e) {
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+			e.printStackTrace();
+		} catch (SocketException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+		}
         sendBroadcast(intent);
     }
 
     private void handleActionGetSecurity(){
-        DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-    	dvrClient.getWifiSecurity();
         Log.v(TAG, "[handleActionGetSecurity] ");
+        DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
         Intent intent = new Intent(Def.ACTION_GET_SECURITY);
+    	try {
+			dvrClient.getWifiSecurity();
+		} catch (SocketTimeoutException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "Connection timeout.");
+		} catch (ConnectException e) {
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+			e.printStackTrace();
+		} catch (SocketException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+		}
         sendBroadcast(intent);
     }
 
     private void handleActionGetAdmin(){
+    	Log.v(TAG, "[handleActionGetAdmin] ");
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        dvrClient.getInfoFromADMPage();
-        Log.v(TAG, "[handleActionGetAdmin] ");
         Intent intent = new Intent(Def.ACTION_GET_ADMIN);
+        try {
+			dvrClient.getInfoFromADMPage();
+		} catch (SocketTimeoutException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "Connection timeout.");
+		} catch (ConnectException e) {
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+			e.printStackTrace();
+		} catch (SocketException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+		}
+        
         sendBroadcast(intent);
     }
     
     private void handleActionGetRecordings(){
     	DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        dvrClient.getCameraSetting();
+    	Intent intent = new Intent(Def.ACTION_GET_RECORDINGS);
+        try {
+			dvrClient.getCameraSetting();
+		} catch (SocketTimeoutException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "Connection timeout.");
+		} catch (ConnectException e) {
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+			e.printStackTrace();
+		} catch (SocketException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+		}
         Log.v(TAG, "[handleActionGetRecordings] ");
-        Intent intent = new Intent(Def.ACTION_GET_RECORDINGS);
         sendBroadcast(intent);
     }
 
     private void handleActionSetTimezone(String timezone, String ntpServer) {
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        dvrClient.setTimezone(timezone, ntpServer);
+        Intent intent = new Intent(Def.ACTION_SET_TIMEZONE);
+        try {
+        	dvrClient.setTimezone(timezone, ntpServer);
+        } catch (SocketTimeoutException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "Connection timeout.");
+		} catch (ConnectException e) {
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+			e.printStackTrace();
+		} catch (SocketException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+		}
+        sendBroadcast(intent);
     }
 
     private void handleActionSetRecordings(String recordingLength, String recordingChannel, String recordingOutput) {
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        dvrClient.setRecordings(recordingLength, recordingChannel, recordingOutput);
+    	Intent intent = new Intent(Def.ACTION_SET_RECORDINGS);
+        try {
+			dvrClient.setRecordings(recordingLength, recordingChannel, recordingOutput);
+		} catch (SocketTimeoutException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "Connection timeout.");
+		} catch (ConnectException e) {
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+			e.printStackTrace();
+		} catch (SocketException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+		}
+        Log.v(TAG, "[handleActionSetRecordings] ");
+        sendBroadcast(intent);
     }
 
     private void handleActionSetInternet(String apn, String pin, String dial_num, String username3g, String password3g, String modem) {
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        dvrClient.setInternets(apn, pin, dial_num, username3g, password3g, modem);
+        Intent intent = new Intent(Def.ACTION_SET_INTERNET);
+        try {
+        	dvrClient.setInternets(apn, pin, dial_num, username3g, password3g, modem);
+        } catch (SocketTimeoutException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "Connection timeout.");
+		} catch (ConnectException e) {
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+			e.printStackTrace();
+		} catch (SocketException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+		}
+        sendBroadcast(intent);
     }
 
     private void handleActionSetVPN(String pptpServer, String pptpUsername, String pptpPassword, String pptpClientIP) {
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        Def.setRemotePreviewURL(pptpClientIP);
-        SharedPreferences SharedPref = getApplicationContext().getSharedPreferences(
-                Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = SharedPref.edit();
-        editor.putString(Def.SP_VPN_IP, pptpClientIP);
-        editor.commit();
-        dvrClient.setVPNs(pptpServer,pptpUsername,pptpPassword);
+        Intent intent = new Intent(Def.ACTION_SET_VPN);
+        try {
+        	dvrClient.setVPNs(pptpServer,pptpUsername,pptpPassword);
+        	Def.setRemotePreviewURL(pptpClientIP);
+            SharedPreferences SharedPref = getApplicationContext().getSharedPreferences(
+                    Def.SHARE_PREFERENCE, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = SharedPref.edit();
+            editor.putString(Def.SP_VPN_IP, pptpClientIP);
+            editor.commit();
+        } catch (SocketTimeoutException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "Connection timeout.");
+		} catch (ConnectException e) {
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+			e.printStackTrace();
+		} catch (SocketException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+		}
+        sendBroadcast(intent);
+        
     }
 
     private void handleActionSetWifi(String ssid, String securityMode, String encryptType, String passPhase) {
         DVRClient dvrClient = DVRClient.newInstance(getApplicationContext());
-        dvrClient.setWIFIs(ssid,securityMode,encryptType,passPhase);
+        Intent intent = new Intent(Def.ACTION_SET_WIFI);
+        try {
+        	dvrClient.setWIFIs(ssid,securityMode,encryptType,passPhase);
+	    } catch (SocketTimeoutException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "Connection timeout.");
+		} catch (ConnectException e) {
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+			e.printStackTrace();
+		} catch (SocketException e) {
+			e.printStackTrace();
+			intent.putExtra(Def.EXTRA_ERROR, "iView is unable to establish a connection.");
+		}
+        Log.v(TAG, "[handleActionSetWifi] ");
+	    sendBroadcast(intent);
     }
 
     @Override

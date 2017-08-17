@@ -7,8 +7,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -344,7 +348,7 @@ public class DVRClient {
     //NTP server
     //Timezone list
 
-    public void getInfoFromADMPage() {
+    public void getInfoFromADMPage() throws SocketTimeoutException, SocketException {
         Map<String, String> map = new HashMap<>();
         String timeZoneListJson = "";
         String timeZone = "";
@@ -394,24 +398,33 @@ public class DVRClient {
             Log.i(TAG, "getInfoFromADMPage NTPServerIP " + ntp_server);
             Log.i(TAG, "getInfoFromADMPage NTP Sync value " + ntp_sync_value);
 
-            SharedPreferences.Editor editor = mSharedPref.edit();
-            editor.putString(Def.SP_TIMEZONE_LIST, timeZoneListJson);
-            editor.putString(Def.SP_TIMEZONE, timeZone);
-            editor.putString(Def.SP_NTPSERVER, ntp_server);
-            editor.putString(Def.SP_NTP_SYNC_VALUE, ntp_sync_value);
-            editor.commit();
+            
             
             int response = urlConnection.getResponseCode();
+            if (response == HttpURLConnection.HTTP_OK) {
+            	SharedPreferences.Editor editor = mSharedPref.edit();
+                editor.putString(Def.SP_TIMEZONE_LIST, timeZoneListJson);
+                editor.putString(Def.SP_TIMEZONE, timeZone);
+                editor.putString(Def.SP_NTPSERVER, ntp_server);
+                editor.putString(Def.SP_NTP_SYNC_VALUE, ntp_sync_value);
+                editor.commit();
+            }
             Log.i(TAG, "getInfoFromADMPage, Response is " + response);
             is.close();
             urlConnection.disconnect();
 
+        } catch (SocketTimeoutException e) {
+        	throw e;
+        } catch (ConnectException e) {
+        	throw e;
+        } catch (SocketException e) {
+        	throw e;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void getCameraSetting() {
+    public void getCameraSetting() throws SocketTimeoutException, SocketException {
 
         //option is [2m,3m,5m]
         String length = "";
@@ -428,7 +441,7 @@ public class DVRClient {
             if (!TextUtils.isEmpty(mAuthPassword)) {
                 urlConnection.setRequestProperty("Authorization", getAuthorizationHeader());
             }
-
+            urlConnection.setConnectTimeout(5000);
             urlConnection.setRequestMethod("GET");
             urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             urlConnection.setDoInput(true);
@@ -483,14 +496,18 @@ public class DVRClient {
             Log.i(TAG, "getCameraSetting, Response is " + response);
             is.close();
             urlConnection.disconnect();
-
-
+        } catch (SocketTimeoutException e) {
+        	throw e;
+        } catch (ConnectException e) {
+        	throw e;
+        } catch (SocketException e) {
+        	throw e;
         } catch (IOException e) {
-            e.printStackTrace();
+        	e.printStackTrace();
         }
     }
 
-    public void getWifiBasic() {
+    public void getWifiBasic() throws SocketTimeoutException, SocketException {
         String ssid = "";
         String passphase = "";
         String bssid = "";
@@ -524,25 +541,32 @@ public class DVRClient {
             //remove &nbsp;
             bssid = element.text().replace("\u00a0","");
             Log.i(TAG, "Get BSSID is " + bssid);
-
-            SharedPreferences.Editor editor = mSharedPref.edit();
-            editor.putString(Def.SP_SSID, ssid);
-            editor.putString(Def.SP_BSSID, bssid);
-            editor.commit();
             
             int response = urlConnection.getResponseCode();
+            if (response == HttpURLConnection.HTTP_OK) {
+            	SharedPreferences.Editor editor = mSharedPref.edit();
+                editor.putString(Def.SP_SSID, ssid);
+                editor.putString(Def.SP_BSSID, bssid);
+                editor.commit();
+            }
             Log.i(TAG, "Get getWifiBasic , Response is " + response);
             is.close();
             urlConnection.disconnect();
 
 
+        } catch (SocketTimeoutException e) {
+        	throw e;
+        } catch (ConnectException e) {
+        	throw e;
+        } catch (SocketException e) {
+        	throw e;
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    public void getWifiSecurity() {
+    public void getWifiSecurity() throws SocketTimeoutException, SocketException {
         String securityMode = "";
         String encryptType = "";
         String passPhase = "";
@@ -595,26 +619,33 @@ public class DVRClient {
             Log.i(TAG, "Get securityMode is " + securityMode);
             Log.i(TAG, "Get encrypType is " + encryptType);
             
-            SharedPreferences.Editor editor = mSharedPref.edit();
-            editor.putString(Def.SP_SECURITY, securityMode);
-            editor.putString(Def.SP_ENCRYPTTYPE, encryptType);
-            editor.putString(Def.SP_PASSPHASE, passPhase);
-            editor.putString(Def.SP_KEYRENEW, keyRenew);
-            editor.commit();
-            
             int response = urlConnection.getResponseCode();
+            if (response == HttpURLConnection.HTTP_OK) {
+            	SharedPreferences.Editor editor = mSharedPref.edit();
+                editor.putString(Def.SP_SECURITY, securityMode);
+                editor.putString(Def.SP_ENCRYPTTYPE, encryptType);
+                editor.putString(Def.SP_PASSPHASE, passPhase);
+                editor.putString(Def.SP_KEYRENEW, keyRenew);
+                editor.commit();
+            }
             Log.i(TAG, "Get wifi security, Response is " + response);
 
             is.close();
             urlConnection.disconnect();
 
 
+        } catch (SocketTimeoutException e) {
+        	throw e;
+        } catch (ConnectException e) {
+        	throw e;
+        } catch (SocketException e) {
+        	throw e;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void getNetworkSetting() {
+    public void getNetworkSetting() throws SocketTimeoutException, SocketException {
         //3g setting
         String apn = "";
         String pin = "";
@@ -688,24 +719,31 @@ public class DVRClient {
                 }
             }
 
-            SharedPreferences.Editor editor = mSharedPref.edit();
-            editor.putString(Def.SP_APN3G, apn);
-            editor.putString(Def.SP_PIN3G, pin);
-            editor.putString(Def.SP_DIAL3G, dial_num);
-            editor.putString(Def.SP_USER3G, username_3g);
-            editor.putString(Def.SP_MODEM_NAME, modem_name);
-            editor.putString(Def.SP_MODEM_LIST_JSON, modemListJson);
-            editor.putString(Def.SP_PASSWORD3G, password_3g);
-            editor.putString(Def.SP_PPTPSERVER, pptp_server);
-            editor.putString(Def.SP_PPTPUSER, username_pptp);
-            editor.putString(Def.SP_PPTPPASS, password_pptp);
-            editor.commit();
-
             int response = urlConnection.getResponseCode();
+            if (response == HttpURLConnection.HTTP_OK) {
+            	SharedPreferences.Editor editor = mSharedPref.edit();
+                editor.putString(Def.SP_APN3G, apn);
+                editor.putString(Def.SP_PIN3G, pin);
+                editor.putString(Def.SP_DIAL3G, dial_num);
+                editor.putString(Def.SP_USER3G, username_3g);
+                editor.putString(Def.SP_MODEM_NAME, modem_name);
+                editor.putString(Def.SP_MODEM_LIST_JSON, modemListJson);
+                editor.putString(Def.SP_PASSWORD3G, password_3g);
+                editor.putString(Def.SP_PPTPSERVER, pptp_server);
+                editor.putString(Def.SP_PPTPUSER, username_pptp);
+                editor.putString(Def.SP_PPTPPASS, password_pptp);
+                editor.commit();
+            }
             Log.i(TAG, "getNetworkSetting , Response is " + response);
             is.close();
             urlConnection.disconnect();
 
+        } catch (SocketTimeoutException e) {
+        	throw e;
+        } catch (ConnectException e) {
+        	throw e;
+        } catch (SocketException e) {
+        	throw e;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -789,8 +827,8 @@ public class DVRClient {
             if (response == HttpURLConnection.HTTP_OK) {
 
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch(IOException e) {
+        	e.printStackTrace();
         }
         return list;
     }
@@ -803,7 +841,7 @@ public class DVRClient {
         }
     }
 
-    public void setTimezone(String timezone, String ntpServer) {
+    public void setTimezone(String timezone, String ntpServer) throws SocketTimeoutException, SocketException {
         try {
             URL url = new URL(Def.getSettingURL(Def.adm_cgi));
 
@@ -837,25 +875,31 @@ public class DVRClient {
             writer.close();
             os.close();
 
-            SharedPreferences.Editor editor = mSharedPref.edit();
-            editor.putString(Def.SP_TIMEZONE, timezone);
-            editor.putString(Def.SP_NTPSERVER, ntpServer);
-            editor.putString(Def.SP_NTP_SYNC_VALUE, syncValue);
-            editor.commit();
+            
             
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "setTimezone to " + timezone + ", Response is " + response);
             urlConnection.disconnect();
             //Save to share preference
             if (response == HttpURLConnection.HTTP_OK) {
-
+            	SharedPreferences.Editor editor = mSharedPref.edit();
+                editor.putString(Def.SP_TIMEZONE, timezone);
+                editor.putString(Def.SP_NTPSERVER, ntpServer);
+                editor.putString(Def.SP_NTP_SYNC_VALUE, syncValue);
+                editor.commit();
             }
+        } catch (SocketTimeoutException e) {
+        	throw e;
+        } catch (ConnectException e) {
+        	throw e;
+        } catch (SocketException e) {
+        	throw e;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void setRecordings(String recordingLength, String recordingChannel, String recordingOutput) {
+    public void setRecordings(String recordingLength, String recordingChannel, String recordingOutput) throws SocketTimeoutException, SocketException {
         try {
             URL url = new URL(Def.getSettingURL(Def.camera_cgi));
 
@@ -884,28 +928,31 @@ public class DVRClient {
             writer.flush();
             writer.close();
             os.close();
-
-            SharedPreferences.Editor editor = mSharedPref.edit();
-            editor.putString(Def.SP_RECORDING_LENGTH, recordingLength);
-            editor.putString(Def.SP_RECORDING_CAMERA, recordingChannel);
-            editor.putString(Def.SP_RECORDING_OUTPUT, recordingOutput);
-            editor.commit();
             
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "Set recording length to " + recordingLength + ", Set recording Channel to " + recordingChannel + ", Response is " + response);
             urlConnection.disconnect();
             //workaround for always 404 response
             if (response == HttpURLConnection.HTTP_OK || 
-            		response == HttpURLConnection.HTTP_NOT_FOUND ||
-            		response == HttpURLConnection.HTTP_BAD_REQUEST) {
-
+            		response == HttpURLConnection.HTTP_NOT_FOUND) {
+            	SharedPreferences.Editor editor = mSharedPref.edit();
+                editor.putString(Def.SP_RECORDING_LENGTH, recordingLength);
+                editor.putString(Def.SP_RECORDING_CAMERA, recordingChannel);
+                editor.putString(Def.SP_RECORDING_OUTPUT, recordingOutput);
+                editor.commit();
             }
+        }  catch (SocketTimeoutException e) {
+        	throw e;
+        } catch (ConnectException e) {
+        	throw e;
+        } catch (SocketException e) {
+        	throw e;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void setInternets(String apn, String pin, String dial_num, String username3g, String password3g, String modem) {
+    public void setInternets(String apn, String pin, String dial_num, String username3g, String password3g, String modem) throws SocketTimeoutException, SocketException {
 
         try {
             URL url = new URL(Def.getSettingURL(Def.net_cgi));
@@ -948,29 +995,33 @@ public class DVRClient {
             writer.close();
             os.close();
 
-            SharedPreferences.Editor editor = mSharedPref.edit();
-            editor.putString(Def.SP_APN3G, apn);
-            editor.putString(Def.SP_PIN3G, pin);
-            editor.putString(Def.SP_DIAL3G, dial_num);
-            editor.putString(Def.SP_USER3G, username3g);
-            editor.putString(Def.SP_PASSWORD3G, password3g);
-            editor.putString(Def.SP_MODEM_NAME, modem);
-            editor.commit();
-            
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "Set Internets to, Response is " + response);
             urlConnection.disconnect();
             //Save to share preference
             if (response == HttpURLConnection.HTTP_OK) {
-
+            	SharedPreferences.Editor editor = mSharedPref.edit();
+                editor.putString(Def.SP_APN3G, apn);
+                editor.putString(Def.SP_PIN3G, pin);
+                editor.putString(Def.SP_DIAL3G, dial_num);
+                editor.putString(Def.SP_USER3G, username3g);
+                editor.putString(Def.SP_PASSWORD3G, password3g);
+                editor.putString(Def.SP_MODEM_NAME, modem);
+                editor.commit();
             }
 
+        } catch (SocketTimeoutException e) {
+        	throw e;
+        } catch (ConnectException e) {
+        	throw e;
+        } catch (SocketException e) {
+        	throw e;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void setVPNs(String pptpServer, String pptpUsername, String pptpPassword) {
+    public void setVPNs(String pptpServer, String pptpUsername, String pptpPassword) throws SocketTimeoutException, SocketException {
         try {
             URL url = new URL(Def.getSettingURL(Def.net_cgi));
 
@@ -1013,33 +1064,37 @@ public class DVRClient {
             writer.flush();
             writer.close();
             os.close();
-
-            SharedPreferences.Editor editor = mSharedPref.edit();
-            editor.putString(Def.SP_PPTPSERVER, pptpServer);
-            editor.putString(Def.SP_PPTPUSER, pptpUsername);
-            editor.putString(Def.SP_PPTPPASS, pptpPassword);
-            editor.commit();
             
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "Set VPNs to , Response is " + response);
             urlConnection.disconnect();
             //Save to share preference
             if (response == HttpURLConnection.HTTP_OK) {
-
+                SharedPreferences.Editor editor = mSharedPref.edit();
+                editor.putString(Def.SP_PPTPSERVER, pptpServer);
+                editor.putString(Def.SP_PPTPUSER, pptpUsername);
+                editor.putString(Def.SP_PPTPPASS, pptpPassword);
+                editor.commit();
             }
 
+        } catch (SocketTimeoutException e) {
+        	throw e;
+        } catch (ConnectException e) {
+        	throw e;
+        } catch (SocketException e) {
+        	throw e;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void setWIFIs(String ssid, String securityMode, String encryptType, String passPhase) {
+    public void setWIFIs(String ssid, String securityMode, String encryptType, String passPhase) throws SocketTimeoutException, SocketException {
 
         setWifiBasic(ssid);
         setWifiSecurity(securityMode,encryptType,passPhase);
     }
 
-    private void setWifiBasic(String ssid) {
+    private void setWifiBasic(String ssid) throws SocketTimeoutException, SocketException {
         try {
             URL url = new URL(Def.getSettingURL(Def.wifi_cgi));
 
@@ -1069,24 +1124,27 @@ public class DVRClient {
             writer.close();
             os.close();
 
-            SharedPreferences.Editor editor = mSharedPref.edit();
-            editor.putString(Def.SP_SSID, ssid);
-            editor.commit();
-            
             int response = urlConnection.getResponseCode();
+            if (response == HttpURLConnection.HTTP_OK) {
+                SharedPreferences.Editor editor = mSharedPref.edit();
+                editor.putString(Def.SP_SSID, ssid);
+                editor.commit();
+            }
             Log.i(TAG, "Set setWifiBasic SSID to " + ssid + ", Response is " + response);
             urlConnection.disconnect();
-            //Save to share preference
-            if (response == HttpURLConnection.HTTP_OK) {
 
-            }
-
+        } catch (SocketTimeoutException e) {
+        	throw e;
+        } catch (ConnectException e) {
+        	throw e;
+        } catch (SocketException e) {
+        	throw e;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void setWifiSecurity(String securityMode, String encryptType, String passPhase) {
+    private void setWifiSecurity(String securityMode, String encryptType, String passPhase) throws SocketTimeoutException, SocketException {
         try {
             URL url = new URL(Def.getSettingURL(Def.wifi_cgi));
 
@@ -1131,21 +1189,25 @@ public class DVRClient {
             writer.flush();
             writer.close();
             os.close();
-
-            SharedPreferences.Editor editor = mSharedPref.edit();
-            editor.putString(Def.SP_SECURITY, securityMode);
-            editor.putString(Def.SP_PASSPHASE, passPhase);
-            editor.putString(Def.SP_ENCRYPTTYPE,encryptType);
-            editor.commit();
             
             int response = urlConnection.getResponseCode();
             Log.i(TAG, "Set setWifiSecurity securityMode to " + securityMode + ", Response is " + response);
             urlConnection.disconnect();
             //Save to share preference
             if (response == HttpURLConnection.HTTP_OK) {
-
+                SharedPreferences.Editor editor = mSharedPref.edit();
+                editor.putString(Def.SP_SECURITY, securityMode);
+                editor.putString(Def.SP_PASSPHASE, passPhase);
+                editor.putString(Def.SP_ENCRYPTTYPE,encryptType);
+                editor.commit();
             }
 
+        } catch (SocketTimeoutException e) {
+        	throw e;
+        } catch (ConnectException e) {
+        	throw e;
+        } catch (SocketException e) {
+        	throw e;
         } catch (IOException e) {
             e.printStackTrace();
         }

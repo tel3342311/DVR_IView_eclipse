@@ -6,6 +6,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -14,6 +15,7 @@ import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.settings.InternetSetting;
 import com.liteon.iview.settings.MainSetting;
 import com.liteon.iview.settings.MainSetting.OnSettingPageSelectedListener;
+import com.liteon.iview.settings.OnConfirmListener;
 import com.liteon.iview.settings.RecordSetting;
 import com.liteon.iview.settings.TimezoneSetting;
 import com.liteon.iview.settings.VPNSetting;
@@ -149,61 +151,10 @@ public class Settings extends Activity implements OnSettingPageSelectedListener{
 		
 		@Override
 		public void onClick(View v) {
-			Intent intent = new Intent();
-			Fragment fragment = getFragmentManager().findFragmentById(R.id.frag_container);
-			if (fragment instanceof TimezoneSetting) {
-                String timezone = ((TimezoneSetting)fragment).getCurrentTimeZone();
-                String ntpServer = ((TimezoneSetting)fragment).getNTPServer();
-                intent.setAction(Def.ACTION_SET_TIMEZONE);
-                intent.putExtra(Def.EXTRA_TIMEZONE, timezone);
-                intent.putExtra(Def.EXTRA_NTP_SERVER, ntpServer);
-            } else if (fragment instanceof RecordSetting) {
-                String recordingLength = ((RecordSetting)fragment).getRecordingLength();
-                String recordingChannel = ((RecordSetting)fragment).getRecordingChannel();
-                String recordingOutput = ((RecordSetting)fragment).getRecordingOutput();
-                intent.setAction(Def.ACTION_SET_RECORDINGS);
-                intent.putExtra(Def.EXTRA_RECORDING_LENGTH, recordingLength);
-                intent.putExtra(Def.EXTRA_RECORDING_CHANNEL, recordingChannel);
-                intent.putExtra(Def.EXTRA_RECORDING_OUTPUT, recordingOutput);
-            } else if (fragment instanceof InternetSetting) {
-                String apn = ((InternetSetting)fragment).getCurrentAPN();
-                String pin = ((InternetSetting)fragment).getCurrentPIN();
-                String dial_Num = ((InternetSetting)fragment).getCurrentDialNum();
-                String username = ((InternetSetting)fragment).getCurrentUsername();
-                String password = ((InternetSetting)fragment).getCurrentPassword();
-                String modem = ((InternetSetting)fragment).getCurrentModem();
-                intent.setAction(Def.ACTION_SET_INTERNET);
-                intent.putExtra(Def.EXTRA_APN, apn);
-                intent.putExtra(Def.EXTRA_PIN, pin);
-                intent.putExtra(Def.EXTRA_DIAL_NUM, dial_Num);
-                intent.putExtra(Def.EXTRA_USERNAME_3G, username);
-                intent.putExtra(Def.EXTRA_PASSWORD_3G, password);
-                intent.putExtra(Def.EXTRA_MODEM, modem);
-            } else if (fragment instanceof VPNSetting) {
-                String pPTPServer = ((VPNSetting)fragment).getCurrentServer();
-                String pPTPUsername = ((VPNSetting)fragment).getCurrentUsername();
-                String pPTPPassword = ((VPNSetting)fragment).getCurrentPassword();
-                String pPTPClientIp = ((VPNSetting)fragment).getCurrentClientIP();
-                intent.setAction(Def.ACTION_SET_VPN);
-                intent.putExtra(Def.EXTRA_PPTP_SERVER, pPTPServer);
-                intent.putExtra(Def.EXTRA_PPTP_USERNAME,pPTPUsername);
-                intent.putExtra(Def.EXTRA_PPTP_PASSWORD,pPTPPassword);
-                intent.putExtra(Def.EXTRA_PPTP_CLIENT_IP, pPTPClientIp);
-            } else if (fragment instanceof WifiSetting) {
-                String ssid = ((WifiSetting)fragment).getCurrentSsid();
-                String securityMode = ((WifiSetting)fragment).getCurrentSecurityMode();
-                String encryptType = ((WifiSetting)fragment).getCurrentEncryptType();
-                String passPhase = ((WifiSetting)fragment).getCurrentPassPhase();
-                intent.setAction(Def.ACTION_SET_WIFI);
-                intent.putExtra(Def.EXTRA_SSID, ssid);
-                intent.putExtra(Def.EXTRA_SECURITYMODE, securityMode);
-                intent.putExtra(Def.EXTRA_ENCRYPTTYPE, encryptType);
-                intent.putExtra(Def.EXTRA_PASSPHASE, passPhase);
-            }
-            intent.setClass(Settings.this, DvrInfoService.class);
-            startService(intent);
+			OnConfirmListener onConfirmPage = (OnConfirmListener) getFragmentManager().findFragmentById(R.id.frag_container);
+			onConfirmPage.onConfirmSetting();
             
-			onSettingSelected(SETTING_MAIN);
+			//onSettingSelected(SETTING_MAIN);
 		}
 	};
 	

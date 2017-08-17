@@ -273,7 +273,7 @@ public class Def {
     public final static String EXTRA_SAVE_TO_IDX = "com.liteon.iView.extra.SAVE_TO_IDX";
     public final static String EXTRA_SAVE_TO_COUNT = "com.liteon.iView.extra.SAVE_TO_COUNT";
     public final static String EXTRA_IS_DVR_REACHABLE = "com.liteon.iView.service.extra.IS_DVR_REACHABLE";
-
+    public final static String EXTRA_ERROR = "com.liteon.iView.service.extra.EXTRA_ERROR";
     //Key for sharePreference
     public final static String SHARE_PREFERENCE = "com.liteon.iView.PREFERENCE_FILE_KEY";
     public final static String SP_SSID = "SP_SSID";
