@@ -5,17 +5,21 @@ import java.lang.ref.WeakReference;
 import java.math.MathContext;
 
 import com.liteon.iview.Preview;
+import com.liteon.iview.R;
 
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -53,6 +57,10 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
         private int frameCounter = 0;
         private long start;
         private Bitmap ovl;
+        private Bitmap warning;
+        private boolean isUnstable;
+        private final static int WARNING_HEIGHT = 90;
+        private final static int WARNING_FPS_THRESHOLD = 5;
         private final WeakReference<Context> mContext; 
         public MjpegViewThread(SurfaceHolder surfaceHolder, Context context) { 
         	mSurfaceHolder = new WeakReference<SurfaceHolder>(surfaceHolder);
@@ -93,18 +101,18 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
         private Bitmap makeFpsOverlay(Paint p, String text) {
             Rect b = new Rect();
             p.getTextBounds(text, 0, text.length(), b);
-            int bwidth  = b.width()+2;
-            int bheight = b.height()+2;
-            Bitmap bm = Bitmap.createBitmap(bwidth, bheight, Bitmap.Config.RGB_565);
+            int bwidth  = b.width()+4;
+            int bheight = WARNING_HEIGHT;//b.height()+4;
+            Bitmap bm = Bitmap.createBitmap(bwidth, bheight, Bitmap.Config.ALPHA_8);
             Canvas c = new Canvas(bm);
-            p.setColor(overlayBackgroundColor);
-            c.drawRect(0, 0, bwidth, bheight, p);
-            p.setColor(overlayTextColor);
-            c.drawText(text, -b.left+1, (bheight/2)-((p.ascent()+p.descent())/2)+1, p);
+            c.drawText(text, 0, (WARNING_HEIGHT / 2) - ((p.ascent()+p.descent())/2) + 1, p);
             return bm;        	 
         }
 
         public void run() {
+        	ovl = makeFpsOverlay(overlayPaint, "Signal Unstable");
+        	warning = BitmapFactory.decodeResource(getResources(),R.drawable.setting_img_warning);
+    		warning = Bitmap.createScaledBitmap(warning, WARNING_HEIGHT, WARNING_HEIGHT, true);
             start = System.currentTimeMillis();
             PorterDuffXfermode mode = new PorterDuffXfermode(PorterDuff.Mode.DST_OVER);
             Bitmap bm;
@@ -113,7 +121,6 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
             Rect destRect;
             Canvas c = null;
             Paint p = new Paint();
-            String fps = "";
             while (mRun) {
                 if(surfaceDone && mSurfaceHolder.get() != null) {
                     try {
@@ -142,18 +149,24 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                                 c.drawBitmap(bm, null, destRect, p);
                                 if(showFps) {
                                     p.setXfermode(mode);
-                                    if(ovl != null) {
-                                    	height = ((ovlPos & 1) == 1) ? destRect.top : destRect.bottom-ovl.getHeight();
-                                    	width  = ((ovlPos & 8) == 8) ? destRect.left : destRect.right -ovl.getWidth();
+                                    if(isUnstable) {
+                                    	height = ((ovlPos & 1) == 1) ? destRect.top : destRect.bottom - ovl.getHeight();
+                                    	width  = ((ovlPos & 8) == 8) ? destRect.left : destRect.right - ovl.getWidth();
+                                    	int height2 = ((ovlPos & 1) == 1) ? destRect.top : destRect.bottom - ovl.getHeight() - warning.getHeight();
+                                    	int width2  = ((ovlPos & 8) == 8) ? destRect.left : destRect.right - ovl.getWidth() - warning.getWidth();
                                         c.drawBitmap(ovl, width, height, null);
+                                        c.drawBitmap(warning, width2, height2, null);
                                     }
                                     p.setXfermode(null);
                                     frameCounter++;
                                     if((System.currentTimeMillis() - start) >= 1000) {
-                                        fps = String.valueOf(frameCounter)+"fps";
-                                        frameCounter = 0; 
                                         start = System.currentTimeMillis();
-                                        ovl = makeFpsOverlay(overlayPaint, fps);
+                                        if (frameCounter <= WARNING_FPS_THRESHOLD) {
+                                        	isUnstable = true;
+                                        } else {
+                                        	isUnstable = false;
+                                        }
+                                        frameCounter = 0; 
                                     }
                                 }
                             } catch (IOException e) {}
@@ -173,15 +186,14 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
         setFocusable(true);
         overlayPaint = new Paint();
         overlayPaint.setTextAlign(Paint.Align.LEFT);
-        overlayPaint.setTextSize(12);
+        overlayPaint.setTextSize(48);
         overlayPaint.setTypeface(Typeface.DEFAULT);
-        overlayTextColor = Color.WHITE;
-        overlayBackgroundColor = Color.BLACK;
-        ovlPos = MjpegView.POSITION_LOWER_RIGHT;
+        overlayTextColor = Color.BLACK;
+        overlayBackgroundColor = Color.TRANSPARENT;
+        ovlPos = MjpegView.POSITION_UPPER_RIGHT;
         displayMode = MjpegView.SIZE_STANDARD;
         dispWidth = getWidth();
         dispHeight = getHeight();
-        
         Log.d(TAG,"dispWidth =  " + dispWidth + " dispHeight = " + dispHeight);
         Log.d(TAG,"dispWidth =  " + dispWidth + " dispHeight = " + dispHeight);
     }
