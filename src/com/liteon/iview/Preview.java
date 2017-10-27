@@ -4,16 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.PublicKey;
+import java.util.List;
 
 import com.camera.simplemjpeg.MjpegInputStream;
 import com.camera.simplemjpeg.MjpegView;
-import com.google.android.exoplayer2.metadata.scte35.PrivateCommand;
 import com.liteon.iview.service.DvrInfoService;
 import com.liteon.iview.util.Def;
 
@@ -28,21 +23,21 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class Preview extends Activity {
 
@@ -256,9 +251,15 @@ public class Preview extends Activity {
                     super.run();
                     String uri = saveImageToGallery(Preview.this, snapShot());
                     ContentResolver cr = getContentResolver();
-                    mCurrentSnapShotUri = Uri.parse(uri);
-                    long id = ContentUris.parseId(mCurrentSnapShotUri);
-                    final Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+                    final Bitmap miniThumb;
+                    if (!uri.startsWith("file://")) {
+                    	mCurrentSnapShotUri = Uri.parse(uri);
+	                    long id = ContentUris.parseId(mCurrentSnapShotUri);
+	                    miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+                	} else {
+                		miniThumb = snapShot();
+                		mCurrentSnapShotUri = Uri.parse(uri);
+                	}
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -275,7 +276,12 @@ public class Preview extends Activity {
 
 		@Override
 		public void onClick(View v) {
-			startActivity(new Intent(Intent.ACTION_VIEW, mCurrentSnapShotUri));
+			MimeTypeMap myMime = MimeTypeMap.getSingleton();
+			Intent newIntent = new Intent(Intent.ACTION_VIEW);
+			String mimeType = myMime.getMimeTypeFromExtension("jpg");
+			newIntent.setDataAndType(mCurrentSnapShotUri,mimeType);
+			newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			startActivity(newIntent);
 		}
     };
     
@@ -465,6 +471,9 @@ public class Preview extends Activity {
  	    try {
  	    	uri = MediaStore.Images.Media.insertImage(context.getContentResolver(),
  					file.getAbsolutePath(), fileName, null);
+ 	    	if (uri == null) {
+ 	    		uri = Uri.parse("file://" + file.getAbsolutePath()).toString();
+ 	    	}
  	    } catch (FileNotFoundException e) {
  	        e.printStackTrace();
  	    }
